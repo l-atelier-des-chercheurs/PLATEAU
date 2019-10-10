@@ -1,0 +1,161 @@
+{
+  "protocol": "https",
+  "host": "localhost",
+  "desired_port": 8080,
+  "redirect_port": "",
+  "userDirPath": "documents",
+  "userDirname": "plateau",
+  "cache_content": true,
+
+  "contentDirname": "user",
+  "cacheDirname": "plateau_cache",
+  "metaFileext": ".txt",
+  "thumbExt": ".jpeg",
+  "thumbFormat": "jpeg",
+  "folderMetaFilename": "meta",
+  "folderPreviewFilename": "meta_preview",
+
+  "privateKeyPath": "",
+  "certificatePath": "",
+
+  "metaDateFormat": "YYYYMMDD_HHmmss",
+  "textEncoding": "UTF-8",
+  "thumbFolderName": "_thumbs",
+  "deletedFolderName": "_bin",
+
+  "mediaThumbQuality": 70,
+  "maxFileSizeForUpload": 100,
+
+  "regexpMatchFolderNames": "^([^.]+)$",
+  "regexpGetFileExtension": "\\.[^.]*$",
+  "regexpRemoveFileExtension": "(.+?)(\\.[^.]*$|$)",
+
+  "api": {
+    "enabled": false,
+    "allow_all_domains": false,
+    "domains_whitelist": []
+  },
+
+  "structure": {
+    "documents": {
+      "path": "",
+      "fields": {
+        "name": {
+          "type": "string"
+        },
+        "date_created": {
+          "type": "date",
+          "default": "current",
+          "read_only": true
+        },
+        "date_modified": {
+          "type": "date",
+          "default": "current"
+        },
+        "password": {
+          "type": "string",
+          "read_only": true
+        },
+        "authors": {
+          "type": "array"
+        },
+        "medias_slugs": {
+          "type": "array"
+        },
+        "header_text": {
+          "type": "string"
+        },
+        "width": {
+          "type": "number",
+          "default": "216"
+        },
+        "height": {
+          "type": "number",
+          "default": "279"
+        }
+      },
+      "medias": {
+        "thumbs": {
+          "resolutions": [360, 800, 1600]
+        },
+        "fields": {
+          "date_created": {
+            "type": "date",
+            "default": "current",
+            "read_only": true
+          },
+          "date_modified": {
+            "type": "date",
+            "default": "current",
+            "override": true
+          },
+          "date_uploaded": {
+            "type": "date",
+            "default": "current",
+            "read_only": true
+          },
+          "media_filename": {
+            "type": "string"
+          },
+          "original_media_filename": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "options": ["text", "image", "embed", "document", "data", "other"],
+            "default": "other"
+          },
+          "embed_link": {
+            "type": "string"
+          },
+          "dataviz_type": {
+            "type": "string"
+          },
+          "dataviz_search_keywords": {
+            "type": "string"
+          },
+          "dataviz_search_period_start": {
+            "type": "string"
+          },
+          "dataviz_search_period_end": {
+            "type": "string"
+          },
+          "dataviz_raw_data": {
+            "type": "string",
+            "escape": false
+          },
+          "ratio": {
+            "type": "number"
+          },
+          "duration": {
+            "type": "number"
+          },
+          "authors": {
+            "type": "array"
+          },
+          "caption": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "authors": {
+      "path": "_authors",
+      "preview": {
+        "width": 1200,
+        "height": 1200,
+        "thumbs": {
+          "resolutions": [180, 640]
+        }
+      },
+      "fields": {
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
