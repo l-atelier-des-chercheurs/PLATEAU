@@ -265,7 +265,7 @@ h1 {
   margin: 0;
   line-height: 1;
   letter-spacing: 0.02em;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   // font-style: italic;
 }

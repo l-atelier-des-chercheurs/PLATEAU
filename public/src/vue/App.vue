@@ -76,12 +76,11 @@ body {
 }
 
 body {
-  font-family: "Public Sans", sans-serif;
+  font-family: "OutputSansVariable", sans-serif;
   font-weight: 400;
 }
 
 #app {
-  font-family: "Public Sans", Helvetica, Arial, sans-serif;
   font-weight: 400;
   font-size: 87.5%;
   line-height: 1.6;
