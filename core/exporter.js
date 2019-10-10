@@ -5,6 +5,8 @@ const path = require('path'),
   fs = require('fs-extra'),
   pad = require('pad-left');
 
+const puppeteer = require('puppeteer');
+
 const sharp = require('sharp');
 sharp.cache(false);
 
@@ -322,45 +324,46 @@ module.exports = (function() {
                 `EXPORTER — makePDFForPubli : created cache folder at path ${cachePath}`
               );
 
-              const { BrowserWindow } = require('electron');
-              let win = new BrowserWindow({
-                width: 800,
-                height: 600,
-                show: false
-              });
-              win.loadURL(urlToPubli);
-
               const page_settings = {
                 width: publiData.width ? publiData.width : 297,
                 height: publiData.width ? publiData.width : 210
               };
 
-              win.webContents.on('did-finish-load', () => {
-                // Use default printing options
-                setTimeout(() => {
-                  win.webContents.printToPDF(
-                    {
-                      marginsType: 1,
-                      pageSize: {
-                        // * 1000 = millimeters to microns
-                        width: page_settings.width * 1000,
-                        height: page_settings.height * 1000
-                      }
-                    },
-                    (error, data) => {
-                      if (error) throw error;
-                      fs.writeFile(pdfPath, data, error => {
-                        if (error) throw error;
-                        console.log('Write PDF successful');
-                        resolve({
-                          pdfPath,
-                          pdfName
+              puppeteer
+                .launch({
+                  headless: true,
+                  ignoreHTTPSErrors: true,
+                  args: ['--no-sandbox']
+                })
+                .then(browser => {
+                  return browser.newPage();
+                })
+                .then(page => {
+                  page
+                    .goto(urlToPubli, {
+                      waitUntil: 'networkidle0'
+                    })
+                    .then(
+                      () => new Promise(resolve => setTimeout(resolve, 1000))
+                    )
+                    .then(() => {
+                      page.emulateMedia('print');
+                      page
+                        .pdf({
+                          path: pdfPath,
+                          printBackground: true,
+                          width: `${page_settings.width}mm`,
+                          height: `${page_settings.height}mm`
+                        })
+                        .then(() => {
+                          console.log('Write PDF successful');
+                          resolve({
+                            pdfName,
+                            pdfPath
+                          });
                         });
-                      });
-                    }
-                  );
-                }, 1000);
-              });
+                    });
+                });
             });
           });
       });

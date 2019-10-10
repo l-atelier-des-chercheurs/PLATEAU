@@ -15,15 +15,10 @@
     "url": "https://github.com/louis-ev/plateau/issues"
   },
   "scripts": {
-    "start": "electron .",
-    "debug": "electron --inspect=5858 . --debug --verbose",
-    "debug-brk": "electron --inspect=5858 . --debug-brk --verbose",
-    "node-start": "node .",
-    "node-debug": "node . --inspect=5858 --debug --verbose",
-    "node-debug-brk": "node . --inspect=5858 --debug-brk --verbose",
+    "start": "node .",
+    "debug": "node . --inspect=5858 --debug --verbose",
     "pack": "build --dir",
-    "dist": "build",
-    "postinstall": "electron-builder install-app-deps"
+    "dist": "build"
   },
   "engines": {
     "node": "8.9.3",
@@ -44,8 +39,6 @@
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "dodoc-parsedown": "github:louis-ev/dodoc-parsedown#master",
-    "electron-pdf-window": "^1.0.12",
-    "electron-window-state": "^5.0.3",
     "exif-reader": "^1.0.2",
     "express": "^4.16.4",
     "ffmpeg-static": "^2.4.0",
@@ -64,6 +57,7 @@
     "platform-folders": "^0.4.0",
     "portscanner": "^2.2.0",
     "pug": "^2.0.3",
+    "puppeteer": "^1.20.0",
     "quill-render": "^1.0.5",
     "rich-text": "^3.1.0",
     "sharedb": "^1.0.0-beta.22",
@@ -80,11 +74,6 @@
     "ws": "^6.2.1"
   },
   "devDependencies": {
-    "electron": "^2.0.18",
-    "electron-builder": "^20.39.0",
-    "electron-packager": "^13.1.1",
-    "electron-prebuilt": "^1.4.13",
-    "electron-rebuild": "^1.8.4",
     "node-gyp": "^3.8.0"
   }
 }
