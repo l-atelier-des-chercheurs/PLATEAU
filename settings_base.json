@@ -57,20 +57,6 @@
         },
         "authors": {
           "type": "array"
-        },
-        "medias_slugs": {
-          "type": "array"
-        },
-        "header_text": {
-          "type": "string"
-        },
-        "width": {
-          "type": "number",
-          "default": "216"
-        },
-        "height": {
-          "type": "number",
-          "default": "279"
         }
       },
       "medias": {
@@ -78,6 +64,9 @@
           "resolutions": [360, 800, 1600]
         },
         "fields": {
+          "name": {
+            "type": "string"
+          },
           "date_created": {
             "type": "date",
             "default": "current",
@@ -111,25 +100,6 @@
               "other"
             ],
             "default": "other"
-          },
-          "embed_link": {
-            "type": "string"
-          },
-          "dataviz_type": {
-            "type": "string"
-          },
-          "dataviz_search_keywords": {
-            "type": "string"
-          },
-          "dataviz_search_period_start": {
-            "type": "string"
-          },
-          "dataviz_search_period_end": {
-            "type": "string"
-          },
-          "dataviz_raw_data": {
-            "type": "string",
-            "escape": false
           },
           "ratio": {
             "type": "number"

@@ -3,14 +3,9 @@
     <div>
       <div>Projet : {{ project.name }}</div>
       <div>Panneau de writeup (un seul pour commencer)</div>
-      <div>
-        <textarea />
-      </div>
+      <WriteUp :slugFolderName="slugProjectName" :medias="project.medias" :read_only="read_only" />
     </div>
-    <div>
-      <div>Bibliothèque</div>
-      <MediaLibrary :slugProjectName="slugProjectName" :project="project" :read_only="false" />
-    </div>
+    <MediaLibrary :slugProjectName="slugProjectName" :project="project" :read_only="false" />
     <div class>
       <div class>Projection/composition</div>
     </div>
@@ -18,6 +13,7 @@
 </template>
 <script>
 import MediaLibrary from "./components/MediaLibrary.vue";
+import WriteUp from "./components/WriteUp.vue";
 
 export default {
   props: {
@@ -25,7 +21,8 @@ export default {
     slugProjectName: String
   },
   components: {
-    MediaLibrary
+    MediaLibrary,
+    WriteUp
   },
   data() {
     return {

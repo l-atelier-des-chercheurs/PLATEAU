@@ -37,19 +37,6 @@
           />
         </label>
 
-        <transition name="fade_fast" :duration="150">
-          <div
-            v-if="!read_only && show_drop_container"
-            @drop="dropHandler($event)"
-            class="_drop_indicator"
-          >
-            <div>
-              <img src="/images/i_importer.svg" draggable="false" />
-              <label>{{ $t('drop_here_to_import') }}</label>
-            </div>
-          </div>
-        </transition>
-
         <UploadFile
           v-if="selected_files.length > 0"
           @close="selected_files = []"
@@ -110,6 +97,19 @@
         :class="{ 'is--just_added' : last_media_added.includes(media.slugMediaName) }"
       />
     </transition-group>
+
+    <transition name="fade_fast" :duration="150">
+      <div
+        v-if="!read_only && show_drop_container"
+        @drop="dropHandler($event)"
+        class="_drop_indicator"
+      >
+        <div>
+          <img src="/images/i_importer.svg" draggable="false" />
+          <label>{{ $t('drop_here_to_import') }}</label>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 <script>
@@ -212,15 +212,22 @@ export default {
       if (!this.project.hasOwnProperty("medias")) {
         return 0;
       }
-      return Object.keys(this.project.medias).length;
+      return Object.keys(this.libraryMedias).length;
     },
     mediaKeywords() {
       // grab all keywords from this.project.medias
-      return this.getAllKeywordsFrom(this.project.medias);
+      return this.getAllKeywordsFrom(this.libraryMedias);
     },
     mediaAuthors() {
-      return this.$root.getAllAuthorsFrom(this.project.medias);
+      return this.$root.getAllAuthorsFrom(this.libraryMedias);
     },
+
+    libraryMedias() {
+      return Object.values(this.project.medias).filter(
+        m => m.hasOwnProperty("type") && m.type !== "writeup"
+      );
+    },
+
     sortedMedias() {
       var sortable = [];
 
@@ -228,9 +235,8 @@ export default {
         return sortable;
       }
 
-      for (let slugMediaName in this.project.medias) {
+      this.libraryMedias.map(media => {
         let orderBy;
-        const media = this.project.medias[slugMediaName];
 
         if (this.mediaSort.type === "date") {
           if (media.hasOwnProperty(this.mediaSort.field)) {
@@ -253,9 +259,9 @@ export default {
         }
 
         if (this.$root.isMediaShown(media)) {
-          sortable.push({ slugMediaName, orderBy });
+          sortable.push({ slugMediaName: media.metaFileName, orderBy });
         }
-      }
+      });
 
       let sortedSortable = sortable.sort(function(a, b) {
         let valA = a.orderBy;
@@ -432,5 +438,42 @@ export default {
   }
 };
 </script>
-<style>
+<style lang="scss">
+.m_library {
+  position: relative;
+  height: 100%;
+}
+
+.m_library--medias {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  grid-auto-rows: max-content;
+  grid-gap: 1em;
+
+  figure {
+    margin: 0;
+  }
+}
+
+._drop_indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #0a997f;
+  z-index: 50000;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;
+
+  > * {
+    display: block;
+    width: 200px;
+    height: 200px;
+  }
+}
 </style>
