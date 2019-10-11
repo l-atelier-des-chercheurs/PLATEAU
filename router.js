@@ -16,7 +16,7 @@ module.exports = function(app) {
    * routing event
    */
   app.get('/', showIndex);
-  app.get('/:slugDocumentName', loadFolder);
+  app.get('/:slugProjectName', loadFolder);
   app.get('/:type/:slugFolderName', printFolder);
   app.get('/:type/:slugFolderName/pdf', createAndDownloadPDF);
   app.post('/file-upload/:type/:slugFolderName', postFile2);
@@ -89,8 +89,8 @@ module.exports = function(app) {
   }
 
   function loadFolder(req, res) {
-    let slugFolderName = req.param('slugDocumentName');
-    const type = 'documents';
+    let slugFolderName = req.param('slugProjectName');
+    const type = 'projects';
 
     generatePageData(req).then(
       pageData => {

@@ -1,36 +1,29 @@
 <template>
   <div id="app">
-    <AppMenu />
+    <Topbar />
 
-    <transition name="fade_fast">
-      <AccountsList v-if="$root.show_accounts" />
-    </transition>
-
-    <main>
-      <template>
-        <component
-          :is="$root.do_navigation.view"
-          :documents="$root.store.documents"
-          :document="$root.currentDocument"
-          :slugDocumentName="$root.do_navigation.current_slugDocumentName"
-        />
-      </template>
-    </main>
+    <template>
+      <component
+        :is="$root.do_navigation.view"
+        :projects="$root.store.projects"
+        :project="$root.currentProject"
+        :slugProjectName="$root.do_navigation.current_slugProjectName"
+      />
+    </template>
   </div>
 </template>
 
 <script>
-import AppMenu from "./components/AppMenu.vue";
-import AccountsList from "./components/AccountsList.vue";
-import ListView from "./ListView.vue";
-import DocumentView from "./DocumentView.vue";
+import Topbar from "./components/Topbar.vue";
+import List from "./List.vue";
+import Project from "./Project.vue";
 
 export default {
   name: "app",
   components: {
-    AppMenu,
-    ListView,
-    DocumentView
+    Topbar,
+    List,
+    Project
   },
   props: {},
   data() {
@@ -54,9 +47,6 @@ export default {
   --spacing: 0.7em;
   --border-width: 1pt;
   --border-color: #222;
-  --page-padding-vert: 0.5in;
-  --page-padding-sides: 0.7in;
-  --page-width: 8.5in;
   --page-height: 11in;
   --active-color: rgb(52, 122, 213);
   --active-color: #2898d9;
@@ -72,7 +62,7 @@ export default {
 
 html,
 body {
-  min-height: 100%;
+  height: 100%;
 }
 
 body {
@@ -87,7 +77,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: #000;
-  margin-top: 60px;
+  margin: 0px;
+
+  height: 100%;
 }
 
 hr {
@@ -95,40 +87,12 @@ hr {
   border-top: var(--border-width) solid var(--border-color);
 }
 
-@media print {
-  body {
-    margin: 0;
-  }
-
-  #app {
-    margin: 0;
-  }
-  .m_appmenu {
-    display: none;
-  }
-  .m_documentview {
-    margin: 0 !important;
-    padding: 0 !important;
-
-    .m_page {
-      margin: 0;
-      box-shadow: none;
-    }
-  }
-}
-
 * {
   box-sizing: border-box;
 }
 
 body {
-  background-color: #eee;
-  margin: 0 4%;
-
-  @media print {
-    background-color: transparent;
-    margin: 0;
-  }
+  background-color: #fff;
 }
 
 img {
@@ -153,6 +117,7 @@ label {
 }
 
 button {
+  text-decoration: underline;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 
@@ -178,9 +143,6 @@ button {
 
 .c-active {
   color: var(--active-color);
-}
-
-main {
 }
 
 .list-complete-move {

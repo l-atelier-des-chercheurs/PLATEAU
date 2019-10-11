@@ -121,7 +121,7 @@ export default {
   methods: {
     initWebsocketMode() {
       const params = new URLSearchParams({
-        type: "documents",
+        type: "projects",
         slugFolderName: this.slugFolderName,
         metaFileName: this.media.metaFileName
       });
@@ -205,7 +205,7 @@ export default {
           `CollaborativeEditor • updateTextMedia: saving new snapshop`
         );
         this.$root.editMedia({
-          type: "documents",
+          type: "projects",
           slugFolderName: this.slugFolderName,
           slugMediaName: this.media.metaFileName,
           data: {

@@ -3,7 +3,6 @@
   "host": "localhost",
   "desired_port": 8080,
   "redirect_port": "",
-  "userDirPath": "documents",
   "userDirname": "plateau",
   "cache_content": true,
 
@@ -37,7 +36,7 @@
   },
 
   "structure": {
-    "documents": {
+    "projects": {
       "path": "",
       "fields": {
         "name": {
@@ -102,7 +101,15 @@
           },
           "type": {
             "type": "string",
-            "options": ["text", "image", "embed", "document", "data", "other"],
+            "options": [
+              "text",
+              "image",
+              "writeup",
+              "embed",
+              "document",
+              "data",
+              "other"
+            ],
             "default": "other"
           },
           "embed_link": {
