@@ -1,86 +1,79 @@
 <template>
-  <div class="m_sidebar m_sidebar_journal" ref="sidebar">
-    <section class="bg-noir_light c-blanc padding-medium">
-      <header class="margin-vert-small">
-        <div class="flex-vertically-centered">
-          <h3 class="margin-none text-cap with-bullet">{{ $t('journal') }}</h3>
-        </div>
-      </header>
-      <div class>
-        <table class v-if="mode === 'writeup_list'">
-          <thead>
-            <tr>
-              <th style>{{ $t('name') }}</th>
-              <th>{{ $t('last_modified') }}</th>
-              <th>
-                <!-- {{ $t('action') }} -->
-              </th>
-            </tr>
-          </thead>
-          <transition-group tag="tbody" name="list-complete">
-            <tr v-for="w in writeup_medias" :key="w.metaFileName">
-              <td>{{ w.name }}</td>
-              <td
-                :title="$moment(w.date_modified).format('l LTS')"
-              >{{ format_date_to_human(w.date_modified) + ' ' + $moment(w.date_modified).format('HH:mm') }}</td>
-              <td>
+  <div class="m_writeup">
+    <div class>
+      <table class v-if="mode === 'writeup_list'">
+        <thead>
+          <tr>
+            <th style>{{ $t('name') }}</th>
+            <th>{{ $t('last_modified') }}</th>
+            <th>
+              <!-- {{ $t('action') }} -->
+            </th>
+          </tr>
+        </thead>
+        <transition-group tag="tbody" name="list-complete">
+          <tr v-for="w in writeup_medias" :key="w.metaFileName">
+            <td>{{ w.name }}</td>
+            <td
+              :title="$moment(w.date_modified).format('l LTS')"
+            >{{ format_date_to_human(w.date_modified) + ' ' + $moment(w.date_modified).format('HH:mm') }}</td>
+            <td>
+              <button
+                type="button"
+                class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
+                @click="openWriteupMedia(w.metaFileName)"
+              >{{ $t('open') }}</button>
+            </td>
+            <td>
+              <button
+                type="button"
+                class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
+                @click="removeWriteupMedia(w.metaFileName)"
+              >{{ $t('remove') }}</button>
+            </td>
+          </tr>
+          <tr :key="'create'">
+            <template v-if="!show_createwriteup_section">
+              <td colspan="3">
                 <button
                   type="button"
-                  class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
-                  @click="openWriteupMedia(w.metaFileName)"
-                >{{ $t('open') }}</button>
+                  class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
+                  @click="show_createwriteup_section = !show_createwriteup_section"
+                >{{ $t('create') }}</button>
               </td>
-              <td>
-                <button
-                  type="button"
-                  class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
-                  @click="removeWriteupMedia(w.metaFileName)"
-                >{{ $t('remove') }}</button>
-              </td>
-            </tr>
-            <tr :key="'create'">
-              <template v-if="!show_createwriteup_section">
-                <td colspan="3">
-                  <button
-                    type="button"
-                    class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-                    @click="show_createwriteup_section = !show_createwriteup_section"
-                  >{{ $t('create') }}</button>
-                </td>
-              </template>
+            </template>
 
-              <template v-else>
-                <td colspan="2">
-                  <input type="text" class="input-xs" ref="nameInput" />
-                </td>
-                <td>
-                  <button
-                    type="button"
-                    class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-                    @click="createWriteupMedia"
-                  >{{ $t('create') }}</button>
-                </td>
-              </template>
-            </tr>
-          </transition-group>
-        </table>
-        <div v-else-if="mode === 'single_writeup'" class="margin-small text-centered">
-          <button
-            type="button"
-            class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
-            @click="closeWriteupMedia"
-          >{{ $t('back_to_list') }}</button>
-        </div>
+            <template v-else>
+              <td colspan="2">
+                <input type="text" class="input-xs" ref="nameInput" />
+              </td>
+              <td>
+                <button
+                  type="button"
+                  class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
+                  @click="createWriteupMedia"
+                >{{ $t('create') }}</button>
+              </td>
+            </template>
+          </tr>
+        </transition-group>
+      </table>
+      <div v-else-if="mode === 'single_writeup'" class="margin-small text-centered">
+        <button
+          type="button"
+          class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
+          @click="closeWriteupMedia"
+        >{{ $t('back_to_list') }}</button>
       </div>
+    </div>
 
-      <WriteUpEditor
-        v-if="current_writeup_media"
-        class="bg-blanc c-noir"
-        :slugFolderName="slugFolderName"
-        :media="current_writeup_media"
-        :readonly="read_only"
-      />
-    </section>
+    <WriteUpEditor
+      v-if="current_writeup_media"
+      class="bg-blanc c-noir"
+      :slugFolderName="slugFolderName"
+      :media="current_writeup_media"
+      :readonly="read_only"
+    />
   </div>
 </template>
 <script>
@@ -222,5 +215,8 @@ export default {
   }
 };
 </script>
-<style>
+<style lang="scss">
+.m_writeup {
+  padding: var(--spacing);
+}
 </style>

@@ -42,6 +42,8 @@ export default {
 <style lang="less" src="./less/_normalize.less"></style>
 <style src="../../node_modules/vue-good-table/dist/vue-good-table.css"></style>
 <style src="../../node_modules/vue-plyr/dist/vue-plyr.css"></style>
+<style src="../../node_modules/splitpanes/dist/splitpanes.css"></style>
+
 <style lang="less">
 :root {
   --spacing: 0.7em;
@@ -68,11 +70,12 @@ body {
 body {
   font-family: "OutputSansVariable", sans-serif;
   font-weight: 400;
+  background-color: white;
 }
 
 #app {
   font-weight: 400;
-  font-size: 87.5%;
+  font-size: 100%;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -92,10 +95,6 @@ hr {
 
 * {
   box-sizing: border-box;
-}
-
-body {
-  background-color: #fff;
 }
 
 img {
@@ -142,6 +141,93 @@ button,
   &[contenteditable="false"] {
     cursor: not-allowed;
   }
+}
+
+.splitpanes__pane {
+  // box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.2);
+  // border-radius: 4px;
+  // overflow: hidden;
+}
+
+.splitpanes .splitpanes__splitter {
+  position: relative;
+  background-color: transparent;
+  // border-left: 1px solid #eee;
+  cursor: pointer;
+  cursor: -webkit-grabbing;
+  cursor: -moz-grabbing;
+}
+
+.splitpanes--vertical > .splitpanes__splitter {
+  width: 1px;
+  margin-left: -1px;
+}
+.splitpanes--horizontal > .splitpanes__splitter {
+  height: 1px;
+}
+
+.splitpanes__splitter:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition: opacity 0.4s;
+  background-color: rgba(255, 255, 255, 1);
+  opacity: 0;
+  z-index: 1;
+}
+.splitpanes__splitter:hover:before {
+  // opacity: 1;
+}
+.splitpanes--vertical > .splitpanes__splitter::before {
+  left: -10px;
+  right: -10px;
+  height: 100%;
+}
+.splitpanes--horizontal > .splitpanes__splitter::before {
+  top: -10px;
+  bottom: -10px;
+  width: 100%;
+}
+
+.splitpanes__splitter:after {
+  content: "";
+  position: absolute;
+  top: auto;
+  bottom: auto;
+  top: ~"calc(50% - 10px)";
+  pointer-events: none;
+  // top: 50%;
+
+  transform: rotate(0deg);
+
+  width: 2px;
+  height: 20px;
+
+  transition: all 0.4s;
+  background-color: #000;
+  opacity: 1;
+  z-index: 1;
+}
+.splitpanes__splitter:hover:after {
+  opacity: 1;
+  transform: rotate(90deg);
+}
+
+.splitpanes--vertical > .splitpanes__splitter:after {
+  // left: -10px;
+  // right: -10px;
+  // height: 100%;
+}
+.splitpanes--horizontal > .splitpanes__splitter:after {
+  transform: rotate(90deg);
+  left: 50%;
+  // top: -10px;
+  // bottom: -10px;
+  // width: 100%;
+}
+.splitpanes--horizontal > .splitpanes__splitter:hover:after {
+  transform: rotate(180deg);
 }
 
 .c-active {

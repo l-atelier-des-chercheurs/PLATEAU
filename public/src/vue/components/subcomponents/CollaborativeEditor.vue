@@ -220,6 +220,8 @@ export default {
 <style src="../../../../node_modules/quill/dist/quill.bubble.css"></style>
 <style lang="scss">
 .m_collaborativeEditor {
+  font-family: "Public Sans";
+
   .ql-toolbar .ql-formats:first-child::before {
     /* content: "options :"; */
     position: relative;
@@ -273,6 +275,19 @@ export default {
     padding-bottom: 0;
     overflow: visible;
     min-height: 5em;
+
+    > * {
+      position: relative;
+      &::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0.15em;
+        height: 1px;
+        border-bottom: 1px solid #ddd;
+      }
+    }
 
     &::after {
       // content: ".";

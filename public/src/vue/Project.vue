@@ -1,19 +1,22 @@
 <template>
-  <div class="m_project">
-    <div>
-      <div>Projet : {{ project.name }}</div>
-      <div>Panneau de writeup (un seul pour commencer)</div>
+  <splitpanes class="m_project">
+    <pane :key="`journal`">
       <WriteUp :slugFolderName="slugProjectName" :medias="project.medias" :read_only="read_only" />
-    </div>
-    <MediaLibrary :slugProjectName="slugProjectName" :project="project" :read_only="false" />
-    <div class>
-      <div class>Projection/composition</div>
-    </div>
-  </div>
+    </pane>
+    <pane :key="`library`" min-size="5">
+      <MediaLibrary :slugProjectName="slugProjectName" :project="project" :read_only="false" />
+    </pane>
+    <pane :key="`composition`" min-size="5">
+      <div class="m_composition">
+        <div class>Projection/composition</div>
+      </div>
+    </pane>
+  </splitpanes>
 </template>
 <script>
 import MediaLibrary from "./components/MediaLibrary.vue";
 import WriteUp from "./components/WriteUp.vue";
+import { Splitpanes, Pane } from "splitpanes";
 
 export default {
   props: {
@@ -22,7 +25,9 @@ export default {
   },
   components: {
     MediaLibrary,
-    WriteUp
+    WriteUp,
+    Splitpanes,
+    Pane
   },
   data() {
     return {
@@ -48,14 +53,11 @@ export default {
   flex-flow: row nowrap;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  background-color: #ecf0ed;
+}
 
-  > * {
-    border-right: 1px solid black;
-    padding: 1em;
-  }
-
-  .m_library {
-    flex: 1 1 auto;
-  }
+.m_composition {
+  background-color: #2c75c5;
+  height: 100%;
 }
 </style>

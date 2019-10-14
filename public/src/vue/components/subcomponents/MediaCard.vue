@@ -200,21 +200,42 @@ export default {
 </script>
 <style lang="scss">
 .m_media {
-  background-color: #eee;
+  position: relative;
+  background-color: rgba(193, 154, 0, 0.4);
+  border-radius: 2px;
   /* border: 2px solid black; */
-  width: var(--media-width);
-  height: var(--media-width);
+  // width: var(--media-width);
+  // height: var(--media-width);
 
   .mediaContainer {
-    width: var(--media-width);
-    height: var(--media-width);
+    position: relative;
+    // width: var(--media-width);
+    // height: var(--media-width);
 
-    > img {
+    > * {
+      position: absolute;
       width: 100%;
       height: 100%;
-      object-fit: scale-down;
-      object-position: center center;
+      margin: 0;
+      padding: 0;
+      object-fit: contain;
+      object-position: 50% 47%;
     }
+
+    &::after {
+      content: "";
+      display: block;
+      width: 100%;
+      height: 0;
+      padding-bottom: 100%;
+    }
+
+    // > img {
+    //   width: 100%;
+    //   height: 100%;
+    //   object-fit: scale-down;
+    //   object-position: center center;
+    // }
   }
 }
 </style>

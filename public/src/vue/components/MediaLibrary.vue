@@ -1,106 +1,120 @@
 <template>
   <div class="m_library">
-    <div class="m_actionbar" v-show="$root.state.connected">
-      <div class="m_actionbar--buttonBar">
-        <button
-          type="button"
-          class="barButton barButton_capture"
-          v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
-          @click="openCapture"
-          :disabled="read_only || is_iOS_device"
-          disabled
-        >
-          <span>{{ $t('capture') }}</span>
-        </button>
-        <label
-          v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
-          :key="`add_${field.key}`"
-          class="barButton barButton_import button"
-          v-for="field in input_file_fields"
-          :disabled="read_only"
-          :for="`add_${field.key}`"
-        >
-          <span v-html="field.label" />
-          <input
-            type="file"
-            multiple
-            :id="`add_${field.key}`"
-            :name="field.key"
-            @change="updateInputFiles($event)"
-            :accept="field.accept"
-            :capture="field.capture"
-            style="width: 1px; height: 1px; overflow: hidden; position: absolute"
-          />
-        </label>
+    <splitpanes horizontal>
+      <pane min-size="20" max-size="100" size="50">
+        <div class="m_actionbar" v-show="$root.state.connected">
+          <div class="m_actionbar--buttonBar">
+            <button
+              type="button"
+              class="barButton barButton_capture"
+              v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
+              @click="openCapture"
+              :disabled="read_only || is_iOS_device"
+              disabled
+            >
+              <span>{{ $t('capture') }}</span>
+            </button>
+            <label
+              v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
+              :key="`add_${field.key}`"
+              class="barButton barButton_import button"
+              v-for="field in input_file_fields"
+              :disabled="read_only"
+              :for="`add_${field.key}`"
+            >
+              <span v-html="field.label" />
+              <input
+                type="file"
+                multiple
+                :id="`add_${field.key}`"
+                :name="field.key"
+                @change="updateInputFiles($event)"
+                :accept="field.accept"
+                :capture="field.capture"
+                style="width: 1px; height: 1px; overflow: hidden; position: absolute"
+              />
+            </label>
 
-        <UploadFile
-          v-if="selected_files.length > 0"
-          @close="selected_files = []"
-          :read_only="read_only"
-          :slugFolderName="slugProjectName"
-          :type="'projects'"
-          :selected_files="selected_files"
-        />
+            <UploadFile
+              v-if="selected_files.length > 0"
+              @close="selected_files = []"
+              :read_only="read_only"
+              :slugFolderName="slugProjectName"
+              :type="'projects'"
+              :selected_files="selected_files"
+            />
 
-        <!-- <button type="button" class="barButton barButton_text" @click="createTextMedia">
+            <!-- <button type="button" class="barButton barButton_text" @click="createTextMedia">
           <span>{{ $t('create_text') }}</span>
-        </button>-->
-      </div>
+            </button>-->
+          </div>
 
-      <div class="m_actionbar--text">
-        {{ $t('showing') }}
-        <span :class="{ 'c-rouge' : sortedMedias.length !== numberOfMedias }">
-          {{ sortedMedias.length }}
-          {{ $t('medias_of') }}
-          {{ numberOfMedias }}
-        </span>
-        <template v-if="$root.allKeywords.length >= 0">
-          —
-          <button
-            type="button"
-            class="button-nostyle text-uc button-triangle"
-            :class="{ 'is--active' : show_filters }"
-            @click="show_filters = !show_filters"
-          >{{ $t('filters') }}</button>
-        </template>
+          <div class="m_actionbar--text">
+            {{ $t('showing') }}
+            <span
+              :class="{ 'c-rouge' : sortedMedias.length !== numberOfMedias }"
+            >
+              {{ sortedMedias.length }}
+              {{ $t('medias_of') }}
+              {{ numberOfMedias }}
+            </span>
+            <template v-if="$root.allKeywords.length >= 0">
+              —
+              <button
+                type="button"
+                class="button-nostyle text-uc button-triangle"
+                :class="{ 'is--active' : show_filters }"
+                @click="show_filters = !show_filters"
+              >{{ $t('filters') }}</button>
+            </template>
 
-        <template v-if="!show_medias_instead_of_projects && show_filters">
-          <TagsAndAuthorFilters
-            :allKeywords="mediaKeywords"
-            :allAuthors="mediaAuthors"
-            :keywordFilter="$root.settings.media_filter.keyword"
-            :authorFilter="$root.settings.media_filter.author"
-            :favFilter="$root.settings.media_filter.fav"
-            @setKeywordFilter="a => $root.setMediaKeywordFilter(a)"
-            @setAuthorFilter="a => $root.setMediaAuthorFilter(a)"
-            @setFavFilter="a => $root.setFavAuthorFilter(a)"
+            <template v-if="!show_medias_instead_of_projects && show_filters">
+              <TagsAndAuthorFilters
+                :allKeywords="mediaKeywords"
+                :allAuthors="mediaAuthors"
+                :keywordFilter="$root.settings.media_filter.keyword"
+                :authorFilter="$root.settings.media_filter.author"
+                :favFilter="$root.settings.media_filter.fav"
+                @setKeywordFilter="a => $root.setMediaKeywordFilter(a)"
+                @setAuthorFilter="a => $root.setMediaAuthorFilter(a)"
+                @setFavFilter="a => $root.setFavAuthorFilter(a)"
+              />
+            </template>
+          </div>
+        </div>
+
+        <transition-group
+          class="m_library--medias"
+          name="list-complete"
+          v-if="selected_files.length === 0"
+        >
+          <MediaCard
+            v-for="media in sortedMedias"
+            :key="media.slugMediaName"
+            :media="media"
+            :metaFileName="media.metaFileName"
+            :slugProjectName="slugProjectName"
+            :class="{ 'is--just_added' : last_media_added.includes(media.slugMediaName) }"
           />
-        </template>
-      </div>
-    </div>
-
-    <transition-group
-      class="m_library--medias"
-      name="list-complete"
-      v-if="selected_files.length === 0"
-    >
-      <MediaCard
-        v-for="media in sortedMedias"
-        :key="media.slugMediaName"
-        :media="media"
-        :metaFileName="media.metaFileName"
-        :slugProjectName="slugProjectName"
-        :class="{ 'is--just_added' : last_media_added.includes(media.slugMediaName) }"
-      />
-    </transition-group>
-    <div class="m_library--mediaFocus" v-if="show_media_detail_for">
-      <MediaContent
-        :context="'preview'"
-        :slugFolderName="slugProjectName"
-        :media="project.medias[show_media_detail_for]"
-        :preview_size="preview_size"
-      />
-    </div>
+        </transition-group>
+      </pane>
+      <pane
+        v-if="show_media_detail_for"
+        min-size="20"
+        max-size="70"
+        size="50"
+        style="position: relative;"
+      >
+        <div class="m_library--mediaFocus">
+          <MediaContent
+            :context="'preview'"
+            :slugFolderName="slugProjectName"
+            :media="project.medias[show_media_detail_for]"
+            :preview_size="preview_size"
+          />
+        </div>
+      </pane>
+    </splitpanes>
 
     <transition name="fade_fast" :duration="150">
       <div
@@ -123,6 +137,7 @@ import MediaContent from "./subcomponents/MediaContent.vue";
 import TagsAndAuthorFilters from "./subcomponents/TagsAndAuthorFilters.vue";
 import { setTimeout } from "timers";
 import debounce from "debounce";
+import { Splitpanes, Pane } from "splitpanes";
 
 export default {
   props: {
@@ -134,7 +149,9 @@ export default {
     MediaCard,
     MediaContent,
     UploadFile,
-    TagsAndAuthorFilters
+    TagsAndAuthorFilters,
+    Splitpanes,
+    Pane
   },
   data() {
     return {
@@ -449,19 +466,21 @@ export default {
 .m_library {
   position: relative;
   height: 100%;
+  background-color: #f9ca00;
   // margin: 0 -1em;
   // background-color: #1c1e20;
   // color: white;
 }
 
 .m_library--medias {
-  --media-width: 60px;
+  --media-width: 80px;
   --grid-gap: 0.5em;
 
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--media-width), 1fr));
   grid-auto-rows: max-content;
-  grid-gap: var(--grid-gap);
+  grid-gap: calc(var(--spacing) / 1.5);
+  padding: var(--spacing);
 
   figure {
     margin: 0;
@@ -469,12 +488,21 @@ export default {
 }
 
 .m_library--mediaFocus {
-  position: absolute;
-  height: 50px;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: rebeccapurple;
+  .mediaContainer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(193, 154, 0, 0.4);
+    border-radius: 2px;
+
+    > * {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
+  }
 }
 
 ._drop_indicator {
