@@ -140,8 +140,12 @@ export default {
 <style lang="scss" scoped>
 .m_topbar {
   width: 100%;
-  height: 50px;
+  min-height: 50px;
   background-color: #000;
   color: white;
+
+  padding: 1em;
+  // padding-top: 2em;
+  // border-bottom: 1px solid black;
 }
 </style>

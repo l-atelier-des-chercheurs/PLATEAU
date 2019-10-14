@@ -51,6 +51,11 @@ export default {
 
   > * {
     border-right: 1px solid black;
+    padding: 1em;
+  }
+
+  .m_library {
+    flex: 1 1 auto;
   }
 }
 </style>

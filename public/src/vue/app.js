@@ -148,7 +148,6 @@ let vm = new Vue({
       },
 
       current_author: false,
-
       project_filter: {
         keyword: false,
         author: false
@@ -636,6 +635,26 @@ let vm = new Vue({
     unsetAuthor: function() {
       this.settings.current_author = false;
     },
+    openMedia({ slugProjectName, metaFileName }) {
+      if (window.state.dev_mode === 'debug') {
+        console.log(
+          `ROOT EVENT: openMedia with slugProjectName = ${slugProjectName} and metaFileName = ${metaFileName}`
+        );
+      }
+
+      this.media_modal.open = true;
+      this.media_modal.minimized = false;
+      this.media_modal.current_slugProjectName = slugProjectName;
+      this.media_modal.current_metaFileName = metaFileName;
+    },
+    closeMedia: function() {
+      if (window.state.dev_mode === 'debug') {
+        console.log(`ROOT EVENT: closeMedia`);
+      }
+
+      this.media_modal.open = false;
+    },
+
     downloadPubliPDF({ slugPubliName }) {
       if (window.state.dev_mode === 'debug') {
         console.log(`ROOT EVENT: downloadPubliPDF: ${slugPubliName}`);

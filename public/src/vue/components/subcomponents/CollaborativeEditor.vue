@@ -272,6 +272,7 @@ export default {
     padding-top: 0;
     padding-bottom: 0;
     overflow: visible;
+    min-height: 5em;
 
     &::after {
       // content: ".";

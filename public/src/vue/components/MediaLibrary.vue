@@ -12,7 +12,6 @@
         >
           <span>{{ $t('capture') }}</span>
         </button>
-
         <label
           v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
           :key="`add_${field.key}`"
@@ -21,10 +20,7 @@
           :disabled="read_only"
           :for="`add_${field.key}`"
         >
-          <span>
-            {{ field.label }}
-            <!-- <div v-html="field.svg" /> -->
-          </span>
+          <span v-html="field.label" />
           <input
             type="file"
             multiple
@@ -33,7 +29,7 @@
             @change="updateInputFiles($event)"
             :accept="field.accept"
             :capture="field.capture"
-            style="width: 1px; height: 1px; overflow: hidden;"
+            style="width: 1px; height: 1px; overflow: hidden; position: absolute"
           />
         </label>
 
@@ -97,6 +93,14 @@
         :class="{ 'is--just_added' : last_media_added.includes(media.slugMediaName) }"
       />
     </transition-group>
+    <div class="m_library--mediaFocus" v-if="show_media_detail_for">
+      <MediaContent
+        :context="'preview'"
+        :slugFolderName="slugProjectName"
+        :media="project.medias[show_media_detail_for]"
+        :preview_size="preview_size"
+      />
+    </div>
 
     <transition name="fade_fast" :duration="150">
       <div
@@ -115,6 +119,7 @@
 <script>
 import UploadFile from "./modals/UploadFile.vue";
 import MediaCard from "./subcomponents/MediaCard.vue";
+import MediaContent from "./subcomponents/MediaContent.vue";
 import TagsAndAuthorFilters from "./subcomponents/TagsAndAuthorFilters.vue";
 import { setTimeout } from "timers";
 import debounce from "debounce";
@@ -127,6 +132,7 @@ export default {
   },
   components: {
     MediaCard,
+    MediaContent,
     UploadFile,
     TagsAndAuthorFilters
   },
@@ -144,6 +150,7 @@ export default {
       show_filters: false,
 
       show_drop_container: false,
+      show_media_detail_for: false,
 
       media_metaFileName_initially_present: [],
       last_media_added: [],
@@ -174,6 +181,8 @@ export default {
     document.addEventListener("dragover", this.ondragover);
 
     this.cancelDragOver = debounce(this.cancelDragOver, 300);
+
+    this.$eventHub.$on("library.openMedia", this.openMedia);
     this.$eventHub.$on("modal.prev_media", this.prevMedia);
     this.$eventHub.$on("modal.next_media", this.nextMedia);
     this.$eventHub.$on("socketio.media_created_or_updated", this.media_created);
@@ -184,6 +193,7 @@ export default {
     this.$root.settings.media_filter.keyword = false;
     this.$root.settings.media_filter.fav = false;
 
+    this.$eventHub.$off("library.openMedia", this.openMedia);
     this.$eventHub.$off("modal.prev_media", this.prevMedia);
     this.$eventHub.$off("modal.next_media", this.nextMedia);
     this.$eventHub.$off(
@@ -296,29 +306,29 @@ export default {
     }
   },
   methods: {
-    prevMedia() {
-      this.mediaNav(-1);
-    },
-    nextMedia() {
-      this.mediaNav(+1);
-    },
-    mediaNav(relative_index) {
-      const current_media_index = this.sortedMedias.findIndex(
-        m => m.metaFileName === this.$root.media_modal.current_metaFileName
-      );
-      const new_media = this.sortedMedias[current_media_index + relative_index];
-      this.$root.closeMedia();
+    // prevMedia() {
+    //   this.mediaNav(-1);
+    // },
+    // nextMedia() {
+    //   this.mediaNav(+1);
+    // },
+    // mediaNav(relative_index) {
+    //   const current_media_index = this.sortedMedias.findIndex(
+    //     m => m.metaFileName === this.$root.media_modal.current_metaFileName
+    //   );
+    //   const new_media = this.sortedMedias[current_media_index + relative_index];
+    //   this.$root.closeMedia();
 
-      if (
-        !!new_media &&
-        new_media.hasOwnProperty("metaFileName") &&
-        !!new_media.metaFileName
-      ) {
-        this.$nextTick(() => {
-          this.openMediaModal(new_media.metaFileName);
-        });
-      }
-    },
+    //   if (
+    //     !!new_media &&
+    //     new_media.hasOwnProperty("metaFileName") &&
+    //     !!new_media.metaFileName
+    //   ) {
+    //     this.$nextTick(() => {
+    //       this.openMediaModal(new_media.metaFileName);
+    //     });
+    //   }
+    // },
     getAllKeywordsFrom(base) {
       let uniqueKeywords = [];
       Object.values(base).map(meta => {
@@ -340,14 +350,11 @@ export default {
       });
     },
     media_created(m) {},
-    openMediaModal(metaFileName) {
+    openMedia(metaFileName) {
       if (this.$root.state.dev_mode === "debug") {
-        console.log("METHODS • MediaLibrary: openMediaModal");
+        console.log("METHODS • MediaLibrary: openMedia");
       }
-      this.$root.openMedia({
-        slugProjectName: this.slugProjectName,
-        metaFileName
-      });
+      this.show_media_detail_for = metaFileName;
     },
     createTextMedia() {
       this.$eventHub.$on(
@@ -362,16 +369,16 @@ export default {
         }
       });
     },
-    newTextMediaCreated(mdata) {
-      if (this.$root.justCreatedMediaID === mdata.id) {
-        this.$root.justCreatedMediaID = false;
-        this.$eventHub.$off(
-          "socketio.media_created_or_updated",
-          this.newTextMediaCreated
-        );
-        this.openMediaModal(mdata.metaFileName);
-      }
-    },
+    // newTextMediaCreated(mdata) {
+    //   if (this.$root.justCreatedMediaID === mdata.id) {
+    //     this.$root.justCreatedMediaID = false;
+    //     this.$eventHub.$off(
+    //       "socketio.media_created_or_updated",
+    //       this.newTextMediaCreated
+    //     );
+    //     this.openMediaModal(mdata.metaFileName);
+    //   }
+    // },
     openCapture() {
       // const iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
       // if(iOS) {
@@ -442,17 +449,32 @@ export default {
 .m_library {
   position: relative;
   height: 100%;
+  // margin: 0 -1em;
+  // background-color: #1c1e20;
+  // color: white;
 }
 
 .m_library--medias {
+  --media-width: 60px;
+  --grid-gap: 0.5em;
+
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--media-width), 1fr));
   grid-auto-rows: max-content;
-  grid-gap: 1em;
+  grid-gap: var(--grid-gap);
 
   figure {
     margin: 0;
   }
+}
+
+.m_library--mediaFocus {
+  position: absolute;
+  height: 50px;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: rebeccapurple;
 }
 
 ._drop_indicator {

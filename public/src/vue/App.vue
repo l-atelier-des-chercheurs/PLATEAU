@@ -80,6 +80,9 @@ body {
   margin: 0px;
 
   height: 100%;
+
+  display: flex;
+  flex-flow: column nowrap;
 }
 
 hr {
@@ -105,20 +108,20 @@ label {
   appearance: none;
   background-color: transparent;
   border: none;
-  padding: 0;
   font-size: inherit;
   font-family: inherit;
   font-variant: small-caps;
   color: inherit;
   text-transform: lowercase;
   cursor: inherit;
-
   font-weight: 600;
 }
 
-button {
+button,
+.button {
   text-decoration: underline;
   cursor: pointer;
+  padding: 0.2em;
   transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 
   &[disabled] {

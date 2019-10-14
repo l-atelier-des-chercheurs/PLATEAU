@@ -20,13 +20,22 @@
           <transition-group tag="tbody" name="list-complete">
             <tr v-for="w in writeup_medias" :key="w.metaFileName">
               <td>{{ w.name }}</td>
-              <td>{{ $moment(w.date_modified).format('l LTS') }}</td>
+              <td
+                :title="$moment(w.date_modified).format('l LTS')"
+              >{{ format_date_to_human(w.date_modified) + ' ' + $moment(w.date_modified).format('HH:mm') }}</td>
               <td>
                 <button
                   type="button"
                   class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
                   @click="openWriteupMedia(w.metaFileName)"
                 >{{ $t('open') }}</button>
+              </td>
+              <td>
+                <button
+                  type="button"
+                  class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
+                  @click="removeWriteupMedia(w.metaFileName)"
+                >{{ $t('remove') }}</button>
               </td>
             </tr>
             <tr :key="'create'">
@@ -120,6 +129,27 @@ export default {
     textChange(delta, oldDelta, source) {
       // if source === 'user'
     },
+    format_date_to_human(d) {
+      if (this.$root.lang.current === "fr") {
+        return this.$moment(d).calendar(null, {
+          lastDay: "[hier]",
+          sameDay: "[aujourd’hui]",
+          nextDay: "[demain]",
+          lastWeek: "dddd [dernier]",
+          nextWeek: "dddd [prochain]",
+          sameElse: "dddd D MMMM"
+        });
+      } else if (this.$root.lang.current === "en") {
+        return this.$moment(d).calendar(null, {
+          lastDay: "[yesterday]",
+          sameDay: "[today]",
+          nextDay: "[tomorrow]",
+          lastWeek: "[last] dddd",
+          nextWeek: "[next] dddd",
+          sameElse: "dddd, MMMM D"
+        });
+      }
+    },
     createWriteupMedia() {
       if (window.state.dev_mode === "debug") {
         console.log("METHODS • AddMediaButton: createWriteupMedia");
@@ -165,6 +195,29 @@ export default {
       }
 
       this.current_writeup_media_metaFileName = false;
+    },
+    removeWriteupMedia(metaFileName) {
+      if (window.state.dev_mode === "debug") {
+        console.log(`METHODS • WriteUp: removeWriteupMedia / ${metaFileName}`);
+      }
+
+      debugger;
+
+      this.current_writeup_media_metaFileName = false;
+      this.$alertify
+        .okBtn(this.$t("yes"))
+        .cancelBtn(this.$t("cancel"))
+        .confirm(
+          this.$t("sureToRemoveWriteup"),
+          () => {
+            this.$root.removeMedia({
+              type: "projects",
+              slugFolderName: this.slugFolderName,
+              slugMediaName: metaFileName
+            });
+          },
+          () => {}
+        );
     }
   }
 };

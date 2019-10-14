@@ -15,7 +15,7 @@
         :class="{ 'is--hovered' : is_hovered }"
       >
         <div>
-          <div class="m_metaField padding-sides-verysmall">
+          <!-- <div class="m_metaField padding-sides-verysmall">
             <div>
               <svg
                 version="1.1"
@@ -40,7 +40,7 @@
               </svg>
               <span v-if="!!media.type" :class="{ 'c-rouge' : media.fav }">{{ $t(media.type) }}</span>
             </div>
-          </div>
+          </div>-->
           <MediaContent
             v-model="media.content"
             :context="'preview'"
@@ -184,26 +184,7 @@ export default {
           `METHODS • MediaCard: openMediaModal = ${this.metaFileName}`
         );
       }
-      this.$root.openMedia({
-        slugProjectName: this.slugProjectName,
-        metaFileName: this.metaFileName
-      });
-    },
-    removeMedia() {
-      if (this.$root.state.dev_mode === "debug") {
-        console.log("METHODS • MediaCard: removeMedia");
-      }
-
-      this.$alertify
-        .okBtn(this.$t("yes"))
-        .cancelBtn(this.$t("cancel"))
-        .confirm(
-          this.$t("sureToRemoveMedia"),
-          () => {
-            this.$root.removeMedia(this.slugProjectName, this.metaFileName);
-          },
-          () => {}
-        );
+      this.$eventHub.$emit("library.openMedia", this.metaFileName);
     },
     addToCurrentPubli() {
       if (this.$root.state.dev_mode === "debug") {
@@ -217,5 +198,23 @@ export default {
   }
 };
 </script>
-<style>
+<style lang="scss">
+.m_media {
+  background-color: #eee;
+  /* border: 2px solid black; */
+  width: var(--media-width);
+  height: var(--media-width);
+
+  .mediaContainer {
+    width: var(--media-width);
+    height: var(--media-width);
+
+    > img {
+      width: 100%;
+      height: 100%;
+      object-fit: scale-down;
+      object-position: center center;
+    }
+  }
+}
 </style>
