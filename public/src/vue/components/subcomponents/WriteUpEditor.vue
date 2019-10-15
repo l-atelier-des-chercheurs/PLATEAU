@@ -5,17 +5,16 @@
         <span class="m_writeupeditor--topbar--title padding-verysmall">{{ media.name }}</span>
       </template>
       <template v-else>
-        <span class="padding-verysmall">
+        <form class="padding-verysmall" v-on:submit.prevent="renameWriteup()">
           <div class="input-group">
             <span class="input-addon input-addon-xs">Nom</span>
-            <input type="text" ref="nameInput" class="input-xs" v-model="new_name" />
+            <input type="text" ref="nameInput" class="input-xs" v-model="new_name" required />
             <button
-              type="button"
+              type="submit"
               class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
-              @click="renameWriteup()"
             >{{ $t('save') }}</button>
           </div>
-        </span>
+        </form>
       </template>
       <span class="m_writeupeditor--topbar--buttons" v-if="!show_rename_field">
         <button
@@ -27,6 +26,10 @@
           type="button"
           class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         >{{ $t('remove') }}</button>
+        <span>
+          <label for="spellcheck">spellcheck</label>
+          <input type="checkbox" v-model="spellcheck" name="spellcheck" id="spellcheck" />
+        </span>
       </span>
     </div>
 
@@ -36,6 +39,7 @@
       :slugFolderName="slugFolderName"
       :enable_collaboration="true"
       :media="media"
+      :spellcheck="spellcheck"
       @connectionStateChanged="_connection_state => connection_state = _connection_state"
       ref="textField"
       :read_only="read_only"
@@ -71,7 +75,8 @@ export default {
       content: this.media.content,
       connection_state: "",
       show_rename_field: false,
-      new_name: this.media.name
+      new_name: this.media.name,
+      spellcheck: true
     };
   },
 
@@ -111,6 +116,9 @@ export default {
       });
     },
     renameWriteup() {
+      if (this.new_name === "") {
+      }
+
       this.$root.editMedia({
         type: "projects",
         slugFolderName: this.slugFolderName,

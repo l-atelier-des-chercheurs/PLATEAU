@@ -6,6 +6,7 @@
       'is--fav' : media.fav,
       'is--ownMedia' : media_made_by_current_author
     }"
+    draggable="true"
   >
     <div>
       <figure
@@ -52,15 +53,15 @@
 
           <transition name="slideright" :duration="400">
             <div
-              v-if="$root.settings.current_publication.slug && $root.settings.current_publication.accepted_media_type.includes(media.type)"
+              v-if="$root.settings.current_writeup_media_metaFileName"
               class="m_media--add_to_recipe"
-              @click.stop="addToCurrentPubli()"
+              @click.stop="addToCurrentWriteup()"
             >
               <button
                 type="button"
                 class="button_addToPubli button-greenthin button-square"
                 :title="instructions_depending_on_media_in_publi"
-                @click.stop="addToCurrentPubli()"
+                @click.stop="addToCurrentWriteup()"
                 v-tippy="{ 
                   placement : 'left',
                   delay: [600, 0]
@@ -186,14 +187,11 @@ export default {
       }
       this.$eventHub.$emit("library.openMedia", this.metaFileName);
     },
-    addToCurrentPubli() {
+    addToCurrentWriteup() {
       if (this.$root.state.dev_mode === "debug") {
-        console.log("METHODS • MediaCard: addToPubli");
+        console.log("METHODS • MediaCard: addToCurrentWriteup");
       }
-      this.$eventHub.$emit("publication.addMedia", {
-        slugProjectName: this.slugProjectName,
-        metaFileName: this.metaFileName
-      });
+      this.$eventHub.$emit("writeup.addMedia", this.media);
     }
   }
 };

@@ -1,7 +1,7 @@
 <template>
   <div class="m_library">
     <splitpanes horizontal>
-      <pane min-size="20" max-size="100" size="50">
+      <pane min-size="20" max-size="100" size="100">
         <div class="m_actionbar" v-show="$root.state.connected">
           <div class="m_actionbar--buttonBar">
             <button

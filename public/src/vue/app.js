@@ -147,6 +147,8 @@ let vm = new Vue({
         accepted_media_type: []
       },
 
+      current_writeup_media_metaFileName: false,
+
       current_author: false,
       project_filter: {
         keyword: false,

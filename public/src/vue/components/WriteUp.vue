@@ -89,8 +89,7 @@ export default {
   },
   data() {
     return {
-      show_createwriteup_section: false,
-      current_writeup_media_metaFileName: false
+      show_createwriteup_section: false
     };
   },
 
@@ -106,13 +105,16 @@ export default {
         .sort((a, b) => a.date_modified.localeCompare(b.date_modified));
     },
     current_writeup_media() {
-      if (this.current_writeup_media_metaFileName === false) return false;
+      if (this.$root.settings.current_writeup_media_metaFileName === false)
+        return false;
       return Object.values(this.medias).filter(
-        m => m.metaFileName === this.current_writeup_media_metaFileName
+        m =>
+          m.metaFileName ===
+          this.$root.settings.current_writeup_media_metaFileName
       )[0];
     },
     mode() {
-      if (this.current_writeup_media_metaFileName) {
+      if (this.$root.settings.current_writeup_media_metaFileName) {
         return "single_writeup";
       }
       return "writeup_list";
@@ -177,9 +179,9 @@ export default {
         console.log(`METHODS • WriteUp: openWriteupMedia / ${metaFileName}`);
       }
 
-      this.current_writeup_media_metaFileName = false;
+      this.$root.settings.current_writeup_media_metaFileName = false;
       this.$nextTick(() => {
-        this.current_writeup_media_metaFileName = metaFileName;
+        this.$root.settings.current_writeup_media_metaFileName = metaFileName;
       });
     },
     closeWriteupMedia() {
@@ -187,16 +189,14 @@ export default {
         console.log(`METHODS • WriteUp: closeWriteupMedia`);
       }
 
-      this.current_writeup_media_metaFileName = false;
+      this.$root.settings.current_writeup_media_metaFileName = false;
     },
     removeWriteupMedia(metaFileName) {
       if (window.state.dev_mode === "debug") {
         console.log(`METHODS • WriteUp: removeWriteupMedia / ${metaFileName}`);
       }
 
-      debugger;
-
-      this.current_writeup_media_metaFileName = false;
+      this.$root.settings.current_writeup_media_metaFileName = false;
       this.$alertify
         .okBtn(this.$t("yes"))
         .cancelBtn(this.$t("cancel"))
@@ -218,5 +218,7 @@ export default {
 <style lang="scss">
 .m_writeup {
   padding: var(--spacing);
+  max-width: 55ch;
+  margin: 0 auto;
 }
 </style>

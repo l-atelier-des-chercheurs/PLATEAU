@@ -2,7 +2,6 @@
   <div
     class="m_collaborativeEditor quillWrapper"
     :class="{ 'is--focused' : is_focused }"
-    autocorrect="off"
     autofocus="autofocus"
   >
     <!-- connection_state : {{ connection_state }} -->
@@ -25,7 +24,11 @@ export default {
       default: "…"
     },
     media: Object,
-    slugFolderName: String
+    slugFolderName: String,
+    spellcheck: {
+      type: Boolean,
+      default: true
+    }
   },
   components: {},
   data() {
@@ -72,11 +75,14 @@ export default {
         "link",
         "header",
         "blockquote",
-        "list"
+        "list",
+        "image"
       ],
       placeholder: "Write text here…"
     });
     this.editor.root.innerHTML = this.value;
+
+    this.setSpellCheck();
 
     if (this.$root.preview_mode) {
       this.editor.disable();
@@ -102,6 +108,8 @@ export default {
         else if (range !== null && oldRange === null) this.is_focused = true;
       });
     });
+
+    this.$eventHub.$on("writeup.addMedia", this.addMediaAtCaretPosition);
   },
   beforeDestroy() {
     if (!!this.socket) {
@@ -115,6 +123,9 @@ export default {
       } else {
         this.editor.enable();
       }
+    },
+    spellcheck: function() {
+      this.setSpellCheck();
     }
   },
   computed: {},
@@ -213,6 +224,33 @@ export default {
           }
         });
       }, 500);
+    },
+    setSpellCheck() {
+      console.log(
+        `CollaborativeEditor • setSpellCheck: set to ${this.spellcheck}`
+      );
+      this.editor.root.spellcheck = this.spellcheck;
+    },
+    addMediaAtCaretPosition(media) {
+      var selection = this.editor.getSelection(true);
+
+      if (media.type === "image") {
+        const thumb = media.thumbs.find(m => m.size === 1600);
+
+        if (!!thumb) {
+          this.editor.insertEmbed(
+            selection.index,
+            "image",
+            thumb.path,
+            Quill.sources.USER
+          );
+        }
+      } else {
+        this.$alertify
+          .closeLogOnClick(true)
+          .delay(4000)
+          .error(this.$t("notifications.media_type_not_handled"));
+      }
     }
   }
 };
@@ -270,23 +308,51 @@ export default {
   }
 
   .ql-editor {
+    position: relative;
     padding-left: 0;
     padding-top: 0;
     padding-bottom: 0;
     overflow: visible;
     min-height: 5em;
+    caret-color: #111;
 
     > * {
       position: relative;
-      &::after {
-        content: "";
-        position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0.15em;
-        height: 1px;
-        border-bottom: 1px solid #ddd;
+      z-index: 1;
+
+      background-position: 0 calc(100% - 3px);
+      background-repeat: no-repeat;
+      background-size: 250% 1px;
+      transition: background 0.25s linear;
+      background-image: linear-gradient(
+        90deg,
+        transparent,
+        transparent 50%,
+        transparent 0,
+        transparent
+      );
+
+      &:hover {
+        background-image: linear-gradient(
+          90deg,
+          #ccc,
+          #ccc 50%,
+          transparent 0,
+          transparent
+        );
       }
+
+      // &::before {
+      //   content: "";
+      //   position: absolute;
+      //   left: 0;
+      //   right: 0;
+      //   bottom: 0.15em;
+      //   height: 1px;
+      //   z-index: 0;
+      //   border-bottom: 1px solid #e9e9e9;
+      //   mix-blend-mode: darken;
+      // }
     }
 
     &::after {

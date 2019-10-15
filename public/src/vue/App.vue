@@ -133,6 +133,19 @@ button,
   }
 }
 
+input:required {
+  background-size: 16px 16px;
+  background-position: top right;
+  background-repeat: no-repeat;
+  background-image: radial-gradient(#ff2719 18%, transparent 25%);
+
+  transition: background-size 0.2s;
+
+  &:focus {
+    background-size: 20px 20px;
+  }
+}
+
 *[contenteditable] {
   &:focus {
     outline: 0;
