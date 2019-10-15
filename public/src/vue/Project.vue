@@ -54,6 +54,7 @@ export default {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   background-color: #ecf0ed;
+  background-color: hsl(135, 12%, 96%);
 }
 
 .m_composition {

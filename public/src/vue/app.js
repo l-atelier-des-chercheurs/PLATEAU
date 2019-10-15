@@ -148,6 +148,7 @@ let vm = new Vue({
       },
 
       current_writeup_media_metaFileName: false,
+      media_being_dragged: false,
 
       current_author: false,
       project_filter: {

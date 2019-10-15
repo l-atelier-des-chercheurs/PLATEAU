@@ -24,6 +24,7 @@
     "axios": "^0.19.0",
     "chart.js": "^2.8.0",
     "debounce": "^1.2.0",
+    "draggabilly": "^2.2.0",
     "i18n": "^0.8.3",
     "instascan": "^1.0.0",
     "jquery": "^3.4.0",

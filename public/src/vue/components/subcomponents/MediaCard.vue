@@ -6,9 +6,11 @@
       'is--fav' : media.fav,
       'is--ownMedia' : media_made_by_current_author
     }"
-    draggable="true"
+    @dragstart="startMediaDrag( media, $event)"
+    @dragend="endMediaDrag()"
+    :draggable="!!$root.settings.current_writeup_media_metaFileName"
   >
-    <div>
+    <div draggable="false">
       <figure
         @click.stop="openMediaModal()"
         @mouseover="is_hovered = true"
@@ -51,7 +53,7 @@
           />
           <figcaption class="m_media--caption" v-if="!!media.caption">{{ media.caption }}</figcaption>
 
-          <transition name="slideright" :duration="400">
+          <!-- <transition name="slideright" :duration="400">
             <div
               v-if="$root.settings.current_writeup_media_metaFileName"
               class="m_media--add_to_recipe"
@@ -71,7 +73,7 @@
                 <template v-else>→</template>
               </button>
             </div>
-          </transition>
+          </transition>-->
         </div>
 
         <figcaption v-if="is_hovered && false">
@@ -192,6 +194,18 @@ export default {
         console.log("METHODS • MediaCard: addToCurrentWriteup");
       }
       this.$eventHub.$emit("writeup.addMedia", this.media);
+    },
+    startMediaDrag(media, $event) {
+      console.log(`METHODS • MediaLibrary / startMediaDrag`);
+
+      $event.dataTransfer.setData("text/plain", JSON.stringify(this.media));
+      $event.dataTransfer.effectAllowed = "move";
+
+      this.$root.settings.media_being_dragged = media.metaFileName;
+    },
+    endMediaDrag() {
+      console.log(`METHODS • MediaLibrary / endMediaDrag`);
+      this.$root.settings.media_being_dragged = false;
     }
   }
 };
@@ -207,6 +221,7 @@ export default {
 
   .mediaContainer {
     position: relative;
+    cursor: pointer;
     // width: var(--media-width);
     // height: var(--media-width);
 

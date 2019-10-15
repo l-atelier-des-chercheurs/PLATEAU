@@ -1,8 +1,10 @@
 <template>
   <div
     class="m_collaborativeEditor quillWrapper"
-    :class="{ 'is--focused' : is_focused }"
+    :class="{ 'is--receptiveToDrop' : !!$root.settings.media_being_dragged }"
     autofocus="autofocus"
+    @dragover="dragover($event)"
+    @drop="dropHandler($event)"
   >
     <!-- connection_state : {{ connection_state }} -->
     <!-- <br /> -->
@@ -14,6 +16,27 @@ import ReconnectingWebSocket from "reconnectingwebsocket";
 import ShareDB from "sharedb/lib/client";
 import Quill from "quill";
 import debounce from "debounce";
+
+let BlockEmbed = Quill.import("blots/block/embed");
+
+class ImageBlot extends BlockEmbed {
+  static create(value) {
+    let node = super.create();
+    node.setAttribute("alt", value.alt);
+    node.setAttribute("src", value.url);
+    return node;
+  }
+
+  static value(node) {
+    return {
+      alt: node.getAttribute("alt"),
+      url: node.getAttribute("src")
+    };
+  }
+}
+ImageBlot.blotName = "image";
+ImageBlot.tagName = "img";
+Quill.register(ImageBlot);
 
 ShareDB.types.register(require("rich-text").type);
 
@@ -233,15 +256,22 @@ export default {
     },
     addMediaAtCaretPosition(media) {
       var selection = this.editor.getSelection(true);
+      this.addMediaAtIndex(selection.index, media);
+    },
+    addMediaAtIndex(index, media) {
+      console.log(`CollaborativeEditor • addMediaAtIndex ${index}`);
 
       if (media.type === "image") {
         const thumb = media.thumbs.find(m => m.size === 1600);
 
         if (!!thumb) {
+          this.editor.insertText(index, "\n", Quill.sources.USER);
           this.editor.insertEmbed(
-            selection.index,
+            index,
             "image",
-            thumb.path,
+            {
+              url: thumb.path
+            },
             Quill.sources.USER
           );
         }
@@ -251,6 +281,61 @@ export default {
           .delay(4000)
           .error(this.$t("notifications.media_type_not_handled"));
       }
+    },
+    dragover($event) {
+      // console.log(`METHODS • CollaborativeEditor / dragover`);
+      debugger;
+    },
+    dropHandler($event) {
+      console.log(`METHODS • CollaborativeEditor / dropHandler`);
+
+      // Prevent default behavior (Prevent file from being opened)
+      $event.preventDefault();
+      $event.dataTransfer.dropEffect = "move";
+
+      const data = JSON.parse($event.dataTransfer.getData("text/plain"));
+      console.log(data);
+
+      if (data.media_filename) {
+        let idx = 0;
+
+        const _blot = Quill.find($event.target);
+        if (_blot) {
+          // const _blotIndex = this.editor.getLines().findIndex(b => b === _blot);
+          // let [line, offset] = this.editor.getLine(_blotIndex);
+          const idx = this.editor.getIndex(_blot);
+          this.addMediaAtIndex(idx, data);
+        } else {
+          this.addMediaAtIndex(this.editor.getContents.length, data);
+          // this.$alertify
+          //   .closeLogOnClick(true)
+          //   .delay(4000)
+          //   .error(this.$t("notifications.failed_to_find_block_line"));
+        }
+
+        // // let [line, offset] = quill.getLine(10);
+        // // let index = quill.getIndex(line);   // index + offset should == 10
+
+        // while (
+        //   // $event.offsetX > this.editor.getBounds(idx).top ||
+        //   $event.target.offsetTop >
+        //   this.editor.getLine(idx)[0].domNode.offsetTop
+        // ) {
+        //   idx++;
+
+        //   console.log(`idx = ${idx}`);
+        //   console.log(
+        //     `top : ${this.editor.getLine(idx)[0].domNode.offsetTop}
+        //     }`
+        //   );
+
+        //   if (idx == this.editor.getLines().length) {
+        //     console.log(`no more index to find, set to last letter`);
+        //     idx = this.editor.getLines().length - 1;
+        //     break;
+        //   }
+        // }
+      }
     }
   }
 };
@@ -259,6 +344,17 @@ export default {
 <style lang="scss">
 .m_collaborativeEditor {
   font-family: "Public Sans";
+  padding: 0.5em 0;
+
+  &.is--receptiveToDrop {
+    .ql-editor {
+      > * {
+        &:hover {
+          background-size: 250% 4px;
+        }
+      }
+    }
+  }
 
   .ql-toolbar .ql-formats:first-child::before {
     /* content: "options :"; */
@@ -323,11 +419,18 @@ export default {
       background-position: 0 calc(100% - 3px);
       background-repeat: no-repeat;
       background-size: 250% 1px;
-      transition: background 0.25s linear;
+      transition: all 0.5s linear;
       background-image: linear-gradient(
         90deg,
         transparent,
         transparent 50%,
+        transparent 0,
+        transparent
+      );
+      background-image: linear-gradient(
+        90deg,
+        #ddd,
+        #ddd 50%,
         transparent 0,
         transparent
       );

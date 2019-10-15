@@ -35,15 +35,6 @@
               />
             </label>
 
-            <UploadFile
-              v-if="selected_files.length > 0"
-              @close="selected_files = []"
-              :read_only="read_only"
-              :slugFolderName="slugProjectName"
-              :type="'projects'"
-              :selected_files="selected_files"
-            />
-
             <!-- <button type="button" class="barButton barButton_text" @click="createTextMedia">
           <span>{{ $t('create_text') }}</span>
             </button>-->
@@ -83,11 +74,7 @@
           </div>
         </div>
 
-        <transition-group
-          class="m_library--medias"
-          name="list-complete"
-          v-if="selected_files.length === 0"
-        >
+        <transition-group class="m_library--medias" name="list-complete">
           <MediaCard
             v-for="media in sortedMedias"
             :key="media.slugMediaName"
@@ -100,21 +87,33 @@
       </pane>
       <pane
         v-if="show_media_detail_for"
+        :key="show_media_detail_for"
+        class="m_library--mediaFocus"
         min-size="20"
         max-size="70"
         size="50"
         style="position: relative;"
       >
-        <div class="m_library--mediaFocus">
-          <MediaContent
-            :context="'preview'"
-            :slugFolderName="slugProjectName"
-            :media="project.medias[show_media_detail_for]"
-            :preview_size="preview_size"
-          />
-        </div>
+        <MediaContent
+          :context="'preview'"
+          :slugFolderName="slugProjectName"
+          :media="project.medias[show_media_detail_for]"
+          :preview_size="preview_size"
+        />
       </pane>
     </splitpanes>
+
+    <transition name="slideup" :duration="150">
+      <div class="m_uploadFile" v-if="selected_files.length > 0">
+        <UploadFile
+          @close="selected_files = []"
+          :read_only="read_only"
+          :slugFolderName="slugProjectName"
+          :type="'projects'"
+          :selected_files="selected_files"
+        />
+      </div>
+    </transition>
 
     <transition name="fade_fast" :duration="150">
       <div
@@ -171,6 +170,7 @@ export default {
 
       media_metaFileName_initially_present: [],
       last_media_added: [],
+      media_dragged: false,
 
       input_file_fields: [
         {
@@ -423,9 +423,9 @@ export default {
       this.selected_files = Array.from($event.target.files);
       $event.target.value = "";
     },
-    ondragover() {
+    ondragover($event) {
       if (this.$root.state.dev_mode === "debug") {
-        console.log(`METHODS • AddMedia / ondragover`);
+        // console.log(`METHODS • AddMedia / ondragover`);
       }
 
       this.show_drop_container = true;
@@ -482,12 +482,17 @@ export default {
   grid-gap: calc(var(--spacing) / 1.5);
   padding: var(--spacing);
 
+  height: 100%;
+  overflow: auto;
+
   figure {
     margin: 0;
   }
 }
 
 .m_library--mediaFocus {
+  box-shadow: 0 -5px 23px rgba(0, 0, 0, 0.8);
+
   .mediaContainer {
     position: absolute;
     width: 100%;
@@ -511,7 +516,7 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #0a997f;
+  background-color: rgba(10, 153, 127, 0.4);
   z-index: 50000;
 
   display: flex;
@@ -525,5 +530,13 @@ export default {
     width: 200px;
     height: 200px;
   }
+}
+.m_uploadFile {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 300px;
+  background-color: #f9ca00;
+  border-bottom: 2px solid white;
 }
 </style>

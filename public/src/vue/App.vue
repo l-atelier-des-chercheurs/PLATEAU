@@ -156,6 +156,19 @@ input:required {
   }
 }
 
+[draggable="true"] {
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  user-select: none;
+  /* Required to make elements draggable in old WebKit */
+  -khtml-user-drag: element;
+  -webkit-user-drag: element;
+
+  cursor: -webkit-grabbing;
+  cursor: -moz-grabbing;
+}
+
 .splitpanes__pane {
   // box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.2);
   // border-radius: 4px;
@@ -289,5 +302,17 @@ input:required {
 .fade_fast-leave-to {
   opacity: 0;
   transition: opacity 0.3s linear;
+}
+
+.slideup-enter-active,
+.slideup-leave-active {
+  transform: translateY(0);
+  transition: opacity 0.4s linear, transform 0.4s ease-out;
+}
+.slideup-enter,
+.slideup-leave-to {
+  // opacity: 0;
+  transform: translateY(100%);
+  transition: opacity 0.4s linear, transform 0.4s ease-out;
 }
 </style>
