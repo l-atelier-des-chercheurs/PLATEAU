@@ -20,19 +20,21 @@ import ShareDB from "sharedb/lib/client";
 import Quill from "quill";
 import debounce from "debounce";
 
+let Inline = Quill.import("blots/inline");
+let Block = Quill.import("blots/block");
 let BlockEmbed = Quill.import("blots/block/embed");
 
 class ImageBlot extends BlockEmbed {
   static create(value) {
     let node = super.create();
-    node.setAttribute("alt", value.alt);
+    // node.setAttribute("alt", value.alt);
     node.setAttribute("src", value.url);
     return node;
   }
 
   static value(node) {
     return {
-      alt: node.getAttribute("alt"),
+      // alt: node.getAttribute("alt"),
       url: node.getAttribute("src")
     };
   }
@@ -40,6 +42,31 @@ class ImageBlot extends BlockEmbed {
 ImageBlot.blotName = "image";
 ImageBlot.tagName = "img";
 Quill.register(ImageBlot);
+
+//// see https://stackoverflow.com/a/46064381
+// class MediaBlot extends BlockEmbed {
+//   static create(value) {
+//     let node = super.create();
+
+//     debugger;
+//     if (value.type === "image") {
+//       node.innerHTML = `<img src="${value.url}">`;
+//     }
+//     // node.setAttribute("src", value.url);
+//     return node;
+//   }
+
+//   static value(node) {
+//     return {
+//       // alt: node.getAttribute("alt"),
+//       type: node.getAttribute("src"),
+//       url: node.getAttribute("src")
+//     };
+//   }
+// }
+// MediaBlot.blotName = "media";
+// MediaBlot.tagName = "div";
+// Quill.register(MediaBlot);
 
 ShareDB.types.register(require("rich-text").type);
 
@@ -271,15 +298,17 @@ export default {
         const thumb = media.thumbs.find(m => m.size === 1600);
 
         if (!!thumb) {
-          this.editor.insertText(index, "\n", Quill.sources.USER);
+          // this.editor.insertText(index, "\n", Quill.sources.USER);
           this.editor.insertEmbed(
             index,
             "image",
             {
+              type: "image",
               url: thumb.path
             },
             Quill.sources.USER
           );
+          this.editor.setSelection(index + 1, Quill.sources.SILENT);
         }
       } else {
         this.$alertify
@@ -311,7 +340,11 @@ export default {
       console.log(data);
 
       if (data.media_filename) {
-        let idx = 0;
+        // drop sur l’éditor et pas sur une ligne
+        if ($event.target.classList.contains("ql-editor")) {
+          this.addMediaAtIndex(this.editor.scroll.length() - 1, data);
+          return;
+        }
 
         const _blot = Quill.find($event.target);
         if (_blot) {
@@ -320,11 +353,10 @@ export default {
           const idx = this.editor.getIndex(_blot);
           this.addMediaAtIndex(idx, data);
         } else {
-          this.addMediaAtIndex(this.editor.getContents.length, data);
-          // this.$alertify
-          //   .closeLogOnClick(true)
-          //   .delay(4000)
-          //   .error(this.$t("notifications.failed_to_find_block_line"));
+          this.$alertify
+            .closeLogOnClick(true)
+            .delay(4000)
+            .error(this.$t("notifications.failed_to_find_block_line"));
         }
 
         // // let [line, offset] = quill.getLine(10);
@@ -500,6 +532,9 @@ export default {
       //   border-bottom: 1px solid #e9e9e9;
       //   mix-blend-mode: darken;
       // }
+    }
+    > img {
+      display: block;
     }
 
     &::after {

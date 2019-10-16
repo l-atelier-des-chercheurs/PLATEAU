@@ -49,6 +49,7 @@
             :context="'preview'"
             :slugFolderName="slugProjectName"
             :media="media"
+            :element_width_for_sizes="200"
             :preview_size="preview_size"
           />
           <figcaption class="m_media--caption" v-if="!!media.caption">{{ media.caption }}</figcaption>
@@ -213,8 +214,8 @@ export default {
 <style lang="scss">
 .m_media {
   position: relative;
-  background-color: rgba(193, 154, 0, 0.4);
-  border-radius: 2px;
+  background-color: rgba(193, 154, 0, 0.2);
+  border-radius: 4px;
   /* border: 2px solid black; */
   // width: var(--media-width);
   // height: var(--media-width);
@@ -231,7 +232,7 @@ export default {
       height: 100%;
       margin: 0;
       padding: 0;
-      object-fit: contain;
+      object-fit: scale-down;
       object-position: 50% 47%;
     }
 

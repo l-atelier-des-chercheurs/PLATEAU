@@ -2,88 +2,90 @@
   <div class="m_library">
     <splitpanes horizontal>
       <pane min-size="20" max-size="100" size="100">
-        <div class="m_actionbar" v-show="$root.state.connected">
-          <div class="m_actionbar--buttonBar">
-            <button
-              type="button"
-              class="barButton barButton_capture"
-              v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
-              @click="openCapture"
-              :disabled="read_only || is_iOS_device"
-              disabled
-            >
-              <span>{{ $t('capture') }}</span>
-            </button>
-            <label
-              v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
-              :key="`add_${field.key}`"
-              class="barButton barButton_import button"
-              v-for="field in input_file_fields"
-              :disabled="read_only"
-              :for="`add_${field.key}`"
-            >
-              <span v-html="field.label" />
-              <input
-                type="file"
-                multiple
-                :id="`add_${field.key}`"
-                :name="field.key"
-                @change="updateInputFiles($event)"
-                :accept="field.accept"
-                :capture="field.capture"
-                style="width: 1px; height: 1px; overflow: hidden; position: absolute"
-              />
-            </label>
-
-            <!-- <button type="button" class="barButton barButton_text" @click="createTextMedia">
-          <span>{{ $t('create_text') }}</span>
-            </button>-->
-          </div>
-
-          <div class="m_actionbar--text">
-            {{ $t('showing') }}
-            <span
-              :class="{ 'c-rouge' : sortedMedias.length !== numberOfMedias }"
-            >
-              {{ sortedMedias.length }}
-              {{ $t('medias_of') }}
-              {{ numberOfMedias }}
-            </span>
-            <template v-if="$root.allKeywords.length >= 0">
-              —
+        <div class="m_library--content">
+          <div class="m_actionbar" v-show="$root.state.connected">
+            <div class="m_actionbar--buttonBar">
               <button
                 type="button"
-                class="button-nostyle text-uc button-triangle"
-                :class="{ 'is--active' : show_filters }"
-                @click="show_filters = !show_filters"
-              >{{ $t('filters') }}</button>
-            </template>
+                class="barButton barButton_capture"
+                v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
+                @click="openCapture"
+                :disabled="read_only || is_iOS_device"
+                disabled
+              >
+                <span>{{ $t('capture') }}</span>
+              </button>
+              <label
+                v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
+                :key="`add_${field.key}`"
+                class="barButton barButton_import button"
+                v-for="field in input_file_fields"
+                :disabled="read_only"
+                :for="`add_${field.key}`"
+              >
+                <span v-html="field.label" />
+                <input
+                  type="file"
+                  multiple
+                  :id="`add_${field.key}`"
+                  :name="field.key"
+                  @change="updateInputFiles($event)"
+                  :accept="field.accept"
+                  :capture="field.capture"
+                  style="width: 1px; height: 1px; overflow: hidden; position: absolute"
+                />
+              </label>
 
-            <template v-if="!show_medias_instead_of_projects && show_filters">
-              <TagsAndAuthorFilters
-                :allKeywords="mediaKeywords"
-                :allAuthors="mediaAuthors"
-                :keywordFilter="$root.settings.media_filter.keyword"
-                :authorFilter="$root.settings.media_filter.author"
-                :favFilter="$root.settings.media_filter.fav"
-                @setKeywordFilter="a => $root.setMediaKeywordFilter(a)"
-                @setAuthorFilter="a => $root.setMediaAuthorFilter(a)"
-                @setFavFilter="a => $root.setFavAuthorFilter(a)"
-              />
-            </template>
+              <!-- <button type="button" class="barButton barButton_text" @click="createTextMedia">
+          <span>{{ $t('create_text') }}</span>
+              </button>-->
+            </div>
+
+            <div class="m_actionbar--text">
+              {{ $t('showing') }}
+              <span
+                :class="{ 'c-rouge' : sortedMedias.length !== numberOfMedias }"
+              >
+                {{ sortedMedias.length }}
+                {{ $t('medias_of') }}
+                {{ numberOfMedias }}
+              </span>
+              <template v-if="$root.allKeywords.length >= 0">
+                —
+                <button
+                  type="button"
+                  class="button-nostyle text-uc button-triangle"
+                  :class="{ 'is--active' : show_filters }"
+                  @click="show_filters = !show_filters"
+                >{{ $t('filters') }}</button>
+              </template>
+
+              <template v-if="!show_medias_instead_of_projects && show_filters">
+                <TagsAndAuthorFilters
+                  :allKeywords="mediaKeywords"
+                  :allAuthors="mediaAuthors"
+                  :keywordFilter="$root.settings.media_filter.keyword"
+                  :authorFilter="$root.settings.media_filter.author"
+                  :favFilter="$root.settings.media_filter.fav"
+                  @setKeywordFilter="a => $root.setMediaKeywordFilter(a)"
+                  @setAuthorFilter="a => $root.setMediaAuthorFilter(a)"
+                  @setFavFilter="a => $root.setFavAuthorFilter(a)"
+                />
+              </template>
+            </div>
           </div>
-        </div>
 
-        <transition-group class="m_library--medias" name="list-complete">
-          <MediaCard
-            v-for="media in sortedMedias"
-            :key="media.slugMediaName"
-            :media="media"
-            :metaFileName="media.metaFileName"
-            :slugProjectName="slugProjectName"
-            :class="{ 'is--just_added' : last_media_added.includes(media.slugMediaName) }"
-          />
-        </transition-group>
+          <transition-group class="m_library--medias" name="list-complete">
+            <MediaCard
+              v-for="media in sortedMedias"
+              :key="media.slugMediaName"
+              :media="media"
+              :metaFileName="media.metaFileName"
+              :slugProjectName="slugProjectName"
+              :class="{ 'is--just_added' : last_media_added.includes(media.slugMediaName) }"
+            />
+          </transition-group>
+        </div>
       </pane>
       <pane
         v-if="show_media_detail_for"
@@ -470,6 +472,12 @@ export default {
   // margin: 0 -1em;
   // background-color: #1c1e20;
   // color: white;
+
+  .m_library--content {
+    height: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+  }
 }
 
 .m_library--medias {
@@ -480,7 +488,8 @@ export default {
   grid-template-columns: repeat(auto-fill, minmax(var(--media-width), 1fr));
   grid-auto-rows: max-content;
   grid-gap: calc(var(--spacing) / 1.5);
-  padding: var(--spacing);
+  padding: 0 var(--spacing);
+  margin: var(--spacing) 0;
 
   height: 100%;
   overflow: auto;

@@ -25,11 +25,12 @@
         <button
           type="button"
           class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
+          @click="$emit('remove')"
         >{{ $t('remove') }}</button>
-        <span>
+        <!-- <span>
           <label for="spellcheck">spellcheck</label>
           <input type="checkbox" v-model="spellcheck" name="spellcheck" id="spellcheck" />
-        </span>
+        </span>-->
       </span>
     </div>
 

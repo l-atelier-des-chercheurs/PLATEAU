@@ -73,6 +73,7 @@
       :slugFolderName="slugFolderName"
       :media="current_writeup_media"
       :readonly="read_only"
+      @remove="removeWriteupMedia($root.settings.current_writeup_media_metaFileName)"
     />
   </div>
 </template>
@@ -196,13 +197,13 @@ export default {
         console.log(`METHODS • WriteUp: removeWriteupMedia / ${metaFileName}`);
       }
 
-      this.$root.settings.current_writeup_media_metaFileName = false;
       this.$alertify
         .okBtn(this.$t("yes"))
         .cancelBtn(this.$t("cancel"))
         .confirm(
           this.$t("sureToRemoveWriteup"),
           () => {
+            this.$root.settings.current_writeup_media_metaFileName = false;
             this.$root.removeMedia({
               type: "projects",
               slugFolderName: this.slugFolderName,
