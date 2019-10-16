@@ -9,6 +9,8 @@
     @dragover="ondragover($event)"
     @drop="dropHandler($event)"
   >
+    {{ _customCaret_style }}
+    <div class="_customCaret" :style="_customCaret_style" />
     <!-- connection_state : {{ connection_state }} -->
     <!-- <br /> -->
     <div ref="editor" class="mediaTextContent" />
@@ -95,6 +97,10 @@ export default {
       is_focused: false,
       is_being_dragover: false,
       debounce_textUpdate: undefined,
+      caret_position: {
+        top: undefined,
+        left: undefined
+      },
 
       custom_toolbar: {
         container: [
@@ -162,6 +168,11 @@ export default {
         console.log("selection changed");
         if (range === null && oldRange !== null) this.is_focused = false;
         else if (range !== null && oldRange === null) this.is_focused = true;
+
+        if (range.length == 0) {
+          console.log('User cursor is on', range.index);
+          this.updateCaretPosition();
+        }
       });
     });
 
@@ -184,7 +195,13 @@ export default {
       this.setSpellCheck();
     }
   },
-  computed: {},
+  computed: {
+    _customCaret_style() {
+      return {
+        transform: `translate3d(${this.caret_position.left}px, ${this.caret_position.top}px, 0px)`,
+      }
+    }
+  },
   methods: {
     initWebsocketMode() {
       const params = new URLSearchParams({
@@ -257,6 +274,12 @@ export default {
           this.editor.updateContents(op);
         });
       });
+    },
+    updateCaretPosition() {
+      console.log(`METHODS • CollaborativeEditor: updateCaretPosition`);
+      var selection = this.editor.getSelection(true);
+      const caretPos = this.editor.getBounds(selection);
+      this.caret_position = { top: caretPos.top, left: caretPos.left };
     },
     wsState(state, reason) {
       console.log(
@@ -389,8 +412,9 @@ export default {
 <style src="../../../../node_modules/quill/dist/quill.bubble.css"></style>
 <style lang="scss">
 .m_collaborativeEditor {
-  font-family: "Public Sans";
-  padding: 0.5em 0;
+  position: relative;
+  font-family: "Work Sans";
+  margin: 0.5em 0;
 
   &.is--receptiveToDrop {
     .ql-editor {
@@ -579,7 +603,7 @@ export default {
     // lh : 1.41
     // scale : 1.31
 
-    font-size: 1em;
+    font-size: 1.0em;
     line-height: 1.4375em;
     // max-width: 773px;
     // margin: auto;
@@ -701,7 +725,7 @@ export default {
 
     strong,
     b {
-      font-weight: 700;
+      font-weight: 600;
     }
 
     a {
@@ -716,16 +740,20 @@ export default {
       -webkit-hyphens: auto;
       -ms-hyphens: auto;
       hyphens: auto;
+
+      strong,b {
+        font-weight: 800;
+      }
     }
 
     h1 {
-      font-weight: 700;
+      font-weight: 600;
     }
 
     h2,
     h3,
     h4 {
-      font-weight: 700;
+      font-weight: 600;
     }
 
     blockquote {
@@ -750,6 +778,27 @@ export default {
       font-size: 85%;
       padding: 2px 4px;
     }
+  }
+}
+
+._customCaret {
+  position: absolute;
+  width: 2px;
+  height: 1em;
+  top: 0;
+  left: 0;
+  background-color: green;
+  z-index: 1;
+
+  animation: 1s blink step-end infinite;
+}
+
+@keyframes blink {
+  from, to {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
   }
 }
 </style>

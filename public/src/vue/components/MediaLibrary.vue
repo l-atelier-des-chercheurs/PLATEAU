@@ -480,6 +480,11 @@ export default {
   }
 }
 
+.m_actionbar {
+  padding: 0 var(--spacing);
+
+}
+
 .m_library--medias {
   --media-width: 80px;
   --grid-gap: 0.5em;
