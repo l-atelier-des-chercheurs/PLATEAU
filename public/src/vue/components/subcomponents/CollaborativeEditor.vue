@@ -1,9 +1,12 @@
 <template>
   <div
     class="m_collaborativeEditor quillWrapper"
-    :class="{ 'is--receptiveToDrop' : !!$root.settings.media_being_dragged }"
+    :class="{ 
+      'is--receptiveToDrop' : !!$root.settings.media_being_dragged,
+      'is--dragover' : is_being_dragover  
+    }"
     autofocus="autofocus"
-    @dragover="dragover($event)"
+    @dragover="ondragover($event)"
     @drop="dropHandler($event)"
   >
     <!-- connection_state : {{ connection_state }} -->
@@ -63,6 +66,7 @@ export default {
       ),
 
       is_focused: false,
+      is_being_dragover: false,
       debounce_textUpdate: undefined,
 
       custom_toolbar: {
@@ -90,6 +94,7 @@ export default {
       modules: {
         toolbar: this.custom_toolbar
       },
+      bounds: this.$refs.editor,
       theme: "bubble",
       formats: [
         "bold",
@@ -104,6 +109,7 @@ export default {
       placeholder: "Write text here…"
     });
     this.editor.root.innerHTML = this.value;
+    this.cancelDragOver = debounce(this.cancelDragOver, 300);
 
     this.setSpellCheck();
 
@@ -282,10 +288,18 @@ export default {
           .error(this.$t("notifications.media_type_not_handled"));
       }
     },
-    dragover($event) {
+    ondragover($event) {
       // console.log(`METHODS • CollaborativeEditor / dragover`);
-      debugger;
+      this.is_being_dragover = true;
+      this.cancelDragOver();
     },
+    cancelDragOver() {
+      if (this.$root.state.dev_mode === "debug") {
+        console.log(`METHODS • AddMedia / cancelDragOver`);
+      }
+      this.is_being_dragover = false;
+    },
+
     dropHandler($event) {
       console.log(`METHODS • CollaborativeEditor / dropHandler`);
 
@@ -348,9 +362,21 @@ export default {
 
   &.is--receptiveToDrop {
     .ql-editor {
-      > * {
-        &:hover {
-          background-size: 250% 4px;
+      background-attachment: #fff;
+    }
+
+    &.is--dragover {
+      .ql-editor {
+        > * {
+          background-image: linear-gradient(
+            90deg,
+            #ccc,
+            #ccc 50%,
+            transparent 0,
+            transparent
+          );
+
+          // background-size: 250% 4px;
         }
       }
     }
@@ -400,7 +426,9 @@ export default {
   }
 
   .ql-tooltip {
+    z-index: 1;
     border-radius: 4px;
+    background-color: #000;
   }
 
   .ql-editor {
@@ -409,8 +437,9 @@ export default {
     padding-top: 0;
     padding-bottom: 0;
     overflow: visible;
-    min-height: 5em;
+    min-height: 80vh;
     caret-color: #111;
+    line-height: inherit;
 
     > * {
       position: relative;
@@ -427,15 +456,30 @@ export default {
         transparent 0,
         transparent
       );
-      background-image: linear-gradient(
-        90deg,
-        #ddd,
-        #ddd 50%,
-        transparent 0,
-        transparent
-      );
+      // background-image: linear-gradient(
+      //   90deg,
+      //   #ddd,
+      //   #ddd 50%,
+      //   transparent 0,
+      //   transparent
+      // );
 
-      &:hover {
+      transform-origin: right center;
+      animation: slide-up 0.2s cubic-bezier(0.19, 1, 0.22, 1);
+
+      @keyframes slide-up {
+        0% {
+          opacity: 0;
+          transform: scale(0, 0);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1, 1);
+        }
+      }
+
+      &:hover,
+      &.is--dragover {
         background-image: linear-gradient(
           90deg,
           #ccc,
@@ -509,7 +553,7 @@ export default {
     .h1 {
       font-size: 2.25em;
       line-height: 1.27777778em;
-      margin-top: 0.63888889em;
+      margin-top: 0.319444445em;
       margin-bottom: 0em;
     }
     h2,

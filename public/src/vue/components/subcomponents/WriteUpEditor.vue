@@ -135,7 +135,7 @@ export default {
 </script>
 <style>
 .quillWrapper .ql-toolbar {
-  padding-left: 1em;
+  /* padding-left: 1em; */
 }
 
 .m_writeupeditor--topbar {
