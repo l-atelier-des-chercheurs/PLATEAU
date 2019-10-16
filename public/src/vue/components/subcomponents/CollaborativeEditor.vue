@@ -1,9 +1,13 @@
 <template>
   <div
     class="m_collaborativeEditor quillWrapper"
-    :class="{ 'is--focused' : is_focused }"
-    autocorrect="off"
+    :class="{ 
+      'is--receptiveToDrop' : !!$root.settings.media_being_dragged,
+      'is--dragover' : is_being_dragover  
+    }"
     autofocus="autofocus"
+    @dragover="ondragover($event)"
+    @drop="dropHandler($event)"
   >
     <!-- connection_state : {{ connection_state }} -->
     <!-- <br /> -->
@@ -16,6 +20,54 @@ import ShareDB from "sharedb/lib/client";
 import Quill from "quill";
 import debounce from "debounce";
 
+let Inline = Quill.import("blots/inline");
+let Block = Quill.import("blots/block");
+let BlockEmbed = Quill.import("blots/block/embed");
+
+class ImageBlot extends BlockEmbed {
+  static create(value) {
+    let node = super.create();
+    // node.setAttribute("alt", value.alt);
+    node.setAttribute("src", value.url);
+    return node;
+  }
+
+  static value(node) {
+    return {
+      // alt: node.getAttribute("alt"),
+      url: node.getAttribute("src")
+    };
+  }
+}
+ImageBlot.blotName = "image";
+ImageBlot.tagName = "img";
+Quill.register(ImageBlot);
+
+//// see https://stackoverflow.com/a/46064381
+// class MediaBlot extends BlockEmbed {
+//   static create(value) {
+//     let node = super.create();
+
+//     debugger;
+//     if (value.type === "image") {
+//       node.innerHTML = `<img src="${value.url}">`;
+//     }
+//     // node.setAttribute("src", value.url);
+//     return node;
+//   }
+
+//   static value(node) {
+//     return {
+//       // alt: node.getAttribute("alt"),
+//       type: node.getAttribute("src"),
+//       url: node.getAttribute("src")
+//     };
+//   }
+// }
+// MediaBlot.blotName = "media";
+// MediaBlot.tagName = "div";
+// Quill.register(MediaBlot);
+
 ShareDB.types.register(require("rich-text").type);
 
 export default {
@@ -25,7 +77,11 @@ export default {
       default: "…"
     },
     media: Object,
-    slugFolderName: String
+    slugFolderName: String,
+    spellcheck: {
+      type: Boolean,
+      default: true
+    }
   },
   components: {},
   data() {
@@ -37,6 +93,7 @@ export default {
       ),
 
       is_focused: false,
+      is_being_dragover: false,
       debounce_textUpdate: undefined,
 
       custom_toolbar: {
@@ -64,6 +121,7 @@ export default {
       modules: {
         toolbar: this.custom_toolbar
       },
+      bounds: this.$refs.editor,
       theme: "bubble",
       formats: [
         "bold",
@@ -72,11 +130,15 @@ export default {
         "link",
         "header",
         "blockquote",
-        "list"
+        "list",
+        "image"
       ],
       placeholder: "Write text here…"
     });
     this.editor.root.innerHTML = this.value;
+    this.cancelDragOver = debounce(this.cancelDragOver, 300);
+
+    this.setSpellCheck();
 
     if (this.$root.preview_mode) {
       this.editor.disable();
@@ -102,6 +164,8 @@ export default {
         else if (range !== null && oldRange === null) this.is_focused = true;
       });
     });
+
+    this.$eventHub.$on("writeup.addMedia", this.addMediaAtCaretPosition);
   },
   beforeDestroy() {
     if (!!this.socket) {
@@ -115,13 +179,16 @@ export default {
       } else {
         this.editor.enable();
       }
+    },
+    spellcheck: function() {
+      this.setSpellCheck();
     }
   },
   computed: {},
   methods: {
     initWebsocketMode() {
       const params = new URLSearchParams({
-        type: "documents",
+        type: "projects",
         slugFolderName: this.slugFolderName,
         metaFileName: this.media.metaFileName
       });
@@ -205,7 +272,7 @@ export default {
           `CollaborativeEditor • updateTextMedia: saving new snapshop`
         );
         this.$root.editMedia({
-          type: "documents",
+          type: "projects",
           slugFolderName: this.slugFolderName,
           slugMediaName: this.media.metaFileName,
           data: {
@@ -213,6 +280,108 @@ export default {
           }
         });
       }, 500);
+    },
+    setSpellCheck() {
+      console.log(
+        `CollaborativeEditor • setSpellCheck: set to ${this.spellcheck}`
+      );
+      this.editor.root.spellcheck = this.spellcheck;
+    },
+    addMediaAtCaretPosition(media) {
+      var selection = this.editor.getSelection(true);
+      this.addMediaAtIndex(selection.index, media);
+    },
+    addMediaAtIndex(index, media) {
+      console.log(`CollaborativeEditor • addMediaAtIndex ${index}`);
+
+      if (media.type === "image") {
+        const thumb = media.thumbs.find(m => m.size === 1600);
+
+        if (!!thumb) {
+          // this.editor.insertText(index, "\n", Quill.sources.USER);
+          this.editor.insertEmbed(
+            index,
+            "image",
+            {
+              type: "image",
+              url: thumb.path
+            },
+            Quill.sources.USER
+          );
+          this.editor.setSelection(index + 1, Quill.sources.SILENT);
+        }
+      } else {
+        this.$alertify
+          .closeLogOnClick(true)
+          .delay(4000)
+          .error(this.$t("notifications.media_type_not_handled"));
+      }
+    },
+    ondragover($event) {
+      // console.log(`METHODS • CollaborativeEditor / dragover`);
+      this.is_being_dragover = true;
+      this.cancelDragOver();
+    },
+    cancelDragOver() {
+      if (this.$root.state.dev_mode === "debug") {
+        console.log(`METHODS • AddMedia / cancelDragOver`);
+      }
+      this.is_being_dragover = false;
+    },
+
+    dropHandler($event) {
+      console.log(`METHODS • CollaborativeEditor / dropHandler`);
+
+      // Prevent default behavior (Prevent file from being opened)
+      $event.preventDefault();
+      $event.dataTransfer.dropEffect = "move";
+
+      const data = JSON.parse($event.dataTransfer.getData("text/plain"));
+      console.log(data);
+
+      if (data.media_filename) {
+        // drop sur l’éditor et pas sur une ligne
+        if ($event.target.classList.contains("ql-editor")) {
+          this.addMediaAtIndex(this.editor.scroll.length() - 1, data);
+          return;
+        }
+
+        const _blot = Quill.find($event.target);
+        if (_blot) {
+          // const _blotIndex = this.editor.getLines().findIndex(b => b === _blot);
+          // let [line, offset] = this.editor.getLine(_blotIndex);
+          const idx = this.editor.getIndex(_blot);
+          this.addMediaAtIndex(idx, data);
+        } else {
+          this.$alertify
+            .closeLogOnClick(true)
+            .delay(4000)
+            .error(this.$t("notifications.failed_to_find_block_line"));
+        }
+
+        // // let [line, offset] = quill.getLine(10);
+        // // let index = quill.getIndex(line);   // index + offset should == 10
+
+        // while (
+        //   // $event.offsetX > this.editor.getBounds(idx).top ||
+        //   $event.target.offsetTop >
+        //   this.editor.getLine(idx)[0].domNode.offsetTop
+        // ) {
+        //   idx++;
+
+        //   console.log(`idx = ${idx}`);
+        //   console.log(
+        //     `top : ${this.editor.getLine(idx)[0].domNode.offsetTop}
+        //     }`
+        //   );
+
+        //   if (idx == this.editor.getLines().length) {
+        //     console.log(`no more index to find, set to last letter`);
+        //     idx = this.editor.getLines().length - 1;
+        //     break;
+        //   }
+        // }
+      }
     }
   }
 };
@@ -220,6 +389,31 @@ export default {
 <style src="../../../../node_modules/quill/dist/quill.bubble.css"></style>
 <style lang="scss">
 .m_collaborativeEditor {
+  font-family: "Public Sans";
+  padding: 0.5em 0;
+
+  &.is--receptiveToDrop {
+    .ql-editor {
+      background-attachment: #fff;
+    }
+
+    &.is--dragover {
+      .ql-editor {
+        > * {
+          background-image: linear-gradient(
+            90deg,
+            #ccc,
+            #ccc 50%,
+            transparent 0,
+            transparent
+          );
+
+          // background-size: 250% 4px;
+        }
+      }
+    }
+  }
+
   .ql-toolbar .ql-formats:first-child::before {
     /* content: "options :"; */
     position: relative;
@@ -264,14 +458,84 @@ export default {
   }
 
   .ql-tooltip {
+    z-index: 1;
     border-radius: 4px;
+    background-color: #000;
   }
 
   .ql-editor {
+    position: relative;
     padding-left: 0;
     padding-top: 0;
     padding-bottom: 0;
     overflow: visible;
+    min-height: 80vh;
+    caret-color: #111;
+    line-height: inherit;
+
+    > * {
+      position: relative;
+      z-index: 1;
+
+      background-position: 0 calc(100% - 3px);
+      background-repeat: no-repeat;
+      background-size: 250% 1px;
+      transition: all 0.5s linear;
+      background-image: linear-gradient(
+        90deg,
+        transparent,
+        transparent 50%,
+        transparent 0,
+        transparent
+      );
+      // background-image: linear-gradient(
+      //   90deg,
+      //   #ddd,
+      //   #ddd 50%,
+      //   transparent 0,
+      //   transparent
+      // );
+
+      transform-origin: right center;
+      animation: slide-up 0.2s cubic-bezier(0.19, 1, 0.22, 1);
+
+      @keyframes slide-up {
+        0% {
+          opacity: 0;
+          transform: scale(0, 0);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1, 1);
+        }
+      }
+
+      &:hover,
+      &.is--dragover {
+        background-image: linear-gradient(
+          90deg,
+          #ccc,
+          #ccc 50%,
+          transparent 0,
+          transparent
+        );
+      }
+
+      // &::before {
+      //   content: "";
+      //   position: absolute;
+      //   left: 0;
+      //   right: 0;
+      //   bottom: 0.15em;
+      //   height: 1px;
+      //   z-index: 0;
+      //   border-bottom: 1px solid #e9e9e9;
+      //   mix-blend-mode: darken;
+      // }
+    }
+    > img {
+      display: block;
+    }
 
     &::after {
       // content: ".";
@@ -324,7 +588,7 @@ export default {
     .h1 {
       font-size: 2.25em;
       line-height: 1.27777778em;
-      margin-top: 0.63888889em;
+      margin-top: 0.319444445em;
       margin-bottom: 0em;
     }
     h2,

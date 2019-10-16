@@ -129,20 +129,37 @@ let vm = new Vue({
     preview_mode: false,
 
     do_navigation: {
-      view: 'ListView',
-      current_slugDocumentName: false
+      view: 'List',
+      current_slugProjectName: false
     },
     show_session_password_prompt: false,
 
     show_accounts_list: false,
-    show_create_document_modal: false,
+    show_create_project_modal: false,
 
     // persistant, par device (dans le localstorage)
     settings: {
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
 
-      current_author: false
+      current_publication: {
+        slug: false,
+        accepted_media_type: []
+      },
+
+      current_writeup_media_metaFileName: false,
+      media_being_dragged: false,
+
+      current_author: false,
+      project_filter: {
+        keyword: false,
+        author: false
+      },
+      media_filter: {
+        keyword: false,
+        author: false,
+        fav: false
+      }
     },
     lang: {
       available: lang_settings.available,
@@ -188,16 +205,16 @@ let vm = new Vue({
         );
       }
 
-      // if a slugDocumentName or a metaFileName is requested, load the content of that folder rightaway
+      // if a slugProjectName or a metaFileName is requested, load the content of that folder rightaway
       // we are probably in a webbrowser that accesses a subfolder or a media
       if (this.state.request.slugFolderName) {
         if (this.state.mode === 'live') {
-          this.$eventHub.$once('socketio.documents.folders_listed', () => {
-            this.openDocument(this.state.request.slugFolderName);
+          this.$eventHub.$once('socketio.projects.folders_listed', () => {
+            this.openProject(this.state.request.slugFolderName);
           });
         } else {
-          this.do_navigation.view = 'DocumentView';
-          this.do_navigation.current_slugDocumentName = this.state.request.slugFolderName;
+          this.do_navigation.view = 'Project';
+          this.do_navigation.current_slugProjectName = this.state.request.slugFolderName;
         }
       }
     }
@@ -206,26 +223,25 @@ let vm = new Vue({
     et si c’est le cas, rafraichir leur contenu (meta, medias) */
     this.$eventHub.$on('socketio.reconnect', () => {
       this.$socketio.listFolders({ type: 'authors' });
-      this.$socketio.listFolders({ type: 'documents' });
+      this.$socketio.listFolders({ type: 'projects' });
 
-      if (this.do_navigation.current_slugDocumentName) {
+      if (this.do_navigation.current_slugProjectName) {
         this.$socketio.listFolder({
-          type: 'documents',
-          slugFolderName: this.do_navigation.current_slugDocumentName
+          type: 'projects',
+          slugFolderName: this.do_navigation.current_slugProjectName
         });
         this.$socketio.listMedias({
-          type: 'documents',
-          slugFolderName: this.do_navigation.current_slugDocumentName
+          type: 'projects',
+          slugFolderName: this.do_navigation.current_slugProjectName
         });
       }
     });
 
     window.onpopstate = event => {
       console.log(
-        `ROOT EVENT: popstate with event.state.slugDocumentName = ${event.state.slugDocumentName}`
+        `ROOT EVENT: popstate with event.state.slugProjectName = ${event.state.slugProjectName}`
       );
-      this.do_navigation.current_slugDocumentName =
-        event.state.slugDocumentName;
+      this.do_navigation.current_slugProjectName = event.state.slugProjectName;
     };
 
     if (this.state.mode === 'live') {
@@ -277,7 +293,7 @@ let vm = new Vue({
 
       this.$eventHub.$once('socketio.authentificated', () => {
         this.$socketio.listFolders({ type: 'authors' });
-        this.$socketio.listFolders({ type: 'documents' });
+        this.$socketio.listFolders({ type: 'projects' });
       });
     }
   },
@@ -300,30 +316,28 @@ let vm = new Vue({
     }
   },
   computed: {
-    currentDocument: function() {
+    currentProject: function() {
       if (
-        !this.store.hasOwnProperty('documents') ||
-        Object.keys(this.store.documents).length === 0
+        !this.store.hasOwnProperty('projects') ||
+        Object.keys(this.store.projects).length === 0
       ) {
-        this.closeDocument();
+        this.closeProject();
         return {};
       }
 
       if (
-        this.store.documents.hasOwnProperty(
-          this.do_navigation.current_slugDocumentName
+        this.store.projects.hasOwnProperty(
+          this.do_navigation.current_slugProjectName
         )
       ) {
-        return this.store.documents[
-          this.do_navigation.current_slugDocumentName
-        ];
+        return this.store.projects[this.do_navigation.current_slugProjectName];
       } else {
-        this.closeDocument();
+        this.closeProject();
         return {};
       }
     },
-    documents_that_are_accessible() {
-      const type = 'documents';
+    projects_that_are_accessible() {
+      const type = 'projects';
       return Object.values(this.store[type]).filter(p =>
         this.canAccessFolder({ type, slugFolderName: p.slugFolderName })
       );
@@ -341,6 +355,39 @@ let vm = new Vue({
     },
     currentTime_human() {
       return this.$moment(this.currentTime).format('LL   LTS');
+    },
+    allKeywords() {
+      let allKeywords = [];
+      for (let slugProjectName in this.store.projects) {
+        const project = this.store.projects[slugProjectName];
+        let projectKeywords = project.keywords;
+        if (!!projectKeywords) {
+          projectKeywords.map(val => {
+            allKeywords.push(val.title);
+          });
+
+          if (
+            project.hasOwnProperty('medias') &&
+            Object.keys(project.medias).length > 0
+          ) {
+            Object.values(project.medias).map(m => {
+              if (m.hasOwnProperty('keywords') && m.keywords.length > 0) {
+                allKeywords = allKeywords.concat(m.keywords.map(k => k.title));
+              }
+            });
+          }
+        }
+      }
+      allKeywords = allKeywords.filter(function(item, pos) {
+        return allKeywords.indexOf(item) == pos;
+      });
+
+      return allKeywords.map(kw => {
+        return {
+          text: kw,
+          classes: 'tagcolorid_' + (parseInt(kw, 36) % 2)
+        };
+      });
     }
   },
   methods: {
@@ -463,45 +510,113 @@ let vm = new Vue({
       }
       return false;
     },
-    openDocument: function(slugDocumentName) {
+    openProject: function(slugProjectName) {
       if (window.state.dev_mode === 'debug') {
-        console.log(`ROOT EVENT: openDocument: ${slugDocumentName}`);
+        console.log(`ROOT EVENT: openProject: ${slugProjectName}`);
       }
       if (
-        !this.store.documents.hasOwnProperty(slugDocumentName) ||
+        !this.store.projects.hasOwnProperty(slugProjectName) ||
         !this.canAccessFolder({
-          type: 'documents',
-          slugFolderName: slugDocumentName
+          type: 'projects',
+          slugFolderName: slugProjectName
         })
       ) {
         console.log('Missing folder key on the page, aborting.');
-        this.closeDocument();
+        this.closeProject();
         return false;
       }
 
-      this.do_navigation.view = 'DocumentView';
-      this.do_navigation.current_slugDocumentName = slugDocumentName;
+      this.do_navigation.view = 'Project';
+      this.do_navigation.current_slugProjectName = slugProjectName;
 
       this.$socketio.listMedias({
-        type: 'documents',
-        slugFolderName: slugDocumentName
+        type: 'projects',
+        slugFolderName: slugProjectName
       });
 
       history.pushState(
-        { slugDocumentName },
-        this.store.documents[slugDocumentName].name,
-        '/' + slugDocumentName
+        { slugProjectName },
+        this.store.projects[slugProjectName].name,
+        '/' + slugProjectName
       );
     },
-    closeDocument: function() {
+    closeProject: function() {
       if (window.state.dev_mode === 'debug') {
-        console.log('ROOT EVENT: closeDocument');
+        console.log('ROOT EVENT: closeProject');
       }
 
-      this.do_navigation.view = 'ListView';
-      this.do_navigation.current_slugDocumentName = '';
+      this.do_navigation.view = 'List';
+      this.do_navigation.current_slugProjectName = '';
 
-      history.pushState({ slugDocumentName: '' }, '', '/');
+      history.pushState({ slugProjectName: '' }, '', '/');
+    },
+    isMediaShown(media) {
+      if (this.settings.media_filter.fav === true) {
+        if (!media.fav) {
+          return false;
+        }
+      }
+
+      if (
+        this.settings.media_filter.keyword === false &&
+        this.settings.media_filter.author === false
+      ) {
+        return true;
+      }
+
+      if (
+        this.settings.media_filter.keyword !== false &&
+        this.settings.media_filter.author !== false
+      ) {
+        // only add to sorted array if project has this keyword
+        if (
+          media.hasOwnProperty('keywords') &&
+          typeof media.keywords === 'object' &&
+          media.keywords.filter(
+            k => k.title === this.settings.media_filter.keyword
+          ).length > 0
+        ) {
+          if (
+            media.hasOwnProperty('authors') &&
+            typeof media.authors === 'object' &&
+            media.authors.filter(
+              k => k.name === this.settings.media_filter.author
+            ).length > 0
+          ) {
+            return true;
+          }
+        }
+        return false;
+      }
+      // if a project keyword filter is set
+      if (this.settings.media_filter.keyword !== false) {
+        // only add to sorted array if project has this keyword
+        if (
+          media.hasOwnProperty('keywords') &&
+          typeof media.keywords === 'object' &&
+          media.keywords.filter(
+            k => k.title === this.settings.media_filter.keyword
+          ).length > 0
+        ) {
+          return true;
+        }
+        return false;
+      }
+
+      if (this.settings.media_filter.author !== false) {
+        // only add to sorted array if project has this keyword
+        if (
+          media.hasOwnProperty('authors') &&
+          typeof media.authors === 'object' &&
+          media.authors.filter(
+            k => k.name === this.settings.media_filter.author
+          ).length > 0
+        ) {
+          return true;
+        }
+        return false;
+      }
+      // END MEDIA FILTER LOGIC
     },
     updateLocalLang: function(newLangCode) {
       if (window.state.dev_mode === 'debug') {
@@ -523,6 +638,26 @@ let vm = new Vue({
     unsetAuthor: function() {
       this.settings.current_author = false;
     },
+    openMedia({ slugProjectName, metaFileName }) {
+      if (window.state.dev_mode === 'debug') {
+        console.log(
+          `ROOT EVENT: openMedia with slugProjectName = ${slugProjectName} and metaFileName = ${metaFileName}`
+        );
+      }
+
+      this.media_modal.open = true;
+      this.media_modal.minimized = false;
+      this.media_modal.current_slugProjectName = slugProjectName;
+      this.media_modal.current_metaFileName = metaFileName;
+    },
+    closeMedia: function() {
+      if (window.state.dev_mode === 'debug') {
+        console.log(`ROOT EVENT: closeMedia`);
+      }
+
+      this.media_modal.open = false;
+    },
+
     downloadPubliPDF({ slugPubliName }) {
       if (window.state.dev_mode === 'debug') {
         console.log(`ROOT EVENT: downloadPubliPDF: ${slugPubliName}`);
@@ -560,10 +695,10 @@ let vm = new Vue({
       this.$socketio.updateNetworkInfos();
     },
     navigation_back() {
-      if (this.do_navigation.view === 'CaptureView') {
-        this.do_navigation.view = 'DocumentView';
-      } else if (this.do_navigation.view === 'DocumentView') {
-        this.closeDocument();
+      if (this.do_navigation.view === 'Capture') {
+        this.do_navigation.view = 'Project';
+      } else if (this.do_navigation.view === 'Project') {
+        this.closeProject();
       }
     }
   }

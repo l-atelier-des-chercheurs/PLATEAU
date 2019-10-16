@@ -1,0 +1,64 @@
+<template>
+  <splitpanes class="m_project">
+    <pane :key="`journal`">
+      <WriteUp :slugFolderName="slugProjectName" :medias="project.medias" :read_only="read_only" />
+    </pane>
+    <pane :key="`library`" min-size="5">
+      <MediaLibrary :slugProjectName="slugProjectName" :project="project" :read_only="false" />
+    </pane>
+    <pane :key="`composition`" min-size="5">
+      <div class="m_composition">
+        <div class>Projection/composition</div>
+      </div>
+    </pane>
+  </splitpanes>
+</template>
+<script>
+import MediaLibrary from "./components/MediaLibrary.vue";
+import WriteUp from "./components/WriteUp.vue";
+import { Splitpanes, Pane } from "splitpanes";
+
+export default {
+  props: {
+    project: Object,
+    slugProjectName: String
+  },
+  components: {
+    MediaLibrary,
+    WriteUp,
+    Splitpanes,
+    Pane
+  },
+  data() {
+    return {
+      paged_content: [[]],
+      flowed_content: [],
+      modules_height: [],
+      max_height_per_page: 0
+    };
+  },
+  created() {},
+  mounted() {},
+  beforeDestroy() {},
+  watch: {},
+  computed: {},
+  methods: {}
+};
+</script>
+<style lang="scss">
+.m_project {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-flow: row nowrap;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background-color: #ecf0ed;
+  background-color: hsl(135, 12%, 96%);
+}
+
+.m_composition {
+  background-color: #2c75c5;
+  height: 100%;
+}
+</style>

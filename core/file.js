@@ -1081,7 +1081,9 @@ module.exports = (function() {
               tasks.push(updateMediaMeta);
 
               if (
-                (meta.type === 'text' || meta.type === 'marker') &&
+                (meta.type === 'text' ||
+                  meta.type === 'marker' ||
+                  meta.type === 'writeup') &&
                 data.hasOwnProperty('content')
               ) {
                 dev.logverbose(`Is text and need to update content.`);
@@ -1340,7 +1342,8 @@ module.exports = (function() {
           );
         } else if (
           additionalMeta.type === 'text' ||
-          additionalMeta.type === 'marker'
+          additionalMeta.type === 'marker' ||
+          additionalMeta.type === 'writeup'
         ) {
           tasks.push(
             new Promise((resolve, reject) => {
@@ -1479,7 +1482,9 @@ module.exports = (function() {
             }
 
             if (
-              (mediaData.type === 'text' || mediaData.type === 'marker') &&
+              (mediaData.type === 'text' ||
+                mediaData.type === 'marker' ||
+                mediaData.type === 'writeup') &&
               mediaData.hasOwnProperty('media_filename')
             ) {
               // get text content
