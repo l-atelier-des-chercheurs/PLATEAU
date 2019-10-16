@@ -219,7 +219,6 @@ export default {
 <style lang="scss">
 .m_writeup {
   padding: var(--spacing);
-  max-width: 65ch;
   margin: 0 auto;
   height: 100%;
   overflow: auto;

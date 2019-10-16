@@ -144,7 +144,7 @@ export default {
         },
       },
       bounds: this.$refs.editor,
-      theme: "bubble",
+      theme: "snow",
       formats: [
         "bold",
         "italic",
@@ -181,7 +181,7 @@ export default {
           "input",
           this.editor.getText() ? this.editor.root.innerHTML : ""
         );
-        cursorsOne.moveCursor(1, range);
+        // cursorsOne.moveCursor(1, range);
       });
 
       this.editor.on("selection-change", (range, oldRange, source) => {
@@ -189,7 +189,7 @@ export default {
         if (range === null && oldRange !== null) this.is_focused = false;
         else if (range !== null && oldRange === null) this.is_focused = true;
 
-        cursorsOne.moveCursor(1, range);
+        // cursorsOne.moveCursor(1, range);
 
         if (!!range && range.length == 0) {
           console.log('User cursor is on', range.index);
@@ -430,7 +430,7 @@ export default {
   }
 };
 </script>
-<style src="../../../../node_modules/quill/dist/quill.bubble.css"></style>
+<style src="../../../../node_modules/quill/dist/quill.snow.css"></style>
 <style lang="scss">
 .m_collaborativeEditor {
   position: relative;
@@ -507,6 +507,11 @@ export default {
     z-index: 1;
     border-radius: 4px;
     background-color: #000;
+  }
+
+  .ql-container {
+    max-width: 65ch;
+    margin:0 auto;
   }
 
   .ql-editor {
@@ -828,5 +833,73 @@ export default {
 .ql-cursor-flag {
   display: none;
 }
+
+.ql-toolbar.ql-snow .ql-formats {
+    display: block;
+    margin-right: 0 !important;
+}
+.ql-snow.ql-toolbar button, .ql-snow .ql-toolbar button {
+    display: block;
+    float:none;
+}
+
+.ql-toolbar.ql-snow {
+    background-color: #222;
+    /* border-left: 0; */
+    border: none;
+    color:  white;
+    border-radius: 4px 4px;
+    top: 160px;
+    position: fixed;
+    left: 10px;
+
+    .ql-fill, .ql-stroke.ql-fill {
+      fill: currentColor;
+    }
+
+    .ql-stroke {
+      stroke: currentColor;
+    }
+}
+
+.ql-snow.ql-toolbar button:hover .ql-stroke, .ql-snow .ql-toolbar button:hover .ql-stroke, .ql-snow.ql-toolbar button:focus .ql-stroke, .ql-snow .ql-toolbar button:focus .ql-stroke, .ql-snow.ql-toolbar button.ql-active .ql-stroke, .ql-snow .ql-toolbar button.ql-active .ql-stroke, .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke, .ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke, .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke, .ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke, .ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke, .ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke, .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke, .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke, .ql-snow.ql-toolbar button:hover .ql-stroke-miter, .ql-snow .ql-toolbar button:hover .ql-stroke-miter, .ql-snow.ql-toolbar button:focus .ql-stroke-miter, .ql-snow .ql-toolbar button:focus .ql-stroke-miter, .ql-snow.ql-toolbar button.ql-active .ql-stroke-miter, .ql-snow .ql-toolbar button.ql-active .ql-stroke-miter, .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke-miter, .ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke-miter, .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter, .ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter, .ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke-miter, .ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke-miter, .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter, .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter {
+  stroke: #0a997f;
+}
+
+.ql-editor {
+  counter-reset: listCounter;
+
+  & > * {
+    counter-increment: listCounter;  
+    
+    &::after {
+      content: counter(listCounter);
+
+      font-family: 'OutputSansVariable';
+      position: absolute;
+      top: 0;
+      right: 100%;
+      margin-right: 1em;
+
+      font-size: 12px;
+      text-align: right;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      // display: inline-block;
+      // float: left;
+      width: 100px;
+      max-width: 100px;
+      // margin-left: -106px;
+      // margin-right: 16px;
+      /* font-weight: normal; */
+      /* background-color: transparent; */
+      /* line-height: 8px; */
+      /* margin-top: 8px; */
+      color: #c1c7cd;
+    }
+  }
+}
+
 
 </style>
