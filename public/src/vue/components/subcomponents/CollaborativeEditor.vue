@@ -9,17 +9,17 @@
     @dragover="ondragover($event)"
     @drop="dropHandler($event)"
   >
-    {{ _customCaret_style }}
-    <div class="_customCaret" :style="_customCaret_style" />
     <!-- connection_state : {{ connection_state }} -->
     <!-- <br /> -->
     <div ref="editor" class="mediaTextContent" />
+    <!-- <div class="_customCaret" :style="_customCaret_style" /> -->
   </div>
 </template>
 <script>
 import ReconnectingWebSocket from "reconnectingwebsocket";
 import ShareDB from "sharedb/lib/client";
 import Quill from "quill";
+import QuillCursors from 'quill-cursors';
 import debounce from "debounce";
 
 let Inline = Quill.import("blots/inline");
@@ -70,6 +70,7 @@ Quill.register(ImageBlot);
 // MediaBlot.tagName = "div";
 // Quill.register(MediaBlot);
 
+Quill.register('modules/cursors', QuillCursors);
 ShareDB.types.register(require("rich-text").type);
 
 export default {
@@ -125,7 +126,22 @@ export default {
   mounted() {
     this.editor = new Quill(this.$refs.editor, {
       modules: {
-        toolbar: this.custom_toolbar
+        toolbar: this.custom_toolbar,
+        cursors: {
+          template: `
+    <span class="ql-cursor-caret-container">
+    <span class="ql-cursor-selections"></span>
+      <span class="ql-cursor-caret"></span>
+    </span>
+    <div class="ql-cursor-flag">
+      <small class="ql-cursor-name"></small>
+      <span class="ql-cursor-flag-flap"></span>
+    </div>
+`,
+          hideDelayMs: 5000,
+          hideSpeedMs: 0,
+          selectionChangeSource: null,          
+        },
       },
       bounds: this.$refs.editor,
       theme: "bubble",
@@ -150,6 +166,9 @@ export default {
       this.editor.disable();
     }
 
+    const cursorsOne = this.editor.getModule('cursors');
+    cursorsOne.createCursor(1, 'User 1', '#0a997f');
+
     this.$nextTick(() => {
       if (this.$root.state.mode !== "live") {
         return;
@@ -162,6 +181,7 @@ export default {
           "input",
           this.editor.getText() ? this.editor.root.innerHTML : ""
         );
+        cursorsOne.moveCursor(1, range);
       });
 
       this.editor.on("selection-change", (range, oldRange, source) => {
@@ -169,7 +189,9 @@ export default {
         if (range === null && oldRange !== null) this.is_focused = false;
         else if (range !== null && oldRange === null) this.is_focused = true;
 
-        if (range.length == 0) {
+        cursorsOne.moveCursor(1, range);
+
+        if (!!range && range.length == 0) {
           console.log('User cursor is on', range.index);
           this.updateCaretPosition();
         }
@@ -227,7 +249,6 @@ export default {
       connection.on("state", this.wsState);
 
       const doc = connection.get("textMedias", requested_querystring);
-
       doc.subscribe(err => {
         if (err) {
           console.error(`ON • CollaborativeEditor: err ${err}`);
@@ -415,6 +436,7 @@ export default {
   position: relative;
   font-family: "Work Sans";
   margin: 0.5em 0;
+  padding: 0 0.1em;
 
   &.is--receptiveToDrop {
     .ql-editor {
@@ -589,6 +611,7 @@ export default {
   .mediaTextContent {
     color: inherit;
     font-family: inherit;
+    overflow: visible;
 
     > *:first-child {
       margin-top: 0;
@@ -801,4 +824,9 @@ export default {
     opacity: 1;
   }
 }
+
+.ql-cursor-flag {
+  display: none;
+}
+
 </style>
