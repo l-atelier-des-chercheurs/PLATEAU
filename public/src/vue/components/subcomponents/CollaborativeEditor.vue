@@ -25,25 +25,118 @@ import debounce from "debounce";
 let Inline = Quill.import("blots/inline");
 let Block = Quill.import("blots/block");
 let BlockEmbed = Quill.import("blots/block/embed");
+const Module = Quill.import('core/module');
 
 class ImageBlot extends BlockEmbed {
+  static blotName = 'image';
+  static tagName = ['figure', 'image'];
+
   static create(value) {
     let node = super.create();
-    // node.setAttribute("alt", value.alt);
-    node.setAttribute("src", value.url);
+    let img = window.document.createElement('img');
+    if (value.alt || value.caption) {
+      img.setAttribute('alt', value.alt || value.caption);
+    }
+    if (value.src || typeof value === 'string') {
+      img.setAttribute('src', value.src || value);
+    }
+    node.appendChild(img);
+    if (value.caption) {
+      let caption = window.document.createElement('figcaption');
+      caption.innerHTML = value.caption;
+      node.appendChild(caption);
+    }
+    node.className = 'ql-card-editable ql-card-figure';
     return node;
   }
 
+  constructor(node) {
+    super(node);
+    node.__onSelect = () => {
+      if (!node.querySelector('input')) {
+        let caption = node.querySelector('figcaption');
+        let captionInput = window.document.createElement('input');
+        captionInput.placeholder = 'Type your caption...';
+        if (caption) {
+          captionInput.value = caption.innerText;
+          caption.innerHTML = '';
+          caption.appendChild(captionInput);
+        } else {
+          caption = window.document.createElement('figcaption');
+          caption.appendChild(captionInput);
+          node.appendChild(caption);
+        }
+        captionInput.addEventListener('blur', () => {
+          let value = captionInput.value;
+          if (!value || value === '') {
+            caption.remove();
+          } else {
+            captionInput.remove();
+            caption.innerText = value;
+          }
+        });
+        captionInput.focus();
+      }
+    }
+  }
+
   static value(node) {
+    let img = node.querySelector('img');
+    let figcaption = node.querySelector('figcaption');
+    if (!img) return false;
     return {
-      // alt: node.getAttribute("alt"),
-      url: node.getAttribute("src")
+      alt: img.getAttribute('alt'),
+      src: img.getAttribute('src'),
+      caption: figcaption ? figcaption.innerText : null
     };
   }
 }
-ImageBlot.blotName = "image";
-ImageBlot.tagName = "img";
-Quill.register(ImageBlot);
+
+class CardEditableModule extends Module {
+    constructor(quill, options) {
+        super(quill, options);
+        let listener = (e) => {
+            if (!document.body.contains(quill.root)) {
+                return document.body.removeEventListener('click', listener);
+            }
+            let elm = e.target.closest('.ql-card-editable');
+            let deselectCard = () => {
+                if (elm.__onDeselect) {
+                    elm.__onDeselect(quill);
+                } else {
+                    quill.setSelection(quill.getIndex(elm.__blot.blot) + 1, 0, Quill.sources.USER);
+                }
+            }
+            if (elm && elm.__blot && elm.__onSelect) {
+                quill.disable();
+                elm.__onSelect(quill);
+                let handleKeyPress = (e) => {
+                    if (e.keyCode === 27 || e.keyCode === 13) {
+                        window.removeEventListener('keypress', handleKeyPress);
+                        quill.enable(true);
+                        deselectCard();
+                    }
+                }
+                let handleClick = (e) => {
+                    if (e.which === 1 && !elm.contains(e.target)) {
+                        window.removeEventListener('click', handleClick);
+                        quill.enable(true);
+                        deselectCard();
+                    }
+                }
+                window.addEventListener('keypress', handleKeyPress);
+                window.addEventListener('click', handleClick);
+            }
+        };
+        quill.emitter.listenDOM('click', document.body, listener);
+    }
+}
+
+Quill.register({
+    // Other formats or modules
+    'formats/image': ImageBlot,
+    'modules/cardEditable': CardEditableModule,
+}, true);
 
 //// see https://stackoverflow.com/a/46064381
 // class MediaBlot extends BlockEmbed {
@@ -126,7 +219,8 @@ export default {
   mounted() {
     this.editor = new Quill(this.$refs.editor, {
       modules: {
-        toolbar: this.custom_toolbar,
+        cardEditable: true,
+                toolbar: this.custom_toolbar,
         cursors: {
           template: `
     <span class="ql-cursor-caret-container">
@@ -346,10 +440,7 @@ export default {
           this.editor.insertEmbed(
             index,
             "image",
-            {
-              type: "image",
-              url: thumb.path
-            },
+            thumb.path,
             Quill.sources.USER
           );
           this.editor.setSelection(index + 1, Quill.sources.SILENT);
@@ -436,6 +527,7 @@ export default {
   position: relative;
   font-family: "Work Sans";
   margin: 0.5em 0;
+    margin-left: 3em;
   padding: 0 0.1em;
 
   &.is--receptiveToDrop {
@@ -512,6 +604,10 @@ export default {
   .ql-container {
     max-width: 65ch;
     margin:0 auto;
+
+    &.ql-snow {
+      border-right: 0;
+    }
   }
 
   .ql-editor {
@@ -527,6 +623,8 @@ export default {
     > * {
       position: relative;
       z-index: 1;
+
+      margin-left: 0;
 
       background-position: 0 calc(100% - 3px);
       background-repeat: no-repeat;
@@ -549,6 +647,22 @@ export default {
 
       transform-origin: right center;
       animation: slide-up 0.2s cubic-bezier(0.19, 1, 0.22, 1);
+
+      &.ql-card-figure {
+
+        img {
+          display: block;
+          margin: 0 auto;
+        }
+
+        figcaption{
+          text-align: center;
+          margin-top: 0em;
+          font-size:75%;
+          font-weight: 600;
+          color: #999;
+        }
+      }
 
       @keyframes slide-up {
         0% {
