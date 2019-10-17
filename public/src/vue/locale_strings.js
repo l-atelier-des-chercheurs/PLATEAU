@@ -5,6 +5,7 @@ module.exports = (function() {
       back_to_list: 'Retour à la liste',
       capture: 'Capturer',
       last_modified: 'Dernière modification',
+      actions: 'Actions',
       name: 'Nom',
       showing: 'Affichage de',
       medias_of: 'médias sur',
@@ -12,6 +13,7 @@ module.exports = (function() {
       remove: 'Suppr.',
       rename: 'Renommer',
       filters: 'Filtres',
+      open: 'Ouvrir',
       drop_here_to_import: 'Déposez vos contenus ici pour les importer',
 
       notifications: {
@@ -22,6 +24,7 @@ module.exports = (function() {
       back_to_list: 'Back to list',
       capture: 'Capture',
       last_modified: 'Last modified',
+      actions: 'Actions',
       name: 'Name',
       showing: 'Showing',
       medias_of: 'medias of',
@@ -29,6 +32,7 @@ module.exports = (function() {
       remove: 'Remove',
       rename: 'Rename',
       filters: 'Filters',
+      open: 'Open',
       drop_here_to_import: 'Drop your content here to import',
 
       notifications: {

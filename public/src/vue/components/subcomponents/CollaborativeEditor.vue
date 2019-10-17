@@ -19,56 +19,56 @@
 import ReconnectingWebSocket from "reconnectingwebsocket";
 import ShareDB from "sharedb/lib/client";
 import Quill from "quill";
-import QuillCursors from 'quill-cursors';
+import QuillCursors from "quill-cursors";
 import debounce from "debounce";
 
 let Inline = Quill.import("blots/inline");
 let Block = Quill.import("blots/block");
 let BlockEmbed = Quill.import("blots/block/embed");
-const Module = Quill.import('core/module');
+const Module = Quill.import("core/module");
 
 class ImageBlot extends BlockEmbed {
-  static blotName = 'image';
-  static tagName = ['figure', 'image'];
+  static blotName = "image";
+  static tagName = ["figure", "image"];
 
   static create(value) {
     let node = super.create();
-    let img = window.document.createElement('img');
+    let img = window.document.createElement("img");
     if (value.alt || value.caption) {
-      img.setAttribute('alt', value.alt || value.caption);
+      img.setAttribute("alt", value.alt || value.caption);
     }
-    if (value.src || typeof value === 'string') {
-      img.setAttribute('src', value.src || value);
+    if (value.src || typeof value === "string") {
+      img.setAttribute("src", value.src || value);
     }
     node.appendChild(img);
     if (value.caption) {
-      let caption = window.document.createElement('figcaption');
+      let caption = window.document.createElement("figcaption");
       caption.innerHTML = value.caption;
       node.appendChild(caption);
     }
-    node.className = 'ql-card-editable ql-card-figure';
+    node.className = "ql-card-editable ql-card-figure";
     return node;
   }
 
   constructor(node) {
     super(node);
     node.__onSelect = () => {
-      if (!node.querySelector('input')) {
-        let caption = node.querySelector('figcaption');
-        let captionInput = window.document.createElement('input');
-        captionInput.placeholder = 'Type your caption...';
+      if (!node.querySelector("input")) {
+        let caption = node.querySelector("figcaption");
+        let captionInput = window.document.createElement("input");
+        captionInput.placeholder = "Type your caption...";
         if (caption) {
           captionInput.value = caption.innerText;
-          caption.innerHTML = '';
+          caption.innerHTML = "";
           caption.appendChild(captionInput);
         } else {
-          caption = window.document.createElement('figcaption');
+          caption = window.document.createElement("figcaption");
           caption.appendChild(captionInput);
           node.appendChild(caption);
         }
-        captionInput.addEventListener('blur', () => {
+        captionInput.addEventListener("blur", () => {
           let value = captionInput.value;
-          if (!value || value === '') {
+          if (!value || value === "") {
             caption.remove();
           } else {
             captionInput.remove();
@@ -77,66 +77,73 @@ class ImageBlot extends BlockEmbed {
         });
         captionInput.focus();
       }
-    }
+    };
   }
 
   static value(node) {
-    let img = node.querySelector('img');
-    let figcaption = node.querySelector('figcaption');
+    let img = node.querySelector("img");
+    let figcaption = node.querySelector("figcaption");
     if (!img) return false;
     return {
-      alt: img.getAttribute('alt'),
-      src: img.getAttribute('src'),
+      alt: img.getAttribute("alt"),
+      src: img.getAttribute("src"),
       caption: figcaption ? figcaption.innerText : null
     };
   }
 }
 
 class CardEditableModule extends Module {
-    constructor(quill, options) {
-        super(quill, options);
-        let listener = (e) => {
-            if (!document.body.contains(quill.root)) {
-                return document.body.removeEventListener('click', listener);
-            }
-            let elm = e.target.closest('.ql-card-editable');
-            let deselectCard = () => {
-                if (elm.__onDeselect) {
-                    elm.__onDeselect(quill);
-                } else {
-                    quill.setSelection(quill.getIndex(elm.__blot.blot) + 1, 0, Quill.sources.USER);
-                }
-            }
-            if (elm && elm.__blot && elm.__onSelect) {
-                quill.disable();
-                elm.__onSelect(quill);
-                let handleKeyPress = (e) => {
-                    if (e.keyCode === 27 || e.keyCode === 13) {
-                        window.removeEventListener('keypress', handleKeyPress);
-                        quill.enable(true);
-                        deselectCard();
-                    }
-                }
-                let handleClick = (e) => {
-                    if (e.which === 1 && !elm.contains(e.target)) {
-                        window.removeEventListener('click', handleClick);
-                        quill.enable(true);
-                        deselectCard();
-                    }
-                }
-                window.addEventListener('keypress', handleKeyPress);
-                window.addEventListener('click', handleClick);
-            }
+  constructor(quill, options) {
+    super(quill, options);
+    let listener = e => {
+      if (!document.body.contains(quill.root)) {
+        return document.body.removeEventListener("click", listener);
+      }
+      let elm = e.target.closest(".ql-card-editable");
+      let deselectCard = () => {
+        if (elm.__onDeselect) {
+          elm.__onDeselect(quill);
+        } else {
+          quill.setSelection(
+            quill.getIndex(elm.__blot.blot) + 1,
+            0,
+            Quill.sources.USER
+          );
+        }
+      };
+      if (elm && elm.__blot && elm.__onSelect) {
+        quill.disable();
+        elm.__onSelect(quill);
+        let handleKeyPress = e => {
+          if (e.keyCode === 27 || e.keyCode === 13) {
+            window.removeEventListener("keypress", handleKeyPress);
+            quill.enable(true);
+            deselectCard();
+          }
         };
-        quill.emitter.listenDOM('click', document.body, listener);
-    }
+        let handleClick = e => {
+          if (e.which === 1 && !elm.contains(e.target)) {
+            window.removeEventListener("click", handleClick);
+            quill.enable(true);
+            deselectCard();
+          }
+        };
+        window.addEventListener("keypress", handleKeyPress);
+        window.addEventListener("click", handleClick);
+      }
+    };
+    quill.emitter.listenDOM("click", document.body, listener);
+  }
 }
 
-Quill.register({
+Quill.register(
+  {
     // Other formats or modules
-    'formats/image': ImageBlot,
-    'modules/cardEditable': CardEditableModule,
-}, true);
+    "formats/image": ImageBlot,
+    "modules/cardEditable": CardEditableModule
+  },
+  true
+);
 
 //// see https://stackoverflow.com/a/46064381
 // class MediaBlot extends BlockEmbed {
@@ -163,7 +170,7 @@ Quill.register({
 // MediaBlot.tagName = "div";
 // Quill.register(MediaBlot);
 
-Quill.register('modules/cursors', QuillCursors);
+Quill.register("modules/cursors", QuillCursors);
 ShareDB.types.register(require("rich-text").type);
 
 export default {
@@ -220,7 +227,7 @@ export default {
     this.editor = new Quill(this.$refs.editor, {
       modules: {
         cardEditable: true,
-                toolbar: this.custom_toolbar,
+        toolbar: this.custom_toolbar,
         cursors: {
           template: `
     <span class="ql-cursor-caret-container">
@@ -234,8 +241,8 @@ export default {
 `,
           hideDelayMs: 5000,
           hideSpeedMs: 0,
-          selectionChangeSource: null,          
-        },
+          selectionChangeSource: null
+        }
       },
       bounds: this.$refs.editor,
       theme: "snow",
@@ -260,8 +267,8 @@ export default {
       this.editor.disable();
     }
 
-    const cursorsOne = this.editor.getModule('cursors');
-    cursorsOne.createCursor(1, 'User 1', '#0a997f');
+    const cursorsOne = this.editor.getModule("cursors");
+    cursorsOne.createCursor(1, "User 1", "#0a997f");
 
     this.$nextTick(() => {
       if (this.$root.state.mode !== "live") {
@@ -286,7 +293,7 @@ export default {
         // cursorsOne.moveCursor(1, range);
 
         if (!!range && range.length == 0) {
-          console.log('User cursor is on', range.index);
+          console.log("User cursor is on", range.index);
           this.updateCaretPosition();
         }
       });
@@ -314,8 +321,8 @@ export default {
   computed: {
     _customCaret_style() {
       return {
-        transform: `translate3d(${this.caret_position.left}px, ${this.caret_position.top}px, 0px)`,
-      }
+        transform: `translate3d(${this.caret_position.left}px, ${this.caret_position.top}px, 0px)`
+      };
     }
   },
   methods: {
@@ -527,7 +534,7 @@ export default {
   position: relative;
   font-family: "Work Sans";
   margin: 0.5em 0;
-    margin-left: 3em;
+  margin-left: 3em;
   padding: 0 0.1em;
 
   &.is--receptiveToDrop {
@@ -603,10 +610,10 @@ export default {
 
   .ql-container {
     max-width: 65ch;
-    margin:0 auto;
+    margin: 0 auto;
 
     &.ql-snow {
-      border-right: 0;
+      border: 0;
     }
   }
 
@@ -649,18 +656,17 @@ export default {
       animation: slide-up 0.2s cubic-bezier(0.19, 1, 0.22, 1);
 
       &.ql-card-figure {
-
         img {
           display: block;
           margin: 0 auto;
         }
 
-        figcaption{
+        figcaption {
           text-align: center;
           margin-top: 0em;
-          font-size:75%;
-          font-weight: 600;
-          color: #999;
+          font-size: 75%;
+          // font-weight: 600;
+          // color: #999;
         }
       }
 
@@ -673,17 +679,6 @@ export default {
           opacity: 1;
           transform: scale(1, 1);
         }
-      }
-
-      &:hover,
-      &.is--dragover {
-        background-image: linear-gradient(
-          90deg,
-          #ccc,
-          #ccc 50%,
-          transparent 0,
-          transparent
-        );
       }
 
       // &::before {
@@ -745,7 +740,7 @@ export default {
     // lh : 1.41
     // scale : 1.31
 
-    font-size: 1.0em;
+    font-size: 1em;
     line-height: 1.4375em;
     // max-width: 773px;
     // margin: auto;
@@ -883,7 +878,8 @@ export default {
       -ms-hyphens: auto;
       hyphens: auto;
 
-      strong,b {
+      strong,
+      b {
         font-weight: 800;
       }
     }
@@ -936,7 +932,8 @@ export default {
 }
 
 @keyframes blink {
-  from, to {
+  from,
+  to {
     opacity: 0;
   }
   50% {
@@ -949,34 +946,64 @@ export default {
 }
 
 .ql-toolbar.ql-snow .ql-formats {
-    display: block;
-    margin-right: 0 !important;
+  display: block;
+  margin-right: 0 !important;
 }
-.ql-snow.ql-toolbar button, .ql-snow .ql-toolbar button {
-    display: block;
-    float:none;
+.ql-snow.ql-toolbar button,
+.ql-snow .ql-toolbar button {
+  display: block;
+  float: none;
 }
 
 .ql-toolbar.ql-snow {
-    background-color: #222;
-    /* border-left: 0; */
-    border: none;
-    color:  white;
-    border-radius: 4px 4px;
-    top: 160px;
-    position: fixed;
-    left: 10px;
+  background-color: #222;
+  /* border-left: 0; */
+  border: none;
+  color: white;
+  border-radius: 4px 4px;
+  top: 160px;
+  position: fixed;
+  z-index: 10;
+  left: 10px;
 
-    .ql-fill, .ql-stroke.ql-fill {
-      fill: currentColor;
-    }
+  .ql-fill,
+  .ql-stroke.ql-fill {
+    fill: currentColor;
+  }
 
-    .ql-stroke {
-      stroke: currentColor;
-    }
+  .ql-stroke {
+    stroke: currentColor;
+  }
 }
 
-.ql-snow.ql-toolbar button:hover .ql-stroke, .ql-snow .ql-toolbar button:hover .ql-stroke, .ql-snow.ql-toolbar button:focus .ql-stroke, .ql-snow .ql-toolbar button:focus .ql-stroke, .ql-snow.ql-toolbar button.ql-active .ql-stroke, .ql-snow .ql-toolbar button.ql-active .ql-stroke, .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke, .ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke, .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke, .ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke, .ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke, .ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke, .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke, .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke, .ql-snow.ql-toolbar button:hover .ql-stroke-miter, .ql-snow .ql-toolbar button:hover .ql-stroke-miter, .ql-snow.ql-toolbar button:focus .ql-stroke-miter, .ql-snow .ql-toolbar button:focus .ql-stroke-miter, .ql-snow.ql-toolbar button.ql-active .ql-stroke-miter, .ql-snow .ql-toolbar button.ql-active .ql-stroke-miter, .ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke-miter, .ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke-miter, .ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter, .ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter, .ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke-miter, .ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke-miter, .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter, .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter {
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow .ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar button:focus .ql-stroke,
+.ql-snow .ql-toolbar button:focus .ql-stroke,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.ql-snow .ql-toolbar button.ql-active .ql-stroke,
+.ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke,
+.ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke,
+.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke,
+.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke,
+.ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke,
+.ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke,
+.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke,
+.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke,
+.ql-snow.ql-toolbar button:hover .ql-stroke-miter,
+.ql-snow .ql-toolbar button:hover .ql-stroke-miter,
+.ql-snow.ql-toolbar button:focus .ql-stroke-miter,
+.ql-snow .ql-toolbar button:focus .ql-stroke-miter,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke-miter,
+.ql-snow .ql-toolbar button.ql-active .ql-stroke-miter,
+.ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke-miter,
+.ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke-miter,
+.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter,
+.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter,
+.ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke-miter,
+.ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke-miter,
+.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter,
+.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter {
   stroke: #0a997f;
 }
 
@@ -984,18 +1011,19 @@ export default {
   counter-reset: listCounter;
 
   & > * {
-    counter-increment: listCounter;  
-    
+    counter-increment: listCounter;
+
     &::after {
       content: counter(listCounter);
 
-      font-family: 'OutputSansVariable';
+      font-family: "IBM Plex Sans", "OutputSansVariable";
       position: absolute;
       top: 0;
       right: 100%;
       margin-right: 1em;
 
-      font-size: 12px;
+      font-size: 0.6rem;
+      font-weight: 200;
       text-align: right;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1011,9 +1039,24 @@ export default {
       /* line-height: 8px; */
       /* margin-top: 8px; */
       color: #c1c7cd;
+
+      transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    &:hover,
+    &.is--dragover {
+      &::after {
+        font-weight: 900;
+        color: #333;
+      }
     }
   }
 }
+.ql-clipboard {
+  position: fixed;
+  display: none;
 
-
+  left: 50%;
+  top: 50%;
+}
 </style>

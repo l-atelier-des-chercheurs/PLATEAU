@@ -68,7 +68,7 @@ body {
 }
 
 body {
-  font-family: "OutputSansVariable", sans-serif;
+  font-family: "IBM Plex Sans", "OutputSansVariable", sans-serif;
   font-weight: 400;
   background-color: white;
 }

@@ -144,7 +144,7 @@ export default {
   background-color: #222;
   color: white;
 
-  padding: 1em;
+  padding: var(--spacing);
 
   display: flex;
   // padding-top: 2em;

@@ -1,5 +1,5 @@
 <template>
-  <div class="m_list" name="list-complete" :duration="300" tag="div">
+  <transition-group class="m_list" name="list-complete" :duration="300" tag="div">
     <div :key="`create_project`" v-if="$root.show_create_project_modal">
       <form @submit.prevent="createProject">
         <label>name</label>
@@ -21,7 +21,7 @@
         <button @click="$root.openProject(slug)">Open</button>
       </div>
     </div>
-  </div>
+  </transition-group>
 </template>
 <script>
 export default {
@@ -94,4 +94,11 @@ export default {
 };
 </script>
 <style lang="scss">
+.m_list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-auto-rows: max-content;
+  grid-gap: var(--spacing);
+  margin: var(--spacing);
+}
 </style>
