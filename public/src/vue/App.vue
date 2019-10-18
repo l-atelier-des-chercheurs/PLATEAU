@@ -220,7 +220,7 @@ input[type="text"] {
   transition: opacity 0.4s;
   background-color: rgba(255, 255, 255, 1);
   opacity: 0;
-  z-index: 1;
+  z-index: 10000;
 }
 .splitpanes__splitter:hover:before {
   // opacity: 1;
@@ -245,7 +245,7 @@ input[type="text"] {
   pointer-events: none;
   // top: 50%;
 
-  transform: rotate(0deg);
+  transform: rotate(45deg);
 
   width: 2px;
   height: 20px;
@@ -253,7 +253,7 @@ input[type="text"] {
   transition: all 0.4s;
   background-color: #000;
   opacity: 1;
-  z-index: 1;
+  z-index: 10000;
 }
 .splitpanes__splitter:hover:after {
   opacity: 1;
@@ -266,7 +266,7 @@ input[type="text"] {
   // height: 100%;
 }
 .splitpanes--horizontal > .splitpanes__splitter:after {
-  transform: rotate(90deg);
+  transform: rotate(135deg);
   left: 50%;
   // top: -10px;
   // bottom: -10px;

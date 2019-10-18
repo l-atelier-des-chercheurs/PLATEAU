@@ -18,10 +18,11 @@
               <label
                 v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
                 :key="`add_${field.key}`"
-                class="barButton barButton_import button"
+                class
                 v-for="field in input_file_fields"
                 :disabled="read_only"
                 :for="`add_${field.key}`"
+                style="text-decoration: underline; cursor: pointer;"
               >
                 <span v-html="field.label" />
                 <input
@@ -32,7 +33,7 @@
                   @change="updateInputFiles($event)"
                   :accept="field.accept"
                   :capture="field.capture"
-                  style="width: 1px; height: 1px; overflow: hidden; position: absolute"
+                  style="width: 1px; height: 1px; overflow: hidden; position: absolute; opacity: 0;"
                 />
               </label>
 
@@ -96,6 +97,7 @@
         size="50"
         style="position: relative;"
       >
+        {{ project.medias[show_media_detail_for] }}
         <MediaContent
           :context="'preview'"
           :slugFolderName="slugProjectName"
@@ -109,15 +111,15 @@
     </splitpanes>
 
     <transition name="slideup" :duration="150">
-      <div class="m_uploadFile" v-if="selected_files.length > 0">
-        <UploadFile
-          @close="selected_files = []"
-          :read_only="read_only"
-          :slugFolderName="slugProjectName"
-          :type="'projects'"
-          :selected_files="selected_files"
-        />
-      </div>
+      <UploadFile
+        class="m_uploadFilePane"
+        v-if="selected_files.length > 0"
+        @close="selected_files = []"
+        :read_only="read_only"
+        :slugFolderName="slugProjectName"
+        :type="'projects'"
+        :selected_files="selected_files"
+      />
     </transition>
 
     <transition name="fade_fast" :duration="150">
@@ -580,12 +582,10 @@ export default {
     height: 200px;
   }
 }
-.m_uploadFile {
+
+.m_uploadFilePane {
   position: absolute;
-  top: 0;
+  bottom: 0;
   width: 100%;
-  height: 300px;
-  background-color: #f9ca00;
-  border-bottom: 2px solid white;
 }
 </style>

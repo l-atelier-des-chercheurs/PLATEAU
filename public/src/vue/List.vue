@@ -103,7 +103,6 @@ export default {
           () => {}
         );
     },
-
     projectDate(d) {
       if (this.$root.lang.current === "fr") {
         return this.$moment(d).calendar(null, {
