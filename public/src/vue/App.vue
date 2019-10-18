@@ -51,7 +51,7 @@ export default {
   --border-color: #222;
   --page-height: 11in;
   --active-color: rgb(52, 122, 213);
-  --active-color: #2898d9;
+  --active-color: #aaa;
   // --active-color: #ff00ff;
 }
 

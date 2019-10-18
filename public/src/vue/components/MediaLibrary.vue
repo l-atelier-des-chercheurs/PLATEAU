@@ -107,19 +107,25 @@
           <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t('remove') }}</button>
         </div>
       </pane>
-    </splitpanes>
 
-    <transition name="slideup" :duration="150">
-      <UploadFile
-        class="m_uploadFilePane"
+      <pane
         v-if="selected_files.length > 0"
-        @close="selected_files = []"
-        :read_only="read_only"
-        :slugFolderName="slugProjectName"
-        :type="'projects'"
-        :selected_files="selected_files"
-      />
-    </transition>
+        :key="'uploadfile'"
+        min-size="1"
+        max-size="30"
+        size="10"
+        style="position: relative;"
+      >
+        <UploadFile
+          class="m_uploadFilePane"
+          @close="selected_files = []"
+          :read_only="read_only"
+          :slugFolderName="slugProjectName"
+          :type="'projects'"
+          :selected_files="selected_files"
+        />
+      </pane>
+    </splitpanes>
 
     <transition name="fade_fast" :duration="150">
       <div
@@ -518,7 +524,6 @@ export default {
   grid-auto-rows: max-content;
   grid-gap: calc(var(--spacing) / 1.5);
   padding: 0 var(--spacing);
-  margin: var(--spacing) 0;
 
   height: 100%;
   overflow: auto;
@@ -529,13 +534,14 @@ export default {
 }
 
 .m_library--mediaFocus {
-  box-shadow: 0 -5px 23px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 -5px 23px rgba(0, 0, 0, 0.4);
 
   .mediaContainer {
     position: absolute;
     width: 100%;
     height: 100%;
     background-color: rgba(193, 154, 0, 0.4);
+    background-color: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
 
     > * {
@@ -589,7 +595,11 @@ export default {
 
 .m_uploadFilePane {
   position: absolute;
+  height: 100%;
   bottom: 0;
   width: 100%;
+  z-index: 1000;
+  padding: var(--spacing);
+  background-color: #f9ca00;
 }
 </style>

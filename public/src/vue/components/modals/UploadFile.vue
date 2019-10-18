@@ -13,7 +13,7 @@
             class="m_uploadFile--image"
             :src="getImgPreview(f)"
       >-->
-      <div class="m_uploadFile--image" />
+      <!-- <div class="m_uploadFile--image" /> -->
 
       <div :title="f.name" class="m_uploadFile--filename">{{ f.name }}</div>
       <div class="m_uploadFile--size">{{ formatBytes(f.size) }}</div>
@@ -213,8 +213,8 @@ export default {
   align-items: center;
   justify-content: space-between;
 
-  font-size: 60%;
-  height: 60px;
+  font-size: 75%;
+  height: 20px;
 
   margin-bottom: var(--spacing);
   background-color: #eee;
@@ -262,7 +262,6 @@ export default {
     white-space: nowrap;
     overflow: hidden;
 
-    font-size: 80%;
     color: #000;
     padding: var(--spacing);
   }

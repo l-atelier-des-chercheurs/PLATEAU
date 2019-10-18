@@ -214,11 +214,16 @@ export default {
 <style lang="scss">
 .m_media {
   position: relative;
-  background-color: rgba(193, 154, 0, 0.2);
+  background-color: rgba(193, 154, 0, 0.4);
+  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   /* border: 2px solid black; */
   // width: var(--media-width);
   // height: var(--media-width);
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
 
   .mediaContainer {
     position: relative;
