@@ -97,9 +97,8 @@
         size="50"
         style="position: relative;"
       >
-        {{ project.medias[show_media_detail_for] }}
         <MediaContent
-          :context="'preview'"
+          :context="'full'"
           :slugFolderName="slugProjectName"
           :media="project.medias[show_media_detail_for]"
           :preview_size="preview_size"
@@ -554,10 +553,15 @@ export default {
     width: 100%;
     z-index: 1;
     padding: 0 calc(var(--spacing) / 2);
+    pointer-events: none;
 
     display: flex;
     justify-content: flex-end;
-    align-items: flex-end;
+    align-items: flex-start;
+
+    > * {
+      pointer-events: auto;
+    }
   }
 }
 

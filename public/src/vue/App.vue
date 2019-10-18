@@ -280,6 +280,64 @@ input[type="text"] {
   color: var(--active-color);
 }
 
+.plyr {
+  width: 100%;
+  height: 100%;
+  min-width: 100px;
+  font-family: inherit;
+  font-weight: 200;
+
+  --c-orange: var(--active-color);
+
+  button {
+    min-height: 0;
+  }
+
+  &.plyr--video {
+    background-color: transparent;
+  }
+
+  video,
+  .plyr__video-wrapper,
+  .plyr__poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: transparent;
+
+    > video {
+      object-fit: contain;
+      height: 100%;
+    }
+  }
+  &.plyr--audio {
+    // .bg-noir;
+
+    .plyr__controls {
+      // background: @c-noir;
+      background: transparent;
+      color: #000;
+    }
+  }
+  .plyr__controls {
+    background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
+    color: white;
+  }
+
+  .plyr__control--overlaid {
+    background-color: var(--c-orange);
+  }
+  input[type="range"] {
+    color: var(--c-orange);
+  }
+
+  .plyr__control.plyr__tab-focus,
+  .plyr__control:hover,
+  .plyr__control[aria-expanded="true"] {
+    background-color: var(--c-orange);
+  }
+}
+
 .list-complete-move {
   position: relative;
   transition: transform 1s cubic-bezier(0.19, 1, 0.22, 1);
