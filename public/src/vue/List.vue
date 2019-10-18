@@ -2,7 +2,7 @@
   <transition-group class="m_list" name="list-complete" :duration="300" tag="div">
     <div :key="`create_project`" v-if="$root.show_create_project_modal">
       <form @submit.prevent="createProject">
-        <label>{{ $t('name') </label>
+        <label>{{ $t('name') }}</label>
         <input type="text" name="name" />
         <input type="submit" />
       </form>
@@ -18,9 +18,7 @@
       </div>
       <div class>
         <button @click="$root.openProject(slug)">{{ $t('open') }}</button>
-        <button
-          @click="$root.removeFolder({ type: 'projects', slugFolderName: slug })"
-        >{{ $t('remove') }}</button>
+        <button @click="removeProject(slug)">{{ $t('remove') }}</button>
       </div>
     </div>
   </transition-group>
@@ -90,6 +88,22 @@ export default {
       this.$root.createFolder({ type: "projects", data: new_project_data });
       this.$root.show_create_project_modal = false;
     },
+    removeProject(slugFolderName) {
+      this.$alertify
+        .okBtn(this.$t("yes"))
+        .cancelBtn(this.$t("cancel"))
+        .confirm(
+          this.$t("sureToRemoveProject"),
+          () => {
+            this.$root.removeFolder({
+              type: "projects",
+              slugFolderName
+            });
+          },
+          () => {}
+        );
+    },
+
     projectDate(d) {
       if (this.$root.lang.current === "fr") {
         return this.$moment(d).calendar(null, {
