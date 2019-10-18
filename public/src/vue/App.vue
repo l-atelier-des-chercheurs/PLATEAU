@@ -51,7 +51,7 @@ export default {
   --border-color: #222;
   --page-height: 11in;
   --active-color: rgb(52, 122, 213);
-  --active-color: #2898d9;
+  --active-color: #aaa;
   // --active-color: #ff00ff;
 }
 
@@ -97,7 +97,8 @@ hr {
   box-sizing: border-box;
 }
 
-img {
+img,
+video {
   max-width: 100%;
   height: auto;
 }
@@ -220,7 +221,7 @@ input[type="text"] {
   transition: opacity 0.4s;
   background-color: rgba(255, 255, 255, 1);
   opacity: 0;
-  z-index: 1;
+  z-index: 10000;
 }
 .splitpanes__splitter:hover:before {
   // opacity: 1;
@@ -245,7 +246,7 @@ input[type="text"] {
   pointer-events: none;
   // top: 50%;
 
-  transform: rotate(0deg);
+  transform: rotate(45deg);
 
   width: 2px;
   height: 20px;
@@ -253,7 +254,7 @@ input[type="text"] {
   transition: all 0.4s;
   background-color: #000;
   opacity: 1;
-  z-index: 1;
+  z-index: 10000;
 }
 .splitpanes__splitter:hover:after {
   opacity: 1;
@@ -266,7 +267,7 @@ input[type="text"] {
   // height: 100%;
 }
 .splitpanes--horizontal > .splitpanes__splitter:after {
-  transform: rotate(90deg);
+  transform: rotate(135deg);
   left: 50%;
   // top: -10px;
   // bottom: -10px;
@@ -278,6 +279,64 @@ input[type="text"] {
 
 .c-active {
   color: var(--active-color);
+}
+
+.plyr {
+  width: 100%;
+  height: 100%;
+  min-width: 100px;
+  font-family: inherit;
+  font-weight: 200;
+
+  --c-orange: var(--active-color);
+
+  button {
+    min-height: 0;
+  }
+
+  &.plyr--video {
+    background-color: transparent;
+  }
+
+  video,
+  .plyr__video-wrapper,
+  .plyr__poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: transparent;
+
+    > video {
+      object-fit: contain;
+      height: 100%;
+    }
+  }
+  &.plyr--audio {
+    // .bg-noir;
+
+    .plyr__controls {
+      // background: @c-noir;
+      background: transparent;
+      color: #000;
+    }
+  }
+  .plyr__controls {
+    background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
+    color: white;
+  }
+
+  .plyr__control--overlaid {
+    background-color: var(--c-orange);
+  }
+  input[type="range"] {
+    color: var(--c-orange);
+  }
+
+  .plyr__control.plyr__tab-focus,
+  .plyr__control:hover,
+  .plyr__control[aria-expanded="true"] {
+    background-color: var(--c-orange);
+  }
 }
 
 .list-complete-move {

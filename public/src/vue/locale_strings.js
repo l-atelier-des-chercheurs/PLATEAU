@@ -19,6 +19,13 @@ module.exports = (function() {
       back: 'Retour',
       at: 'à',
 
+      bytes: 'octets',
+      kb: 'ko',
+      mb: 'Mo',
+      gb: 'Go',
+      duration: 'Durée',
+      send: 'Envoyer',
+
       drop_here_to_import: 'Déposez vos contenus ici pour les importer',
 
       notifications: {
@@ -42,6 +49,13 @@ module.exports = (function() {
       open: 'Open',
       back: 'Back',
       at: 'at',
+
+      bytes: 'bytes',
+      kb: 'KB',
+      mb: 'MB',
+      gb: 'GB',
+      duration: 'Duration',
+      send: 'Send',
 
       drop_here_to_import: 'Drop your content here to import',
 

@@ -18,10 +18,11 @@
               <label
                 v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
                 :key="`add_${field.key}`"
-                class="barButton barButton_import button"
+                class
                 v-for="field in input_file_fields"
                 :disabled="read_only"
                 :for="`add_${field.key}`"
+                style="text-decoration: underline; cursor: pointer;"
               >
                 <span v-html="field.label" />
                 <input
@@ -32,7 +33,7 @@
                   @change="updateInputFiles($event)"
                   :accept="field.accept"
                   :capture="field.capture"
-                  style="width: 1px; height: 1px; overflow: hidden; position: absolute"
+                  style="width: 1px; height: 1px; overflow: hidden; position: absolute; opacity: 0;"
                 />
               </label>
 
@@ -97,7 +98,7 @@
         style="position: relative;"
       >
         <MediaContent
-          :context="'preview'"
+          :context="'full'"
           :slugFolderName="slugProjectName"
           :media="project.medias[show_media_detail_for]"
           :preview_size="preview_size"
@@ -106,19 +107,25 @@
           <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t('remove') }}</button>
         </div>
       </pane>
-    </splitpanes>
 
-    <transition name="slideup" :duration="150">
-      <div class="m_uploadFile" v-if="selected_files.length > 0">
+      <pane
+        v-if="selected_files.length > 0"
+        :key="'uploadfile'"
+        min-size="1"
+        max-size="30"
+        size="10"
+        style="position: relative;"
+      >
         <UploadFile
+          class="m_uploadFilePane"
           @close="selected_files = []"
           :read_only="read_only"
           :slugFolderName="slugProjectName"
           :type="'projects'"
           :selected_files="selected_files"
         />
-      </div>
-    </transition>
+      </pane>
+    </splitpanes>
 
     <transition name="fade_fast" :duration="150">
       <div
@@ -517,7 +524,6 @@ export default {
   grid-auto-rows: max-content;
   grid-gap: calc(var(--spacing) / 1.5);
   padding: 0 var(--spacing);
-  margin: var(--spacing) 0;
 
   height: 100%;
   overflow: auto;
@@ -528,13 +534,14 @@ export default {
 }
 
 .m_library--mediaFocus {
-  box-shadow: 0 -5px 23px rgba(0, 0, 0, 0.8);
+  box-shadow: 0 -5px 23px rgba(0, 0, 0, 0.4);
 
   .mediaContainer {
     position: absolute;
     width: 100%;
     height: 100%;
     background-color: rgba(193, 154, 0, 0.4);
+    background-color: rgba(255, 255, 255, 0.2);
     border-radius: 2px;
 
     > * {
@@ -552,10 +559,15 @@ export default {
     width: 100%;
     z-index: 1;
     padding: 0 calc(var(--spacing) / 2);
+    pointer-events: none;
 
     display: flex;
     justify-content: flex-end;
-    align-items: flex-end;
+    align-items: flex-start;
+
+    > * {
+      pointer-events: auto;
+    }
   }
 }
 
@@ -580,12 +592,14 @@ export default {
     height: 200px;
   }
 }
-.m_uploadFile {
+
+.m_uploadFilePane {
   position: absolute;
-  top: 0;
+  height: 100%;
+  bottom: 0;
   width: 100%;
-  height: 300px;
+  z-index: 1000;
+  padding: var(--spacing);
   background-color: #f9ca00;
-  border-bottom: 2px solid white;
 }
 </style>

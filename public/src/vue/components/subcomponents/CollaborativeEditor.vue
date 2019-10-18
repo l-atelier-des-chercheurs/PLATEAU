@@ -146,6 +146,49 @@ Quill.register(
   true
 );
 
+class VideoBlot extends BlockEmbed {
+  static create(url) {
+    let node = super.create();
+    node.setAttribute("src", url);
+    node.setAttribute("controls", true);
+
+    return node;
+  }
+
+  static formats(node) {
+    // We still need to report unregistered embed formats
+    let format = {};
+    if (node.hasAttribute("height")) {
+      format.height = node.getAttribute("height");
+    }
+    if (node.hasAttribute("width")) {
+      format.width = node.getAttribute("width");
+    }
+    return format;
+  }
+
+  static value(node) {
+    return node.getAttribute("src");
+  }
+
+  format(name, value) {
+    // Handle unregistered embed formats
+    if (name === "height" || name === "width") {
+      if (value) {
+        this.domNode.setAttribute(name, value);
+      } else {
+        this.domNode.removeAttribute(name, value);
+      }
+    } else {
+      super.format(name, value);
+    }
+  }
+}
+VideoBlot.blotName = "video";
+VideoBlot.tagName = "video";
+VideoBlot.className = "ql-card-figure";
+Quill.register(VideoBlot);
+
 //// see https://stackoverflow.com/a/46064381
 // class MediaBlot extends BlockEmbed {
 //   static create(value) {
@@ -255,7 +298,8 @@ export default {
         "header",
         "blockquote",
         "list",
-        "image"
+        "image",
+        "video"
       ],
       placeholder: "…"
     });
@@ -440,9 +484,15 @@ export default {
     addMediaAtIndex(index, media) {
       console.log(`CollaborativeEditor • addMediaAtIndex ${index}`);
 
+      debugger;
+
+      const mediaURL =
+        this.$root.state.mode === "export_publication"
+          ? `./${this.slugFolderName}/${media.media_filename}`
+          : `/${this.slugFolderName}/${media.media_filename}`;
+
       if (media.type === "image") {
         const thumb = media.thumbs.find(m => m.size === 1600);
-
         if (!!thumb) {
           // this.editor.insertText(index, "\n", Quill.sources.USER);
           this.editor.insertEmbed(
@@ -453,6 +503,10 @@ export default {
           );
           this.editor.setSelection(index + 1, Quill.sources.SILENT);
         }
+      } else if (media.type === "video") {
+        // this.editor.insertText(index, "\n", Quill.sources.USER);
+        this.editor.insertEmbed(index, "video", mediaURL, Quill.sources.USER);
+        this.editor.setSelection(index + 1, Quill.sources.SILENT);
       } else {
         this.$alertify
           .closeLogOnClick(true)
@@ -1024,7 +1078,7 @@ export default {
       /* background-color: transparent; */
       /* line-height: 8px; */
       /* margin-top: 8px; */
-      color: #c1c7cd;
+      color: hsl(210, 11%, 58%);
 
       transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
     }

@@ -214,11 +214,16 @@ export default {
 <style lang="scss">
 .m_media {
   position: relative;
-  background-color: rgba(193, 154, 0, 0.2);
+  background-color: rgba(193, 154, 0, 0.4);
+  background-color: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   /* border: 2px solid black; */
   // width: var(--media-width);
   // height: var(--media-width);
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
 
   .mediaContainer {
     position: relative;
@@ -250,6 +255,23 @@ export default {
     //   object-fit: scale-down;
     //   object-position: center center;
     // }
+    .play_picto {
+      display: block;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      svg {
+        width: 20px;
+        height: 20px;
+        padding: 4px;
+
+        // box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+        background-color: rgba(31, 31, 31, 1);
+        fill: #f9ca00;
+        border-radius: 10px;
+      }
+    }
   }
 }
 </style>

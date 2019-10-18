@@ -13,7 +13,7 @@
             class="m_uploadFile--image"
             :src="getImgPreview(f)"
       >-->
-      <div class="m_uploadFile--image" />
+      <!-- <div class="m_uploadFile--image" /> -->
 
       <div :title="f.name" class="m_uploadFile--filename">{{ f.name }}</div>
       <div class="m_uploadFile--size">{{ formatBytes(f.size) }}</div>
@@ -204,5 +204,77 @@ export default {
   }
 };
 </script>
-<style>
+<style lang="less" scoped>
+.m_uploadFile {
+  position: relative;
+
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: space-between;
+
+  font-size: 75%;
+  height: 20px;
+
+  margin-bottom: var(--spacing);
+  background-color: #eee;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    transform: scale(var(--progress-percent), 1);
+    transform-origin: left center;
+    background-color: #e45a6b;
+
+    transition: all 0.1s;
+  }
+
+  > * {
+    flex: 1 1 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  &.is--success {
+  }
+  &.is--failed {
+    &::before {
+      background-color: #e45a6b;
+    }
+  }
+
+  .m_uploadFile--image {
+    display: block;
+    flex: 0 0 60px;
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    object-position: center;
+    background-color: fade(white, 35%);
+  }
+
+  .m_uploadFile--filename {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+
+    color: #000;
+    padding: var(--spacing);
+  }
+  .m_uploadFile--size {
+    flex: 0 0 70px;
+  }
+  .m_uploadFile--action {
+    flex: 0 0 70px;
+
+    button {
+      background-color: transparent;
+      color: inherit;
+    }
+  }
+}
 </style>

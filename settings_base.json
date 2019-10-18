@@ -61,7 +61,7 @@
       },
       "medias": {
         "thumbs": {
-          "resolutions": [360, 800, 1600]
+          "resolutions": [180, 360, 800, 1600]
         },
         "fields": {
           "name": {
@@ -91,12 +91,12 @@
           "type": {
             "type": "string",
             "options": [
-              "text",
               "image",
+              "video",
+              "audio",
+              "text",
               "writeup",
-              "embed",
               "document",
-              "data",
               "other"
             ],
             "default": "other"
