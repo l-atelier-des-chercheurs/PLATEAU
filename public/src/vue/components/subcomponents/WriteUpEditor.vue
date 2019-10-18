@@ -139,6 +139,12 @@ export default {
   /* padding-left: 1em; */
 }
 
+.m_writeupeditor {
+  max-width: 65ch;
+  margin: 0 auto;
+  padding: 0 var(--spacing);
+}
+
 .m_writeupeditor--topbar {
   border-bottom: 1px solid black;
   /* padding: calc(var(--size-skipline) / 2) calc(var(--size-skipline)); */

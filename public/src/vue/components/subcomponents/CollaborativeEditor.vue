@@ -256,7 +256,7 @@ export default {
         "list",
         "image"
       ],
-      placeholder: "Write text here…"
+      placeholder: "…"
     });
     this.editor.root.innerHTML = this.value;
     this.cancelDragOver = debounce(this.cancelDragOver, 300);
@@ -488,7 +488,16 @@ export default {
           return;
         }
 
-        const _blot = Quill.find($event.target);
+        let _target = $event.target;
+        while (!_target.parentElement.classList.contains("ql-editor")) {
+          _target = $event.target.parentElement;
+
+          if (_target === null) {
+            break;
+          }
+        }
+
+        let _blot = Quill.find(_target);
         if (_blot) {
           // const _blotIndex = this.editor.getLines().findIndex(b => b === _blot);
           // let [line, offset] = this.editor.getLine(_blotIndex);
@@ -500,29 +509,6 @@ export default {
             .delay(4000)
             .error(this.$t("notifications.failed_to_find_block_line"));
         }
-
-        // // let [line, offset] = quill.getLine(10);
-        // // let index = quill.getIndex(line);   // index + offset should == 10
-
-        // while (
-        //   // $event.offsetX > this.editor.getBounds(idx).top ||
-        //   $event.target.offsetTop >
-        //   this.editor.getLine(idx)[0].domNode.offsetTop
-        // ) {
-        //   idx++;
-
-        //   console.log(`idx = ${idx}`);
-        //   console.log(
-        //     `top : ${this.editor.getLine(idx)[0].domNode.offsetTop}
-        //     }`
-        //   );
-
-        //   if (idx == this.editor.getLines().length) {
-        //     console.log(`no more index to find, set to last letter`);
-        //     idx = this.editor.getLines().length - 1;
-        //     break;
-        //   }
-        // }
       }
     }
   }
@@ -534,7 +520,7 @@ export default {
   position: relative;
   font-family: "Work Sans";
   margin: 0.5em 0;
-  margin-left: 3em;
+  // margin-left: 3em;
   padding: 0 0.1em;
 
   &.is--receptiveToDrop {
@@ -619,9 +605,7 @@ export default {
 
   .ql-editor {
     position: relative;
-    padding-left: 0;
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 0;
     overflow: visible;
     min-height: 80vh;
     caret-color: #111;
@@ -631,7 +615,8 @@ export default {
       position: relative;
       z-index: 1;
 
-      margin-left: 0;
+      margin: 0;
+      padding: 0;
 
       background-position: 0 calc(100% - 3px);
       background-repeat: no-repeat;
@@ -653,12 +638,12 @@ export default {
       // );
 
       transform-origin: right center;
-      animation: slide-up 0.2s cubic-bezier(0.19, 1, 0.22, 1);
+      animation: scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1);
 
       &.ql-card-figure {
         img {
           display: block;
-          margin: 0 auto;
+          margin: var(--spacing) auto;
         }
 
         figcaption {
@@ -670,10 +655,10 @@ export default {
         }
       }
 
-      @keyframes slide-up {
+      @keyframes scale-in {
         0% {
           opacity: 0;
-          transform: scale(0, 0);
+          transform: scale(0.9, 1);
         }
         100% {
           opacity: 1;

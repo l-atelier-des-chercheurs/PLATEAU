@@ -8,7 +8,10 @@
     </pane>
     <pane :key="`composition`" min-size="5" size="15">
       <div class="m_composition">
-        <div class><i>à venir</i><br>projection/composition</div>
+        <div class>
+          <i>à venir</i>
+          <br />projection/composition
+        </div>
       </div>
     </pane>
   </splitpanes>
@@ -53,8 +56,8 @@ export default {
   flex-flow: row nowrap;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  background-color: #ecf0ed;
-  background-color: hsl(135, 12%, 96%);
+  // background-color: #ecf0ed;
+  // background-color: hsl(135, 12%, 96%);
 }
 
 .m_composition {

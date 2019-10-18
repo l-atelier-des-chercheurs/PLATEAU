@@ -156,6 +156,14 @@ input:required {
   }
 }
 
+.font-small {
+  font-size: 0.9em;
+  line-height: 1.25;
+}
+.font-verysmall {
+  font-size: 0.8em;
+}
+
 [draggable="true"] {
   -moz-user-select: none;
   -khtml-user-select: none;
@@ -187,9 +195,11 @@ input:required {
 .splitpanes--vertical > .splitpanes__splitter {
   width: 1px;
   margin-left: -1px;
+  border-right: 1px solid black;
 }
 .splitpanes--horizontal > .splitpanes__splitter {
   height: 1px;
+  border-bottom: 1px solid black;
 }
 
 .splitpanes__splitter:before {
