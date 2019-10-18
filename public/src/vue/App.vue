@@ -97,7 +97,8 @@ hr {
   box-sizing: border-box;
 }
 
-img {
+img,
+video {
   max-width: 100%;
   height: auto;
 }
