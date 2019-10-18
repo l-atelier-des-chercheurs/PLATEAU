@@ -1,14 +1,17 @@
 <template>
   <splitpanes class="m_project">
-    <pane :key="`journal`">
+    <pane :key="`journal`" size="70">
       <WriteUp :slugFolderName="slugProjectName" :medias="project.medias" :read_only="read_only" />
     </pane>
-    <pane :key="`library`" min-size="5">
+    <pane :key="`library`" min-size="5" size="30">
       <MediaLibrary :slugProjectName="slugProjectName" :project="project" :read_only="false" />
     </pane>
-    <pane :key="`composition`" min-size="5">
+    <pane :key="`composition`" min-size="5" size="15">
       <div class="m_composition">
-        <div class>Projection/composition</div>
+        <div class>
+          <i>à venir</i>
+          <br />projection/composition
+        </div>
       </div>
     </pane>
   </splitpanes>
@@ -53,12 +56,13 @@ export default {
   flex-flow: row nowrap;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  background-color: #ecf0ed;
-  background-color: hsl(135, 12%, 96%);
+  // background-color: #ecf0ed;
+  // background-color: hsl(135, 12%, 96%);
 }
 
 .m_composition {
   background-color: #2c75c5;
   height: 100%;
+  padding: var(--spacing);
 }
 </style>

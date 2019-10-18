@@ -4,11 +4,9 @@
       <table class v-if="mode === 'writeup_list'">
         <thead>
           <tr>
-            <th style>{{ $t('name') }}</th>
-            <th>{{ $t('last_modified') }}</th>
-            <th>
-              <!-- {{ $t('action') }} -->
-            </th>
+            <th style>{{ $t('documents') }}</th>
+            <th>{{ $t('date_modified') }}</th>
+            <th colspan="2">{{ $t('actions') }}</th>
           </tr>
         </thead>
         <transition-group tag="tbody" name="list-complete">
@@ -34,10 +32,10 @@
           </tr>
           <tr :key="'create'">
             <template v-if="!show_createwriteup_section">
-              <td colspan="3">
+              <td colspan="4">
                 <button
                   type="button"
-                  class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
+                  class="_create_button"
                   @click="show_createwriteup_section = !show_createwriteup_section"
                 >{{ $t('create') }}</button>
               </td>
@@ -45,9 +43,9 @@
 
             <template v-else>
               <td colspan="2">
-                <input type="text" class="input-xs" ref="nameInput" />
+                <input type="text" class ref="nameInput" />
               </td>
-              <td>
+              <td colspan="2">
                 <button
                   type="button"
                   class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
@@ -58,12 +56,12 @@
           </tr>
         </transition-group>
       </table>
-      <div v-else-if="mode === 'single_writeup'" class="margin-small text-centered">
+      <div v-else-if="mode === 'single_writeup'" class="text-centered">
         <button
+          class="button_backtolist"
           type="button"
-          class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
           @click="closeWriteupMedia"
-        >{{ $t('back_to_list') }}</button>
+        >← {{ $t('back_to_list') }}</button>
       </div>
     </div>
 
@@ -218,10 +216,117 @@ export default {
 </script>
 <style lang="scss">
 .m_writeup {
-  padding: var(--spacing);
-  max-width: 55ch;
-  margin: 0 auto;
+  position: relative;
+  // margin: var(--spacing);
+  // margin: 0 auto;
   height: 100%;
   overflow: auto;
+
+  table {
+    width: 100%;
+    margin: 0;
+  }
+  input[type="text"] {
+    width: 100%;
+  }
+
+  button {
+  }
+}
+
+table a:link {
+  color: #666;
+  font-weight: bold;
+  text-decoration: none;
+}
+table a:visited {
+  color: #999999;
+  font-weight: bold;
+  text-decoration: none;
+}
+table a:active,
+table a:hover {
+  color: #bd5a35;
+  text-decoration: underline;
+}
+
+table {
+  // font-family:Arial, Helvetica, sans-serif;
+  // color: #666;
+  // font-size:12px;
+  // text-shadow: 1px 1px 0px #fff;
+  // background:#ccc;
+  margin: 20px;
+  border-bottom: #000 1px solid;
+
+  // -moz-box-shadow: 0 1px 2px #d1d1d1;
+  // -webkit-box-shadow: 0 1px 2px #d1d1d1;
+  // box-shadow: 0 1px 2px #d1d1d1;
+}
+
+table th {
+  padding: var(--spacing);
+  // border-top: 1px solid #fafafa;
+  // border-bottom: 1px solid #e0e0e0;
+
+  // background: #ededed;
+  // background: -webkit-gradient(
+  //   linear,
+  //   left top,
+  //   left bottom,
+  //   from(#ededed),
+  //   to(#ebebeb)
+  // );
+  border-bottom: 1px solid black;
+}
+table th:first-child {
+  text-align: left;
+  padding-left: 20px;
+}
+table tr {
+  text-align: center;
+  padding-left: 20px;
+}
+table td:first-child {
+  text-align: left;
+  padding-left: 20px;
+  border-left: 0;
+}
+table td {
+  padding: 18px;
+  border-bottom: 1px solid #000;
+  border-left: 1px solid #000;
+}
+table tr:last-child td {
+  border-bottom: 0;
+}
+table tr:last-child td:first-child {
+  -moz-border-radius-bottomleft: 3px;
+  -webkit-border-bottom-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+table tr:last-child td:last-child {
+  -moz-border-radius-bottomright: 3px;
+  -webkit-border-bottom-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+table tr:hover td {
+  background: #f2f2f2;
+  background: -webkit-gradient(
+    linear,
+    left top,
+    left bottom,
+    from(#f2f2f2),
+    to(#f0f0f0)
+  );
+  background: -moz-linear-gradient(top, #f2f2f2, #f0f0f0);
+}
+
+.button_backtolist {
+  margin: 0 var(--spacing);
+}
+
+._create_button {
+  width: 100%;
 }
 </style>

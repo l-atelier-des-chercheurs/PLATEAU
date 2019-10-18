@@ -4,14 +4,21 @@ module.exports = (function() {
     fr: {
       back_to_list: 'Retour à la liste',
       capture: 'Capturer',
-      last_modified: 'Dernière modification',
+      date_created: 'Date de création',
+      date_modified: 'Dernière modification',
+      actions: 'Actions',
       name: 'Nom',
+      documents: 'Documents',
       showing: 'Affichage de',
       medias_of: 'médias sur',
       create: 'Créer',
       remove: 'Suppr.',
       rename: 'Renommer',
       filters: 'Filtres',
+      open: 'Ouvrir',
+      back: 'Retour',
+      at: 'à',
+
       drop_here_to_import: 'Déposez vos contenus ici pour les importer',
 
       notifications: {
@@ -21,14 +28,21 @@ module.exports = (function() {
     en: {
       back_to_list: 'Back to list',
       capture: 'Capture',
-      last_modified: 'Last modified',
+      date_created: 'Created date',
+      date_modified: 'Last modified',
+      actions: 'Actions',
       name: 'Name',
+      documents: 'Documents',
       showing: 'Showing',
       medias_of: 'medias of',
       create: 'Create',
       remove: 'Remove',
       rename: 'Rename',
       filters: 'Filters',
+      open: 'Open',
+      back: 'Back',
+      at: 'at',
+
       drop_here_to_import: 'Drop your content here to import',
 
       notifications: {

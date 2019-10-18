@@ -12,36 +12,139 @@
     <!-- connection_state : {{ connection_state }} -->
     <!-- <br /> -->
     <div ref="editor" class="mediaTextContent" />
+    <!-- <div class="_customCaret" :style="_customCaret_style" /> -->
   </div>
 </template>
 <script>
 import ReconnectingWebSocket from "reconnectingwebsocket";
 import ShareDB from "sharedb/lib/client";
 import Quill from "quill";
+import QuillCursors from "quill-cursors";
 import debounce from "debounce";
 
 let Inline = Quill.import("blots/inline");
 let Block = Quill.import("blots/block");
 let BlockEmbed = Quill.import("blots/block/embed");
+const Module = Quill.import("core/module");
 
 class ImageBlot extends BlockEmbed {
+  static blotName = "image";
+  static tagName = ["figure", "image"];
+
   static create(value) {
     let node = super.create();
-    // node.setAttribute("alt", value.alt);
-    node.setAttribute("src", value.url);
+    let img = window.document.createElement("img");
+    if (value.alt || value.caption) {
+      img.setAttribute("alt", value.alt || value.caption);
+    }
+    if (value.src || typeof value === "string") {
+      img.setAttribute("src", value.src || value);
+    }
+    node.appendChild(img);
+    if (value.caption) {
+      let caption = window.document.createElement("figcaption");
+      caption.innerHTML = value.caption;
+      node.appendChild(caption);
+    }
+    node.className = "ql-card-editable ql-card-figure";
     return node;
   }
 
+  constructor(node) {
+    super(node);
+    node.__onSelect = () => {
+      if (!node.querySelector("input")) {
+        let caption = node.querySelector("figcaption");
+        let captionInput = window.document.createElement("input");
+        captionInput.setAttribute("type", "text");
+        captionInput.placeholder = "Type your caption...";
+        if (caption) {
+          captionInput.value = caption.innerText;
+          caption.innerHTML = "";
+          caption.appendChild(captionInput);
+        } else {
+          caption = window.document.createElement("figcaption");
+          caption.appendChild(captionInput);
+          node.appendChild(caption);
+        }
+        captionInput.addEventListener("blur", () => {
+          let value = captionInput.value;
+          if (!value || value === "") {
+            caption.remove();
+          } else {
+            captionInput.remove();
+            caption.innerText = value;
+          }
+        });
+        captionInput.focus();
+      }
+    };
+  }
+
   static value(node) {
+    let img = node.querySelector("img");
+    let figcaption = node.querySelector("figcaption");
+    if (!img) return false;
     return {
-      // alt: node.getAttribute("alt"),
-      url: node.getAttribute("src")
+      alt: img.getAttribute("alt"),
+      src: img.getAttribute("src"),
+      caption: figcaption ? figcaption.innerText : null
     };
   }
 }
-ImageBlot.blotName = "image";
-ImageBlot.tagName = "img";
-Quill.register(ImageBlot);
+
+class CardEditableModule extends Module {
+  constructor(quill, options) {
+    super(quill, options);
+    let listener = e => {
+      if (!document.body.contains(quill.root)) {
+        return document.body.removeEventListener("click", listener);
+      }
+      let elm = e.target.closest(".ql-card-editable");
+      let deselectCard = () => {
+        if (elm.__onDeselect) {
+          elm.__onDeselect(quill);
+        } else {
+          quill.setSelection(
+            quill.getIndex(elm.__blot.blot) + 1,
+            0,
+            Quill.sources.USER
+          );
+        }
+      };
+      if (elm && elm.__blot && elm.__onSelect) {
+        quill.disable();
+        elm.__onSelect(quill);
+        let handleKeyPress = e => {
+          if (e.keyCode === 27 || e.keyCode === 13) {
+            window.removeEventListener("keypress", handleKeyPress);
+            quill.enable(true);
+            deselectCard();
+          }
+        };
+        let handleClick = e => {
+          if (e.which === 1 && !elm.contains(e.target)) {
+            window.removeEventListener("click", handleClick);
+            quill.enable(true);
+            deselectCard();
+          }
+        };
+        window.addEventListener("keypress", handleKeyPress);
+        window.addEventListener("click", handleClick);
+      }
+    };
+    quill.emitter.listenDOM("click", document.body, listener);
+  }
+}
+
+Quill.register(
+  {
+    // Other formats or modules
+    "formats/image": ImageBlot,
+    "modules/cardEditable": CardEditableModule
+  },
+  true
+);
 
 //// see https://stackoverflow.com/a/46064381
 // class MediaBlot extends BlockEmbed {
@@ -68,6 +171,7 @@ Quill.register(ImageBlot);
 // MediaBlot.tagName = "div";
 // Quill.register(MediaBlot);
 
+Quill.register("modules/cursors", QuillCursors);
 ShareDB.types.register(require("rich-text").type);
 
 export default {
@@ -95,6 +199,10 @@ export default {
       is_focused: false,
       is_being_dragover: false,
       debounce_textUpdate: undefined,
+      caret_position: {
+        top: undefined,
+        left: undefined
+      },
 
       custom_toolbar: {
         container: [
@@ -119,10 +227,26 @@ export default {
   mounted() {
     this.editor = new Quill(this.$refs.editor, {
       modules: {
-        toolbar: this.custom_toolbar
+        cardEditable: true,
+        toolbar: this.custom_toolbar,
+        cursors: {
+          template: `
+    <span class="ql-cursor-caret-container">
+    <span class="ql-cursor-selections"></span>
+      <span class="ql-cursor-caret"></span>
+    </span>
+    <div class="ql-cursor-flag">
+      <small class="ql-cursor-name"></small>
+      <span class="ql-cursor-flag-flap"></span>
+    </div>
+`,
+          hideDelayMs: 5000,
+          hideSpeedMs: 0,
+          selectionChangeSource: null
+        }
       },
       bounds: this.$refs.editor,
-      theme: "bubble",
+      theme: "snow",
       formats: [
         "bold",
         "italic",
@@ -133,7 +257,7 @@ export default {
         "list",
         "image"
       ],
-      placeholder: "Write text here…"
+      placeholder: "…"
     });
     this.editor.root.innerHTML = this.value;
     this.cancelDragOver = debounce(this.cancelDragOver, 300);
@@ -143,6 +267,9 @@ export default {
     if (this.$root.preview_mode) {
       this.editor.disable();
     }
+
+    const cursorsOne = this.editor.getModule("cursors");
+    cursorsOne.createCursor(1, "User 1", "#0a997f");
 
     this.$nextTick(() => {
       if (this.$root.state.mode !== "live") {
@@ -156,12 +283,20 @@ export default {
           "input",
           this.editor.getText() ? this.editor.root.innerHTML : ""
         );
+        // cursorsOne.moveCursor(1, range);
       });
 
       this.editor.on("selection-change", (range, oldRange, source) => {
         console.log("selection changed");
         if (range === null && oldRange !== null) this.is_focused = false;
         else if (range !== null && oldRange === null) this.is_focused = true;
+
+        // cursorsOne.moveCursor(1, range);
+
+        if (!!range && range.length == 0) {
+          console.log("User cursor is on", range.index);
+          this.updateCaretPosition();
+        }
       });
     });
 
@@ -184,7 +319,13 @@ export default {
       this.setSpellCheck();
     }
   },
-  computed: {},
+  computed: {
+    _customCaret_style() {
+      return {
+        transform: `translate3d(${this.caret_position.left}px, ${this.caret_position.top}px, 0px)`
+      };
+    }
+  },
   methods: {
     initWebsocketMode() {
       const params = new URLSearchParams({
@@ -210,7 +351,6 @@ export default {
       connection.on("state", this.wsState);
 
       const doc = connection.get("textMedias", requested_querystring);
-
       doc.subscribe(err => {
         if (err) {
           console.error(`ON • CollaborativeEditor: err ${err}`);
@@ -258,6 +398,12 @@ export default {
         });
       });
     },
+    updateCaretPosition() {
+      console.log(`METHODS • CollaborativeEditor: updateCaretPosition`);
+      var selection = this.editor.getSelection(true);
+      const caretPos = this.editor.getBounds(selection);
+      this.caret_position = { top: caretPos.top, left: caretPos.left };
+    },
     wsState(state, reason) {
       console.log(
         `METHODS • CollaborativeEditor: wsState with state = ${state} and reason = ${reason}`
@@ -302,10 +448,7 @@ export default {
           this.editor.insertEmbed(
             index,
             "image",
-            {
-              type: "image",
-              url: thumb.path
-            },
+            thumb.path,
             Quill.sources.USER
           );
           this.editor.setSelection(index + 1, Quill.sources.SILENT);
@@ -346,7 +489,16 @@ export default {
           return;
         }
 
-        const _blot = Quill.find($event.target);
+        let _target = $event.target;
+        while (!_target.parentElement.classList.contains("ql-editor")) {
+          _target = $event.target.parentElement;
+
+          if (_target === null) {
+            break;
+          }
+        }
+
+        let _blot = Quill.find(_target);
         if (_blot) {
           // const _blotIndex = this.editor.getLines().findIndex(b => b === _blot);
           // let [line, offset] = this.editor.getLine(_blotIndex);
@@ -358,39 +510,19 @@ export default {
             .delay(4000)
             .error(this.$t("notifications.failed_to_find_block_line"));
         }
-
-        // // let [line, offset] = quill.getLine(10);
-        // // let index = quill.getIndex(line);   // index + offset should == 10
-
-        // while (
-        //   // $event.offsetX > this.editor.getBounds(idx).top ||
-        //   $event.target.offsetTop >
-        //   this.editor.getLine(idx)[0].domNode.offsetTop
-        // ) {
-        //   idx++;
-
-        //   console.log(`idx = ${idx}`);
-        //   console.log(
-        //     `top : ${this.editor.getLine(idx)[0].domNode.offsetTop}
-        //     }`
-        //   );
-
-        //   if (idx == this.editor.getLines().length) {
-        //     console.log(`no more index to find, set to last letter`);
-        //     idx = this.editor.getLines().length - 1;
-        //     break;
-        //   }
-        // }
       }
     }
   }
 };
 </script>
-<style src="../../../../node_modules/quill/dist/quill.bubble.css"></style>
+<style src="../../../../node_modules/quill/dist/quill.snow.css"></style>
 <style lang="scss">
 .m_collaborativeEditor {
-  font-family: "Public Sans";
-  padding: 0.5em 0;
+  position: relative;
+  font-family: "Work Sans";
+  margin: 0.5em 0;
+  // margin-left: 3em;
+  padding: 0 0.1em;
 
   &.is--receptiveToDrop {
     .ql-editor {
@@ -463,19 +595,30 @@ export default {
     background-color: #000;
   }
 
+  .ql-container {
+    max-width: 65ch;
+    margin: 0 auto;
+
+    &.ql-snow {
+      border: 0;
+    }
+  }
+
   .ql-editor {
     position: relative;
-    padding-left: 0;
-    padding-top: 0;
-    padding-bottom: 0;
+    padding: 0;
     overflow: visible;
     min-height: 80vh;
     caret-color: #111;
     line-height: inherit;
+    margin-left: 70px;
 
     > * {
       position: relative;
       z-index: 1;
+
+      margin: 0;
+      padding: 0;
 
       background-position: 0 calc(100% - 3px);
       background-repeat: no-repeat;
@@ -496,29 +639,32 @@ export default {
       //   transparent
       // );
 
-      transform-origin: right center;
-      animation: slide-up 0.2s cubic-bezier(0.19, 1, 0.22, 1);
+      &.ql-card-figure {
+        transform-origin: right center;
+        animation: scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        img {
+          display: block;
+          margin: var(--spacing) 0;
+        }
 
-      @keyframes slide-up {
+        figcaption {
+          text-align: center;
+          margin-top: 0em;
+          font-size: 75%;
+          // font-weight: 600;
+          // color: #999;
+        }
+      }
+
+      @keyframes scale-in {
         0% {
           opacity: 0;
-          transform: scale(0, 0);
+          transform: scale(0.9, 1);
         }
         100% {
           opacity: 1;
           transform: scale(1, 1);
         }
-      }
-
-      &:hover,
-      &.is--dragover {
-        background-image: linear-gradient(
-          90deg,
-          #ccc,
-          #ccc 50%,
-          transparent 0,
-          transparent
-        );
       }
 
       // &::before {
@@ -565,6 +711,7 @@ export default {
   .mediaTextContent {
     color: inherit;
     font-family: inherit;
+    overflow: visible;
 
     > *:first-child {
       margin-top: 0;
@@ -701,7 +848,7 @@ export default {
 
     strong,
     b {
-      font-weight: 700;
+      font-weight: 600;
     }
 
     a {
@@ -716,16 +863,21 @@ export default {
       -webkit-hyphens: auto;
       -ms-hyphens: auto;
       hyphens: auto;
+
+      strong,
+      b {
+        font-weight: 800;
+      }
     }
 
     h1 {
-      font-weight: 700;
+      font-weight: 600;
     }
 
     h2,
     h3,
     h4 {
-      font-weight: 700;
+      font-weight: 600;
     }
 
     blockquote {
@@ -751,5 +903,146 @@ export default {
       padding: 2px 4px;
     }
   }
+}
+
+._customCaret {
+  position: absolute;
+  width: 2px;
+  height: 1em;
+  top: 0;
+  left: 0;
+  background-color: green;
+  z-index: 1;
+
+  animation: 1s blink step-end infinite;
+}
+
+@keyframes blink {
+  from,
+  to {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.ql-cursor-flag {
+  display: none;
+}
+
+.ql-toolbar.ql-snow .ql-formats {
+  display: block;
+  margin-right: 0 !important;
+}
+.ql-snow.ql-toolbar button,
+.ql-snow .ql-toolbar button {
+  display: block;
+  float: none;
+}
+
+.ql-toolbar.ql-snow {
+  background-color: #222;
+  /* border-left: 0; */
+  border: none;
+  color: white;
+  border-radius: 0 0 4px 4px;
+  top: 121px;
+  position: fixed;
+  z-index: 10;
+  left: 10px;
+
+  .ql-fill,
+  .ql-stroke.ql-fill {
+    fill: currentColor;
+  }
+
+  .ql-stroke {
+    stroke: currentColor;
+  }
+}
+
+.ql-snow.ql-toolbar button:hover .ql-stroke,
+.ql-snow .ql-toolbar button:hover .ql-stroke,
+.ql-snow.ql-toolbar button:focus .ql-stroke,
+.ql-snow .ql-toolbar button:focus .ql-stroke,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.ql-snow .ql-toolbar button.ql-active .ql-stroke,
+.ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke,
+.ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke,
+.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke,
+.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke,
+.ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke,
+.ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke,
+.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke,
+.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke,
+.ql-snow.ql-toolbar button:hover .ql-stroke-miter,
+.ql-snow .ql-toolbar button:hover .ql-stroke-miter,
+.ql-snow.ql-toolbar button:focus .ql-stroke-miter,
+.ql-snow .ql-toolbar button:focus .ql-stroke-miter,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke-miter,
+.ql-snow .ql-toolbar button.ql-active .ql-stroke-miter,
+.ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke-miter,
+.ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke-miter,
+.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter,
+.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke-miter,
+.ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke-miter,
+.ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke-miter,
+.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter,
+.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke-miter {
+  stroke: #0a997f;
+}
+
+.ql-editor {
+  counter-reset: listCounter;
+
+  & > * {
+    counter-increment: listCounter;
+
+    &::after {
+      content: counter(listCounter);
+
+      font-family: "IBM Plex Sans", "OutputSansVariable";
+      position: absolute;
+      top: 0;
+      right: 100%;
+      margin-right: 1em;
+
+      font-size: 0.6rem;
+      font-weight: 200;
+      text-align: right;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+      // display: inline-block;
+      // float: left;
+      width: 100px;
+      max-width: 100px;
+      // margin-left: -106px;
+      // margin-right: 16px;
+      /* font-weight: normal; */
+      /* background-color: transparent; */
+      /* line-height: 8px; */
+      /* margin-top: 8px; */
+      color: #c1c7cd;
+
+      transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    &:hover,
+    &.is--dragover {
+      &::after {
+        font-weight: 900;
+        color: #333;
+      }
+    }
+  }
+}
+.ql-clipboard {
+  position: fixed;
+  display: none;
+
+  left: 50%;
+  top: 50%;
 }
 </style>

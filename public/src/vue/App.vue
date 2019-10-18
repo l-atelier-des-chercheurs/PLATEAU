@@ -68,7 +68,7 @@ body {
 }
 
 body {
-  font-family: "OutputSansVariable", sans-serif;
+  font-family: "IBM Plex Sans", "OutputSansVariable", sans-serif;
   font-weight: 400;
   background-color: white;
 }
@@ -145,6 +145,16 @@ input:required {
     background-size: 20px 20px;
   }
 }
+input[type="text"] {
+  border: 1px solid #000;
+  line-height: 2;
+  padding: 0 ~"calc(var(--spacing) / 2)";
+  &:focus {
+    outline: 0;
+    // outline: #0a997f 1px solid;
+    border-color: #999;
+  }
+}
 
 *[contenteditable] {
   &:focus {
@@ -154,6 +164,14 @@ input:required {
   &[contenteditable="false"] {
     cursor: not-allowed;
   }
+}
+
+.font-small {
+  font-size: 0.9em;
+  line-height: 1.25;
+}
+.font-verysmall {
+  font-size: 0.8em;
 }
 
 [draggable="true"] {
@@ -187,9 +205,11 @@ input:required {
 .splitpanes--vertical > .splitpanes__splitter {
   width: 1px;
   margin-left: -1px;
+  border-right: 1px solid black;
 }
 .splitpanes--horizontal > .splitpanes__splitter {
   height: 1px;
+  border-bottom: 1px solid black;
 }
 
 .splitpanes__splitter:before {

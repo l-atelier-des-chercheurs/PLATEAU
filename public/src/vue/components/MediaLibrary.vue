@@ -102,6 +102,9 @@
           :media="project.medias[show_media_detail_for]"
           :preview_size="preview_size"
         />
+        <div class="m_library--mediaFocus--buttons">
+          <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t('remove') }}</button>
+        </div>
       </pane>
     </splitpanes>
 
@@ -388,6 +391,27 @@ export default {
         }
       });
     },
+    removeMedia(metaFileName) {
+      if (window.state.dev_mode === "debug") {
+        console.log(`METHODS • WriteUp: removeMedia / ${metaFileName}`);
+      }
+
+      this.$alertify
+        .okBtn(this.$t("yes"))
+        .cancelBtn(this.$t("cancel"))
+        .confirm(
+          this.$t("sureToRemoveMedia"),
+          () => {
+            this.$root.settings.current_writeup_media_metaFileName = false;
+            this.$root.removeMedia({
+              type: "projects",
+              slugFolderName: this.slugProjectName,
+              slugMediaName: metaFileName
+            });
+          },
+          () => {}
+        );
+    },
     // newTextMediaCreated(mdata) {
     //   if (this.$root.justCreatedMediaID === mdata.id) {
     //     this.$root.justCreatedMediaID = false;
@@ -480,6 +504,10 @@ export default {
   }
 }
 
+.m_actionbar {
+  padding: 0 var(--spacing);
+}
+
 .m_library--medias {
   --media-width: 80px;
   --grid-gap: 0.5em;
@@ -516,6 +544,18 @@ export default {
       object-fit: contain;
       object-position: center;
     }
+  }
+
+  .m_library--mediaFocus--buttons {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+    padding: 0 calc(var(--spacing) / 2);
+
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
   }
 }
 

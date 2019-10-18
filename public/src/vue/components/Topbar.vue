@@ -1,6 +1,27 @@
 <template>
-  <div class="m_topbar">
-    <div @click="$root.navigation_back()">plateau</div>
+  <div class="m_topbar" :class="`mode--${$root.do_navigation.view}`">
+    <div @click="$root.navigation_back()">
+      <h1>
+        <svg
+          v-if="$root.do_navigation.view === 'Project'"
+          version="1.1"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          x="0px"
+          y="0px"
+          width="4.1px"
+          height="8px"
+          viewBox="0 0 4.1 8"
+          style="enable-background:new 0 0 4.1 8;"
+          xml:space="preserve"
+        >
+          <path class="st0" d="M4,8H2.6L0,4.1L2.6,0h1.4L2.1,4.1L4,8z" />
+        </svg>
+        plateau
+      </h1>
+    </div>
+
+    <div class="m_topbar--separator">/</div>
 
     <template v-if="$root.state.mode === 'live' && !$root.state.authentificated">
       <div class="m_inputSessionPassword" v-if="$root.show_session_password_prompt">
@@ -52,16 +73,12 @@
           </svg>
           new project
         </button>
-        <button
-          type="button"
+        <span
           v-if="$root.do_navigation.view === 'Project'"
-          :key="`remove`"
-          @click="removeProject"
-        >
-          ×&nbsp;
-          remove
-        </button>
-        <button
+          :key="`projectname`"
+          @click="$root.navigation_back()"
+        >{{ $root.currentProject.name }}</span>
+        <!-- <button
           type="button"
           v-if="$root.do_navigation.view === 'Project'"
           @click="$root.navigation_back()"
@@ -81,8 +98,18 @@
           >
             <path class="st0" d="M4,8H2.6L0,4.1L2.6,0h1.4L2.1,4.1L4,8z" />
           </svg>
-          back
+          &nbsp;
+          {{ $t('back') }}
         </button>
+        <button
+          type="button"
+          v-if="$root.do_navigation.view === 'Project'"
+          :key="`remove`"
+          @click="removeProject"
+        >
+          ×&nbsp;
+          remove
+        </button>-->
       </transition-group>
     </template>
   </div>
@@ -141,13 +168,29 @@ export default {
 .m_topbar {
   width: 100%;
   height: 55px;
-  background-color: #000;
-  color: white;
+  border-bottom: 1px solid black;
 
-  padding: 1em;
+  padding: var(--spacing);
 
   display: flex;
+  line-height: 2;
   // padding-top: 2em;
   // border-bottom: 1px solid black;
+
+  h1 {
+    font-size: inherit;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  &.mode--Project {
+    h1 {
+      cursor: pointer;
+    }
+  }
+}
+
+.m_topbar--separator {
+  margin: 0 var(--spacing);
 }
 </style>
