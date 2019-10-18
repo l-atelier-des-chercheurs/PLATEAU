@@ -56,6 +56,7 @@ class ImageBlot extends BlockEmbed {
       if (!node.querySelector("input")) {
         let caption = node.querySelector("figcaption");
         let captionInput = window.document.createElement("input");
+        captionInput.setAttribute("type", "text");
         captionInput.placeholder = "Type your caption...";
         if (caption) {
           captionInput.value = caption.innerText;
@@ -610,6 +611,7 @@ export default {
     min-height: 80vh;
     caret-color: #111;
     line-height: inherit;
+    margin-left: 70px;
 
     > * {
       position: relative;
@@ -637,13 +639,12 @@ export default {
       //   transparent
       // );
 
-      transform-origin: right center;
-      animation: scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-
       &.ql-card-figure {
+        transform-origin: right center;
+        animation: scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1);
         img {
           display: block;
-          margin: var(--spacing) auto;
+          margin: var(--spacing) 0;
         }
 
         figcaption {
@@ -945,8 +946,8 @@ export default {
   /* border-left: 0; */
   border: none;
   color: white;
-  border-radius: 4px 4px;
-  top: 160px;
+  border-radius: 0 0 4px 4px;
+  top: 121px;
   position: fixed;
   z-index: 10;
   left: 10px;

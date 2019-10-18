@@ -226,6 +226,9 @@ export default {
     width: 100%;
     margin: 0;
   }
+  input[type="text"] {
+    width: 100%;
+  }
 
   button {
   }
@@ -324,10 +327,6 @@ table tr:hover td {
 }
 
 ._create_button {
-  width: 100%;
-}
-
-input[type="text"] {
   width: 100%;
 }
 </style>
