@@ -145,6 +145,16 @@ input:required {
     background-size: 20px 20px;
   }
 }
+input[type="text"] {
+  border: 1px solid #000;
+  line-height: 2;
+  padding: 0 ~"calc(var(--spacing) / 2)";
+  &:focus {
+    outline: 0;
+    // outline: #0a997f 1px solid;
+    border-color: #999;
+  }
+}
 
 *[contenteditable] {
   &:focus {

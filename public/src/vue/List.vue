@@ -2,7 +2,7 @@
   <transition-group class="m_list" name="list-complete" :duration="300" tag="div">
     <div :key="`create_project`" v-if="$root.show_create_project_modal">
       <form @submit.prevent="createProject">
-        <label>name</label>
+        <label>{{ $t('name') </label>
         <input type="text" name="name" />
         <input type="submit" />
       </form>
@@ -17,10 +17,10 @@
         </div>
       </div>
       <div class>
+        <button @click="$root.openProject(slug)">{{ $t('open') }}</button>
         <button
           @click="$root.removeFolder({ type: 'projects', slugFolderName: slug })"
         >{{ $t('remove') }}</button>
-        <button @click="$root.openProject(slug)">{{ $t('open') }}</button>
       </div>
     </div>
   </transition-group>
