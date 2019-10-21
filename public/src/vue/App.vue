@@ -52,7 +52,11 @@ export default {
   --page-height: 11in;
   --active-color: rgb(52, 122, 213);
   --active-color: #aaa;
-  // --active-color: #ff00ff;
+
+  --color-WriteUp: #fff;
+  --color-MediaLibrary: #f9ca00;
+  --color-Composition: #2c75c5;
+  --color-Capture: #e45a6b;
 }
 
 ::-moz-selection {

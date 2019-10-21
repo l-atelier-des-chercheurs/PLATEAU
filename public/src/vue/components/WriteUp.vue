@@ -219,6 +219,7 @@ export default {
   position: relative;
   // margin: var(--spacing);
   // margin: 0 auto;
+  background-color: var(--color-WriteUp);
   height: 100%;
   overflow: auto;
 

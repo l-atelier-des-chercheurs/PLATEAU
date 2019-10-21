@@ -1,6 +1,6 @@
 <template>
   <div class="m_library">
-    <splitpanes horizontal>
+    <splitpanes horizontal watch-slots>
       <pane min-size="20" max-size="100" size="100">
         <div class="m_library--content">
           <div class="m_actionbar" v-show="$root.state.connected">
@@ -105,6 +105,7 @@
         />
         <div class="m_library--mediaFocus--buttons">
           <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t('remove') }}</button>
+          <button type="button" @click="closeMediaFocus()">{{ $t('close') }}</button>
         </div>
       </pane>
 
@@ -385,6 +386,12 @@ export default {
       }
       this.show_media_detail_for = metaFileName;
     },
+    closeMediaFocus() {
+      if (this.$root.state.dev_mode === "debug") {
+        console.log("METHODS • MediaLibrary: closeMediaFocus");
+      }
+      this.show_media_detail_for = false;
+    },
     createTextMedia() {
       this.$eventHub.$on(
         "socketio.media_created_or_updated",
@@ -499,7 +506,7 @@ export default {
 .m_library {
   position: relative;
   height: 100%;
-  background-color: #f9ca00;
+  background-color: var(--color-MediaLibrary);
   // margin: 0 -1em;
   // background-color: #1c1e20;
   // color: white;

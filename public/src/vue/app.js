@@ -147,6 +147,25 @@ let vm = new Vue({
         accepted_media_type: []
       },
 
+      project_active_panes_in_order: [
+        {
+          key: 'WriteUp',
+          enabled: true
+        },
+        {
+          key: 'MediaLibrary',
+          enabled: true
+        },
+        {
+          key: 'Composition',
+          enabled: true
+        },
+        {
+          key: 'Capture',
+          enabled: true
+        }
+      ],
+
       current_writeup_media_metaFileName: false,
       media_being_dragged: false,
 

@@ -19,6 +19,11 @@ module.exports = (function() {
       back: 'Retour',
       at: 'à',
 
+      WriteUp: 'Document',
+      Capture: 'Capture',
+      MediaLibrary: 'Bibliothèque',
+      Composition: 'Composition',
+
       bytes: 'octets',
       kb: 'ko',
       mb: 'Mo',
@@ -49,6 +54,11 @@ module.exports = (function() {
       open: 'Open',
       back: 'Back',
       at: 'at',
+
+      WriteUp: 'Document',
+      Capture: 'Capture',
+      MediaLibrary: 'Library',
+      Composition: 'Composition',
 
       bytes: 'bytes',
       kb: 'KB',
