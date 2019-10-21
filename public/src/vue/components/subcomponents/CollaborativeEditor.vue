@@ -9,6 +9,7 @@
     @dragover="ondragover($event)"
     @drop="dropHandler($event)"
   >
+    {{ $root.settings.medias_present_in_writeup }}
     <!-- connection_state : {{ connection_state }} -->
     <!-- <br /> -->
     <div ref="editor" class="mediaTextContent" />
@@ -31,22 +32,25 @@ class ImageBlot extends BlockEmbed {
   static blotName = "image";
   static tagName = ["figure", "image"];
 
-  static create(value) {
+  static create({ src, caption, metaFileName }) {
     let node = super.create();
     let img = window.document.createElement("img");
-    if (value.alt || value.caption) {
-      img.setAttribute("alt", value.alt || value.caption);
+    if (caption) {
+      img.setAttribute("alt", caption);
     }
-    if (value.src || typeof value === "string") {
-      img.setAttribute("src", value.src || value);
+    if (src) {
+      img.setAttribute("src", src);
     }
     node.appendChild(img);
-    if (value.caption) {
+    if (caption) {
       let caption = window.document.createElement("figcaption");
-      caption.innerHTML = value.caption;
+      caption.innerHTML = caption;
       node.appendChild(caption);
     }
     node.className = "ql-card-editable ql-card-figure";
+    if (metaFileName) {
+      node.dataset.metaFileName = metaFileName;
+    }
     return node;
   }
 
@@ -361,6 +365,9 @@ export default {
     },
     spellcheck: function() {
       this.setSpellCheck();
+    },
+    value: function() {
+      this.broadcastMediasPresentInWriteup();
     }
   },
   computed: {
@@ -461,6 +468,9 @@ export default {
         console.log(
           `CollaborativeEditor • updateTextMedia: saving new snapshop`
         );
+
+        this.broadcastMediasPresentInWriteup();
+
         this.$root.editMedia({
           type: "projects",
           slugFolderName: this.slugFolderName,
@@ -470,6 +480,27 @@ export default {
           }
         });
       }, 500);
+    },
+    broadcastMediasPresentInWriteup() {
+      console.log(`CollaborativeEditor • broadcastMediasPresentInWriteup`);
+
+      var t0 = performance.now();
+
+      const _medias_present = this.editor.getLines().reduce((acc, _blot) => {
+        if (_blot.domNode.dataset && _blot.domNode.dataset.metaFileName) {
+          if (!acc.includes(_blot.domNode.dataset.metaFileName)) {
+            acc.push(_blot.domNode.dataset.metaFileName);
+          }
+        }
+        return acc;
+      }, []);
+
+      var t1 = performance.now();
+      console.log(
+        "L'appel à faireQuelqueChose a pris " + (t1 - t0) + " millisecondes."
+      );
+
+      this.$root.settings.medias_present_in_writeup = _medias_present;
     },
     setSpellCheck() {
       console.log(
@@ -483,9 +514,6 @@ export default {
     },
     addMediaAtIndex(index, media) {
       console.log(`CollaborativeEditor • addMediaAtIndex ${index}`);
-
-      debugger;
-
       const mediaURL =
         this.$root.state.mode === "export_publication"
           ? `./${this.slugFolderName}/${media.media_filename}`
@@ -498,7 +526,10 @@ export default {
           this.editor.insertEmbed(
             index,
             "image",
-            thumb.path,
+            {
+              src: thumb.path,
+              metaFileName: media.metaFileName
+            },
             Quill.sources.USER
           );
           this.editor.setSelection(index + 1, Quill.sources.SILENT);
@@ -666,6 +697,7 @@ export default {
     caret-color: #111;
     line-height: inherit;
     margin-left: 70px;
+    padding-bottom: 33vh;
 
     > * {
       position: relative;
