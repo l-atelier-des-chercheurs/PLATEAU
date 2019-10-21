@@ -128,8 +128,10 @@ export default {
   display: block;
   width: 18px;
   height: 18px;
+
   border: 4px solid transparent;
   border-radius: 9px;
+
   background-color: var(--color-active);
   margin-right: 10px;
   cursor: col-resize;
