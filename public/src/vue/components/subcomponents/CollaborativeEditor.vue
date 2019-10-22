@@ -46,7 +46,7 @@ class ImageBlot extends BlockEmbed {
       caption.innerHTML = caption;
       node.appendChild(caption);
     }
-    node.className = "ql-card-editable ql-card-figure";
+    node.className = "ql-card-editable ql-card-figure ql-card-image";
     if (metaFileName) {
       node.dataset.metaFileName = metaFileName;
     }
@@ -96,75 +96,76 @@ class ImageBlot extends BlockEmbed {
     };
   }
 }
-// class VideoBlot extends BlockEmbed {
-//   static blotName = "video";
-//   static tagName = ["figure", "video"];
+class VideoBlot extends BlockEmbed {
+  static blotName = "video";
+  static tagName = ["figure", "video"];
 
-//   static create({ src, caption, metaFileName }) {
-//     let node = super.create();
-//     let video = window.document.createElement("video");
-//     if (caption) {
-//       video.setAttribute("alt", caption);
-//     }
-//     if (src) {
-//       video.setAttribute("src", src);
-//     }
-//     node.appendChild(video);
-//     if (caption) {
-//       let caption = window.document.createElement("figcaption");
-//       caption.innerHTML = caption;
-//       node.appendChild(caption);
-//     }
-//     node.className = "ql-card-editable ql-card-figure";
-//     if (metaFileName) {
-//       node.dataset.metaFileName = metaFileName;
-//     }
-//     return node;
-//   }
+  static create({ src, caption, metaFileName }) {
+    let node = super.create();
+    let video = window.document.createElement("video");
+    video.setAttribute("controls", true);
+    if (caption) {
+      video.setAttribute("alt", caption);
+    }
+    if (src) {
+      video.setAttribute("src", src);
+    }
+    node.appendChild(video);
+    if (caption) {
+      let caption = window.document.createElement("figcaption");
+      caption.innerHTML = caption;
+      node.appendChild(caption);
+    }
+    node.className = "ql-card-editable ql-card-figure ql-card-video";
+    if (metaFileName) {
+      node.dataset.metaFileName = metaFileName;
+    }
+    return node;
+  }
 
-//   constructor(node) {
-//     super(node);
-//     node.__onSelect = () => {
-//       if (!node.querySelector("input")) {
-//         let caption = node.querySelector("figcaption");
-//         let captionInput = window.document.createElement("input");
-//         captionInput.setAttribute("type", "text");
-//         captionInput.placeholder = "Légende…";
-//         if (caption) {
-//           captionInput.value = caption.innerText;
-//           caption.innerHTML = "";
-//           caption.appendChild(captionInput);
-//         } else {
-//           caption = window.document.createElement("figcaption");
-//           caption.appendChild(captionInput);
-//           node.appendChild(caption);
-//         }
-//         captionInput.addEventListener("blur", () => {
-//           let value = captionInput.value;
-//           if (!value || value === "") {
-//             caption.remove();
-//           } else {
-//             captionInput.remove();
-//             caption.innerText = value;
-//           }
-//         });
-//         captionInput.focus();
-//       }
-//     };
-//   }
+  constructor(node) {
+    super(node);
+    node.__onSelect = () => {
+      if (!node.querySelector("input")) {
+        let caption = node.querySelector("figcaption");
+        let captionInput = window.document.createElement("input");
+        captionInput.setAttribute("type", "text");
+        captionInput.placeholder = "Légende…";
+        if (caption) {
+          captionInput.value = caption.innerText;
+          caption.innerHTML = "";
+          caption.appendChild(captionInput);
+        } else {
+          caption = window.document.createElement("figcaption");
+          caption.appendChild(captionInput);
+          node.appendChild(caption);
+        }
+        captionInput.addEventListener("blur", () => {
+          let value = captionInput.value;
+          if (!value || value === "") {
+            caption.remove();
+          } else {
+            captionInput.remove();
+            caption.innerText = value;
+          }
+        });
+        captionInput.focus();
+      }
+    };
+  }
 
-//   static value(node) {
-//     let video = node.querySelector("video");
-//     let figcaption = node.querySelector("figcaption");
-//     if (!video) return false;
-//     return {
-//       alt: video.getAttribute("alt"),
-//       src: video.getAttribute("src"),
-//       linked_media_metaFileName: node.dataset.metaFileName,
-//       caption: figcaption ? figcaption.innerText : null
-//     };
-//   }
-// }
+  static value(node) {
+    let video = node.querySelector("video");
+    let figcaption = node.querySelector("figcaption");
+    if (!video) return false;
+    return {
+      alt: video.getAttribute("alt"),
+      src: video.getAttribute("src"),
+      linked_media_metaFileName: node.dataset.metaFileName,
+      caption: figcaption ? figcaption.innerText : null
+    };
+  }
+}
 
 class CardEditableModule extends Module {
   constructor(quill, options) {
@@ -214,6 +215,7 @@ Quill.register(
   {
     // Other formats or modules
     "formats/image": ImageBlot,
+    "formats/video": VideoBlot,
     "modules/cardEditable": CardEditableModule
   },
   true
@@ -436,8 +438,6 @@ export default {
         }
         console.log(`ON • CollaborativeEditor: subscribe`);
 
-        debugger;
-
         if (!doc.type) {
           console.log(
             `ON • CollaborativeEditor: no type found on doc, creating a new one with content ${JSON.stringify(
@@ -567,12 +567,11 @@ export default {
         }
       } else if (media.type === "video") {
         // this.editor.insertText(index, "\n", Quill.sources.USER);
-        debugger;
         this.editor.insertEmbed(
           index,
           "video",
           {
-            src: thumb.src,
+            src: mediaURL,
             metaFileName: media.metaFileName
           },
           Quill.sources.USER
