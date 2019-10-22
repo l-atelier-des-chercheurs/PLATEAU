@@ -34,6 +34,7 @@ class MediaBlot extends BlockEmbed {
 
   static create({ type, src, caption, metaFileName }) {
     let node = super.create();
+    console.log(`CollaborativeEditor • MediaBlot : create for type = ${type}`);
 
     let tag;
 
@@ -56,9 +57,9 @@ class MediaBlot extends BlockEmbed {
     }
     node.appendChild(tag);
     if (caption) {
-      let caption = window.document.createElement("figcaption");
-      caption.innerHTML = caption;
-      node.appendChild(caption);
+      let caption_tag = window.document.createElement("figcaption");
+      caption_tag.innerHTML = caption;
+      node.appendChild(caption_tag);
     }
     node.dataset.type = type;
     node.dataset.metaFileName = metaFileName;
@@ -172,8 +173,8 @@ class CardEditableModule extends Module {
 Quill.register(
   {
     // Other formats or modules
-    "formats/media": MediaBlot
-    // "modules/cardEditable": CardEditableModule
+    "formats/media": MediaBlot,
+    "modules/cardEditable": CardEditableModule
   },
   true
 );
@@ -235,6 +236,7 @@ export default {
         top: undefined,
         left: undefined
       },
+      focused_lines: [],
 
       custom_toolbar: {
         container: [
@@ -324,11 +326,12 @@ export default {
         else if (range !== null && oldRange === null) this.is_focused = true;
 
         // cursorsOne.moveCursor(1, range);
-
         if (!!range && range.length == 0) {
           console.log("User cursor is on", range.index);
           this.updateCaretPosition();
         }
+
+        this.updateFocusedLines(oldRange, range);
       });
     });
 
@@ -339,7 +342,7 @@ export default {
       this.socket.close();
     }
 
-    this.$root.settings.medias_present_in_writeup = "";
+    this.$root.settings.medias_present_in_writeup = [];
   },
   watch: {
     "$root.preview_mode": function() {
@@ -429,6 +432,8 @@ export default {
           }
         });
 
+        this.broadcastMediasPresentInWriteup();
+
         doc.on("op", (op, source) => {
           if (source === this.editor_id) return;
           console.log(`ON • CollaborativeEditor: operation applied to quill`);
@@ -437,10 +442,27 @@ export default {
       });
     },
     updateCaretPosition() {
-      console.log(`METHODS • CollaborativeEditor: updateCaretPosition`);
+      console.log(`CollaborativeEditor • METHODS: updateCaretPosition`);
       var selection = this.editor.getSelection(true);
       const caretPos = this.editor.getBounds(selection);
       this.caret_position = { top: caretPos.top, left: caretPos.left };
+    },
+    updateFocusedLines(oldRange, range) {
+      console.log(`CollaborativeEditor • METHODS: updateFocusedLines`);
+
+      if (oldRange && oldRange.index) {
+        const line = this.editor.getLine(oldRange.index);
+        if (line) {
+          line[0].domNode.classList.remove("is--focused");
+        }
+      }
+
+      if (range && range.index) {
+        const line = this.editor.getLine(range.index);
+        if (line) {
+          line[0].domNode.classList.add("is--focused");
+        }
+      }
     },
     wsState(state, reason) {
       console.log(
@@ -689,7 +711,7 @@ export default {
     padding: 0;
     overflow: visible;
     min-height: 80vh;
-    caret-color: #111;
+    caret-color: var(--active-color);
     line-height: inherit;
     padding: 1em 20px 33vh;
 
@@ -723,10 +745,11 @@ export default {
       &.ql-mediacard {
         transform-origin: right center;
         animation: scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        margin-top: var(--spacing);
+        margin-bottom: var(--spacing);
 
         img {
           display: block;
-          margin: var(--spacing) 0;
         }
 
         figcaption {
@@ -737,13 +760,13 @@ export default {
           // color: #999;
         }
 
-        > * {
-          padding-right: 5px;
+        > *:not(figcaption) {
+          // padding-right: 1px;
         }
 
         &.is--focused {
           outline: 0;
-          box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0070e0;
+          box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
         }
       }
 
@@ -817,7 +840,7 @@ export default {
     // lh : 1.41
     // scale : 1.31
 
-    font-size: 1em;
+    font-size: 1.1em;
     line-height: 1.4375em;
     // max-width: 773px;
     // margin: auto;
@@ -1144,12 +1167,12 @@ export default {
 
       font-family: "IBM Plex Sans", "OutputSansVariable";
       position: absolute;
-      top: 0;
+      top: 2px;
       right: 100%;
       margin-right: 1em;
 
       font-size: 0.6rem;
-      font-weight: 200;
+      font-weight: 400;
       text-align: right;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1164,16 +1187,15 @@ export default {
       /* background-color: transparent; */
       /* line-height: 8px; */
       /* margin-top: 8px; */
-      color: hsl(210, 11%, 58%);
+      color: transparent;
 
       transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
     }
 
-    &:hover,
+    &.is--focused,
     &.is--dragover {
       &::after {
-        font-weight: 900;
-        color: #333;
+        color: hsl(210, 11%, 58%);
       }
     }
   }

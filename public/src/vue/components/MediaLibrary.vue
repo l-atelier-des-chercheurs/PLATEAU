@@ -3,7 +3,6 @@
     <splitpanes horizontal watch-slots>
       <pane min-size="20" max-size="100" size="100">
         <div class="m_library--content">
-          {{ $root.settings.medias_present_in_writeup }}
           <div class="m_actionbar" v-show="$root.state.connected">
             <div class="m_actionbar--buttonBar">
               <button
@@ -131,7 +130,7 @@
 
     <transition name="fade_fast" :duration="150">
       <div
-        v-if="!read_only && show_drop_container"
+        v-if="!read_only && show_drop_container && !$root.settings.media_being_dragged"
         @drop="dropHandler($event)"
         class="_drop_indicator"
       >

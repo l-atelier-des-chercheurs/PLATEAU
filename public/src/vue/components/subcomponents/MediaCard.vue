@@ -2,7 +2,7 @@
   <div
     class="m_media"
     :class=" { 
-      'is--inPubli' : is_media_in_publi, 
+      'is--inWriteUp' : is_media_in_publi, 
       'is--fav' : media.fav,
       'is--ownMedia' : media_made_by_current_author
     }"
@@ -140,10 +140,12 @@ export default {
   watch: {},
   computed: {
     is_media_in_publi() {
-      return false;
+      if (this.$root.settings.medias_present_in_writeup.length === 0) {
+        return false;
+      }
       return (
-        Object.values(this.$root.current_publication_medias).findIndex(
-          s => s.slugMediaName === this.metaFileName
+        this.$root.settings.medias_present_in_writeup.findIndex(
+          s => s === this.metaFileName
         ) > -1
       );
 
@@ -206,7 +208,9 @@ export default {
     },
     endMediaDrag() {
       console.log(`METHODS • MediaLibrary / endMediaDrag`);
-      this.$root.settings.media_being_dragged = false;
+      setTimeout(() => {
+        this.$root.settings.media_being_dragged = false;
+      }, 500);
     }
   }
 };
@@ -223,6 +227,27 @@ export default {
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.4);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 5px;
+    height: 5px;
+    margin: 5px;
+    background-color: #000;
+    box-shadow: 0 0 5px 2px var(--color-MediaLibrary);
+    border-radius: 50%;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  &.is--inWriteUp {
+    &::after {
+      opacity: 1;
+    }
   }
 
   .mediaContainer {
