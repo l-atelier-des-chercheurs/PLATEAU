@@ -27,29 +27,41 @@ let Block = Quill.import("blots/block");
 let BlockEmbed = Quill.import("blots/block/embed");
 const Module = Quill.import("core/module");
 
-class ImageBlot extends BlockEmbed {
-  static blotName = "image";
-  static tagName = ["figure", "image"];
+class MediaBlot extends BlockEmbed {
+  static blotName = "media";
+  static tagName = "figure";
+  static className = "ql-mediacard";
 
-  static create({ src, caption, metaFileName }) {
+  static create({ type, src, caption, metaFileName }) {
     let node = super.create();
-    let img = window.document.createElement("img");
-    if (caption) {
-      img.setAttribute("alt", caption);
+
+    let tag;
+
+    if (!type || !metaFileName) {
+      alert(
+        `Missing type or metaFileName : type = ${type} and metaFileName = ${metaFileName}`
+      );
+      return;
     }
+
+    if (type === "image") {
+      tag = window.document.createElement("img");
+    } else if (type === "video") {
+      tag = window.document.createElement("video");
+      tag.setAttribute("controls", true);
+    }
+
     if (src) {
-      img.setAttribute("src", src);
+      tag.setAttribute("src", src);
     }
-    node.appendChild(img);
+    node.appendChild(tag);
     if (caption) {
       let caption = window.document.createElement("figcaption");
       caption.innerHTML = caption;
       node.appendChild(caption);
     }
-    node.className = "ql-card-editable ql-card-figure ql-card-image";
-    if (metaFileName) {
-      node.dataset.metaFileName = metaFileName;
-    }
+    node.dataset.type = type;
+    node.dataset.metaFileName = metaFileName;
     return node;
   }
 
@@ -78,92 +90,38 @@ class ImageBlot extends BlockEmbed {
             captionInput.remove();
             caption.innerText = value;
           }
+          node.classList.remove("is--focused");
         });
+        node.classList.add("is--focused");
         captionInput.focus();
       }
     };
   }
 
   static value(node) {
-    let img = node.querySelector("img");
-    let figcaption = node.querySelector("figcaption");
-    if (!img) return false;
-    return {
-      alt: img.getAttribute("alt"),
-      src: img.getAttribute("src"),
-      linked_media_metaFileName: node.dataset.metaFileName,
-      caption: figcaption ? figcaption.innerText : null
-    };
-  }
-}
-class VideoBlot extends BlockEmbed {
-  static blotName = "video";
-  static tagName = ["figure", "video"];
-
-  static create({ src, caption, metaFileName }) {
-    let node = super.create();
-    let video = window.document.createElement("video");
-    video.setAttribute("controls", true);
-    if (caption) {
-      video.setAttribute("alt", caption);
+    if (node.dataset.type === "image") {
+      let img = node.querySelector("img");
+      let figcaption = node.querySelector("figcaption");
+      if (!img) return false;
+      return {
+        alt: img.getAttribute("alt"),
+        src: img.getAttribute("src"),
+        metaFileName: node.dataset.metaFileName,
+        type: node.dataset.type,
+        caption: figcaption ? figcaption.innerText : null
+      };
+    } else if (node.dataset.type === "video") {
+      let video = node.querySelector("video");
+      let figcaption = node.querySelector("figcaption");
+      if (!video) return false;
+      return {
+        alt: video.getAttribute("alt"),
+        src: video.getAttribute("src"),
+        metaFileName: node.dataset.metaFileName,
+        type: node.dataset.type,
+        caption: figcaption ? figcaption.innerText : null
+      };
     }
-    if (src) {
-      video.setAttribute("src", src);
-    }
-    node.appendChild(video);
-    if (caption) {
-      let caption = window.document.createElement("figcaption");
-      caption.innerHTML = caption;
-      node.appendChild(caption);
-    }
-    node.className = "ql-card-editable ql-card-figure ql-card-video";
-    if (metaFileName) {
-      node.dataset.metaFileName = metaFileName;
-    }
-    return node;
-  }
-
-  constructor(node) {
-    super(node);
-    node.__onSelect = () => {
-      if (!node.querySelector("input")) {
-        let caption = node.querySelector("figcaption");
-        let captionInput = window.document.createElement("input");
-        captionInput.setAttribute("type", "text");
-        captionInput.placeholder = "Légende…";
-        if (caption) {
-          captionInput.value = caption.innerText;
-          caption.innerHTML = "";
-          caption.appendChild(captionInput);
-        } else {
-          caption = window.document.createElement("figcaption");
-          caption.appendChild(captionInput);
-          node.appendChild(caption);
-        }
-        captionInput.addEventListener("blur", () => {
-          let value = captionInput.value;
-          if (!value || value === "") {
-            caption.remove();
-          } else {
-            captionInput.remove();
-            caption.innerText = value;
-          }
-        });
-        captionInput.focus();
-      }
-    };
-  }
-
-  static value(node) {
-    let video = node.querySelector("video");
-    let figcaption = node.querySelector("figcaption");
-    if (!video) return false;
-    return {
-      alt: video.getAttribute("alt"),
-      src: video.getAttribute("src"),
-      linked_media_metaFileName: node.dataset.metaFileName,
-      caption: figcaption ? figcaption.innerText : null
-    };
   }
 }
 
@@ -174,7 +132,7 @@ class CardEditableModule extends Module {
       if (!document.body.contains(quill.root)) {
         return document.body.removeEventListener("click", listener);
       }
-      let elm = e.target.closest(".ql-card-editable");
+      let elm = e.target.closest(".ql-mediacard");
       let deselectCard = () => {
         if (elm.__onDeselect) {
           elm.__onDeselect(quill);
@@ -214,9 +172,8 @@ class CardEditableModule extends Module {
 Quill.register(
   {
     // Other formats or modules
-    "formats/image": ImageBlot,
-    "formats/video": VideoBlot,
-    "modules/cardEditable": CardEditableModule
+    "formats/media": MediaBlot
+    // "modules/cardEditable": CardEditableModule
   },
   true
 );
@@ -330,8 +287,7 @@ export default {
         "header",
         "blockquote",
         "list",
-        "image",
-        "video"
+        "media"
       ],
       placeholder: "…"
     });
@@ -556,8 +512,9 @@ export default {
           // this.editor.insertText(index, "\n", Quill.sources.USER);
           this.editor.insertEmbed(
             index,
-            "image",
+            "media",
             {
+              type: media.type,
               src: thumb.path,
               metaFileName: media.metaFileName
             },
@@ -569,8 +526,9 @@ export default {
         // this.editor.insertText(index, "\n", Quill.sources.USER);
         this.editor.insertEmbed(
           index,
-          "video",
+          "media",
           {
+            type: media.type,
             src: mediaURL,
             metaFileName: media.metaFileName
           },
@@ -644,7 +602,6 @@ export default {
 .m_collaborativeEditor {
   position: relative;
   font-family: "Work Sans";
-  margin: 0.5em 0;
   // margin-left: 3em;
   padding: 0 0.1em;
 
@@ -720,7 +677,6 @@ export default {
   }
 
   .ql-container {
-    max-width: 65ch;
     margin: 0 auto;
 
     &.ql-snow {
@@ -735,20 +691,20 @@ export default {
     min-height: 80vh;
     caret-color: #111;
     line-height: inherit;
-    margin-left: 70px;
-    padding-bottom: 33vh;
+    padding: 1em 20px 33vh;
 
     > * {
       position: relative;
       z-index: 1;
 
-      margin: 0;
+      margin: 0 auto;
       padding: 0;
+      max-width: var(--size-column-width);
 
       background-position: 0 calc(100% - 3px);
       background-repeat: no-repeat;
       background-size: 250% 1px;
-      transition: all 0.5s linear;
+      transition: transform 0.5s linear;
       background-image: linear-gradient(
         90deg,
         transparent,
@@ -764,9 +720,10 @@ export default {
       //   transparent
       // );
 
-      &.ql-card-figure {
+      &.ql-mediacard {
         transform-origin: right center;
         animation: scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+
         img {
           display: block;
           margin: var(--spacing) 0;
@@ -778,6 +735,15 @@ export default {
           font-size: 75%;
           // font-weight: 600;
           // color: #999;
+        }
+
+        > * {
+          padding-right: 5px;
+        }
+
+        &.is--focused {
+          outline: 0;
+          box-shadow: 0 0 0 2px #fff, 0 0 0 4px #0070e0;
         }
       }
 
@@ -1072,7 +1038,8 @@ export default {
   border: none;
   color: white;
   border-radius: 0 0 4px 4px;
-  top: 121px;
+  // top: 121px;
+  bottom: 10px;
   position: fixed;
   z-index: 10;
   left: 10px;

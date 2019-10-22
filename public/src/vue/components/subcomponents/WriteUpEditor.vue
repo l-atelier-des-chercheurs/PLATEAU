@@ -140,13 +140,14 @@ export default {
 }
 
 .m_writeupeditor {
-  max-width: 65ch;
   margin: 0 auto;
-  padding: 0 var(--spacing);
+  --size-column-width: 600px;
 }
 
 .m_writeupeditor--topbar {
   border-bottom: 1px solid black;
+  margin: 0 auto;
+  max-width: var(--size-column-width);
   /* padding: calc(var(--size-skipline) / 2) calc(var(--size-skipline)); */
   display: flex;
   justify-content: space-between;
@@ -154,6 +155,7 @@ export default {
 }
 
 .m_writeupeditor--topbar--title {
+  display: block;
   flex-grow: 0;
   font-size: 1.4em;
 }
