@@ -9,7 +9,6 @@
     @dragover="ondragover($event)"
     @drop="dropHandler($event)"
   >
-    {{ $root.settings.medias_present_in_writeup }}
     <!-- connection_state : {{ connection_state }} -->
     <!-- <br /> -->
     <div ref="editor" class="mediaTextContent" />
@@ -61,7 +60,7 @@ class ImageBlot extends BlockEmbed {
         let caption = node.querySelector("figcaption");
         let captionInput = window.document.createElement("input");
         captionInput.setAttribute("type", "text");
-        captionInput.placeholder = "Type your caption...";
+        captionInput.placeholder = "Légende…";
         if (caption) {
           captionInput.value = caption.innerText;
           caption.innerHTML = "";
@@ -92,10 +91,80 @@ class ImageBlot extends BlockEmbed {
     return {
       alt: img.getAttribute("alt"),
       src: img.getAttribute("src"),
+      linked_media_metaFileName: node.dataset.metaFileName,
       caption: figcaption ? figcaption.innerText : null
     };
   }
 }
+// class VideoBlot extends BlockEmbed {
+//   static blotName = "video";
+//   static tagName = ["figure", "video"];
+
+//   static create({ src, caption, metaFileName }) {
+//     let node = super.create();
+//     let video = window.document.createElement("video");
+//     if (caption) {
+//       video.setAttribute("alt", caption);
+//     }
+//     if (src) {
+//       video.setAttribute("src", src);
+//     }
+//     node.appendChild(video);
+//     if (caption) {
+//       let caption = window.document.createElement("figcaption");
+//       caption.innerHTML = caption;
+//       node.appendChild(caption);
+//     }
+//     node.className = "ql-card-editable ql-card-figure";
+//     if (metaFileName) {
+//       node.dataset.metaFileName = metaFileName;
+//     }
+//     return node;
+//   }
+
+//   constructor(node) {
+//     super(node);
+//     node.__onSelect = () => {
+//       if (!node.querySelector("input")) {
+//         let caption = node.querySelector("figcaption");
+//         let captionInput = window.document.createElement("input");
+//         captionInput.setAttribute("type", "text");
+//         captionInput.placeholder = "Légende…";
+//         if (caption) {
+//           captionInput.value = caption.innerText;
+//           caption.innerHTML = "";
+//           caption.appendChild(captionInput);
+//         } else {
+//           caption = window.document.createElement("figcaption");
+//           caption.appendChild(captionInput);
+//           node.appendChild(caption);
+//         }
+//         captionInput.addEventListener("blur", () => {
+//           let value = captionInput.value;
+//           if (!value || value === "") {
+//             caption.remove();
+//           } else {
+//             captionInput.remove();
+//             caption.innerText = value;
+//           }
+//         });
+//         captionInput.focus();
+//       }
+//     };
+//   }
+
+//   static value(node) {
+//     let video = node.querySelector("video");
+//     let figcaption = node.querySelector("figcaption");
+//     if (!video) return false;
+//     return {
+//       alt: video.getAttribute("alt"),
+//       src: video.getAttribute("src"),
+//       linked_media_metaFileName: node.dataset.metaFileName,
+//       caption: figcaption ? figcaption.innerText : null
+//     };
+//   }
+// }
 
 class CardEditableModule extends Module {
   constructor(quill, options) {
@@ -149,49 +218,6 @@ Quill.register(
   },
   true
 );
-
-class VideoBlot extends BlockEmbed {
-  static create(url) {
-    let node = super.create();
-    node.setAttribute("src", url);
-    node.setAttribute("controls", true);
-
-    return node;
-  }
-
-  static formats(node) {
-    // We still need to report unregistered embed formats
-    let format = {};
-    if (node.hasAttribute("height")) {
-      format.height = node.getAttribute("height");
-    }
-    if (node.hasAttribute("width")) {
-      format.width = node.getAttribute("width");
-    }
-    return format;
-  }
-
-  static value(node) {
-    return node.getAttribute("src");
-  }
-
-  format(name, value) {
-    // Handle unregistered embed formats
-    if (name === "height" || name === "width") {
-      if (value) {
-        this.domNode.setAttribute(name, value);
-      } else {
-        this.domNode.removeAttribute(name, value);
-      }
-    } else {
-      super.format(name, value);
-    }
-  }
-}
-VideoBlot.blotName = "video";
-VideoBlot.tagName = "video";
-VideoBlot.className = "ql-card-figure";
-Quill.register(VideoBlot);
 
 //// see https://stackoverflow.com/a/46064381
 // class MediaBlot extends BlockEmbed {
@@ -354,6 +380,8 @@ export default {
     if (!!this.socket) {
       this.socket.close();
     }
+
+    this.$root.settings.medias_present_in_writeup = "";
   },
   watch: {
     "$root.preview_mode": function() {
@@ -408,12 +436,15 @@ export default {
         }
         console.log(`ON • CollaborativeEditor: subscribe`);
 
+        debugger;
+
         if (!doc.type) {
           console.log(
             `ON • CollaborativeEditor: no type found on doc, creating a new one with content ${JSON.stringify(
               this.editor.getContents()
             )}`
           );
+
           doc.create(this.editor.getContents(), "rich-text");
         } else {
           console.log(
@@ -484,7 +515,7 @@ export default {
     broadcastMediasPresentInWriteup() {
       console.log(`CollaborativeEditor • broadcastMediasPresentInWriteup`);
 
-      var t0 = performance.now();
+      // var t0 = performance.now();
 
       const _medias_present = this.editor.getLines().reduce((acc, _blot) => {
         if (_blot.domNode.dataset && _blot.domNode.dataset.metaFileName) {
@@ -495,10 +526,10 @@ export default {
         return acc;
       }, []);
 
-      var t1 = performance.now();
-      console.log(
-        "L'appel à faireQuelqueChose a pris " + (t1 - t0) + " millisecondes."
-      );
+      // var t1 = performance.now();
+      // console.log(
+      //   "L'appel à faire quelqueChose a pris " + (t1 - t0) + " millisecondes."
+      // );
 
       this.$root.settings.medias_present_in_writeup = _medias_present;
     },
@@ -536,7 +567,16 @@ export default {
         }
       } else if (media.type === "video") {
         // this.editor.insertText(index, "\n", Quill.sources.USER);
-        this.editor.insertEmbed(index, "video", mediaURL, Quill.sources.USER);
+        debugger;
+        this.editor.insertEmbed(
+          index,
+          "video",
+          {
+            src: thumb.src,
+            metaFileName: media.metaFileName
+          },
+          Quill.sources.USER
+        );
         this.editor.setSelection(index + 1, Quill.sources.SILENT);
       } else {
         this.$alertify

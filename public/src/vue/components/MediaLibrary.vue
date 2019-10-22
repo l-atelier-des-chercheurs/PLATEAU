@@ -3,6 +3,7 @@
     <splitpanes horizontal watch-slots>
       <pane min-size="20" max-size="100" size="100">
         <div class="m_library--content">
+          {{ $root.settings.medias_present_in_writeup }}
           <div class="m_actionbar" v-show="$root.state.connected">
             <div class="m_actionbar--buttonBar">
               <button
