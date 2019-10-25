@@ -1,11 +1,11 @@
 <template>
   <div class="m_library">
-    <splitpanes horizontal>
+    <splitpanes horizontal watch-slots>
       <pane min-size="20" max-size="100" size="100">
         <div class="m_library--content">
           <div class="m_actionbar" v-show="$root.state.connected">
             <div class="m_actionbar--buttonBar">
-              <button
+              <!-- <button
                 type="button"
                 class="barButton barButton_capture"
                 v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
@@ -14,7 +14,7 @@
                 disabled
               >
                 <span>{{ $t('capture') }}</span>
-              </button>
+              </button>-->
               <label
                 v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
                 :key="`add_${field.key}`"
@@ -105,6 +105,7 @@
         />
         <div class="m_library--mediaFocus--buttons">
           <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t('remove') }}</button>
+          <button type="button" @click="closeMediaFocus()">{{ $t('close') }}</button>
         </div>
       </pane>
 
@@ -129,7 +130,7 @@
 
     <transition name="fade_fast" :duration="150">
       <div
-        v-if="!read_only && show_drop_container"
+        v-if="!read_only && show_drop_container && !$root.settings.media_being_dragged"
         @drop="dropHandler($event)"
         class="_drop_indicator"
       >
@@ -385,6 +386,12 @@ export default {
       }
       this.show_media_detail_for = metaFileName;
     },
+    closeMediaFocus() {
+      if (this.$root.state.dev_mode === "debug") {
+        console.log("METHODS • MediaLibrary: closeMediaFocus");
+      }
+      this.show_media_detail_for = false;
+    },
     createTextMedia() {
       this.$eventHub.$on(
         "socketio.media_created_or_updated",
@@ -409,7 +416,8 @@ export default {
         .confirm(
           this.$t("sureToRemoveMedia"),
           () => {
-            this.$root.settings.current_writeup_media_metaFileName = false;
+            this.show_media_detail_for = false;
+
             this.$root.removeMedia({
               type: "projects",
               slugFolderName: this.slugProjectName,
@@ -499,7 +507,7 @@ export default {
 .m_library {
   position: relative;
   height: 100%;
-  background-color: #f9ca00;
+  background-color: var(--color-MediaLibrary);
   // margin: 0 -1em;
   // background-color: #1c1e20;
   // color: white;
@@ -534,7 +542,7 @@ export default {
 }
 
 .m_library--mediaFocus {
-  box-shadow: 0 -5px 23px rgba(0, 0, 0, 0.4);
+  // box-shadow: 0 10px 23px rgba(0, 0, 0, 0.4);
 
   .mediaContainer {
     position: absolute;

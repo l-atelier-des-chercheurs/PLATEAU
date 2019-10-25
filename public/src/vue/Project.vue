@@ -1,19 +1,32 @@
 <template>
-  <splitpanes class="m_project">
-    <pane :key="`journal`" size="70">
-      <WriteUp :slugFolderName="slugProjectName" :medias="project.medias" :read_only="read_only" />
-    </pane>
-    <pane :key="`library`" min-size="5" size="30">
-      <MediaLibrary :slugProjectName="slugProjectName" :project="project" :read_only="false" />
-    </pane>
-    <pane :key="`composition`" min-size="5" size="15">
-      <div class="m_composition">
-        <div class>
-          <i>à venir</i>
-          <br />projection/composition
+  <splitpanes class="m_project" watch-slots>
+    <template v-for="pane in $root.settings.project_panes_in_order">
+      <pane v-if="pane.key === 'WriteUp' && pane.enabled" :key="pane.key" min-size="1">
+        <WriteUp :slugFolderName="slugProjectName" :medias="project.medias" :read_only="read_only" />
+      </pane>
+
+      <pane v-else-if="pane.key === 'MediaLibrary' && pane.enabled" :key="pane.key">
+        <MediaLibrary :slugProjectName="slugProjectName" :project="project" :read_only="false" />
+      </pane>
+
+      <pane v-else-if="pane.key === 'Composition' && pane.enabled" :key="pane.key">
+        <div class="m_composition">
+          <div class>
+            <i>à venir</i>
+            <br />projection/composition
+          </div>
         </div>
-      </div>
-    </pane>
+      </pane>
+
+      <pane v-else-if="pane.key === 'Capture' && pane.enabled" :key="pane.key">
+        <div class="m_capture">
+          <div class>
+            <i>à venir</i>
+            <br />capture
+          </div>
+        </div>
+      </pane>
+    </template>
   </splitpanes>
 </template>
 <script>
@@ -58,11 +71,21 @@ export default {
   -webkit-overflow-scrolling: touch;
   // background-color: #ecf0ed;
   // background-color: hsl(135, 12%, 96%);
+
+  > * {
+    height: 100%;
+  }
 }
 
 .m_composition {
-  background-color: #2c75c5;
-  height: 100%;
+  background-color: var(--color-Composition);
   padding: var(--spacing);
+  height: 100%;
+}
+
+.m_capture {
+  background-color: var(--color-Capture);
+  padding: var(--spacing);
+  height: 100%;
 }
 </style>

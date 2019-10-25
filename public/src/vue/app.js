@@ -142,10 +142,26 @@ let vm = new Vue({
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
 
-      current_publication: {
-        slug: false,
-        accepted_media_type: []
-      },
+      project_panes_in_order: [
+        {
+          key: 'WriteUp',
+          enabled: true
+        },
+        {
+          key: 'MediaLibrary',
+          enabled: true
+        },
+        {
+          key: 'Composition',
+          enabled: true
+        },
+        {
+          key: 'Capture',
+          enabled: true
+        }
+      ],
+
+      medias_present_in_writeup: [],
 
       current_writeup_media_metaFileName: false,
       media_being_dragged: false,
@@ -313,6 +329,22 @@ let vm = new Vue({
       ) {
         this.unsetAuthor();
       }
+    },
+    'settings.project_panes_in_order': {
+      handler() {
+        console.log(
+          `ROOT EVENT: var has changed: settings.project_panes_in_order`
+        );
+        // console.log(`panes data`);
+        // this.$root.settings.project_panes_in_order.map(pp =>
+        //   console.log(`${pp.key} = ${pp.enabled}`)
+        // );
+        localstore.set(
+          `panes.${this.$root.do_navigation.current_slugProjectName}`,
+          this.$root.settings.project_panes_in_order
+        );
+      },
+      deep: true
     }
   },
   computed: {
@@ -528,6 +560,13 @@ let vm = new Vue({
 
       this.do_navigation.view = 'Project';
       this.do_navigation.current_slugProjectName = slugProjectName;
+
+      const panes_config_for_project = localstore.get(
+        `panes.${this.$root.do_navigation.current_slugProjectName}`
+      );
+      if (panes_config_for_project) {
+        this.$root.settings.project_panes_in_order = panes_config_for_project;
+      }
 
       this.$socketio.listMedias({
         type: 'projects',

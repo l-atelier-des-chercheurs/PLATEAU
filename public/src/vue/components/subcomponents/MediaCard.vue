@@ -2,9 +2,11 @@
   <div
     class="m_media"
     :class=" { 
-      'is--inPubli' : is_media_in_publi, 
+      'is--inWriteUp' : is_media_in_publi, 
       'is--fav' : media.fav,
-      'is--ownMedia' : media_made_by_current_author
+      'is--ownMedia' : media_made_by_current_author,
+      'is--draggable_to_writeup' : $root.settings.current_writeup_media_metaFileName,
+      'is--dragged' : is_dragged
     }"
     @dragstart="startMediaDrag( media, $event)"
     @dragend="endMediaDrag()"
@@ -125,6 +127,7 @@ export default {
   data() {
     return {
       is_hovered: false,
+      is_dragged: false,
       mediaTypeIcon: {
         image: "/images/i_icone-dodoc_image.svg",
         video: "/images/i_icone-dodoc_video.svg",
@@ -140,10 +143,12 @@ export default {
   watch: {},
   computed: {
     is_media_in_publi() {
-      return false;
+      if (this.$root.settings.medias_present_in_writeup.length === 0) {
+        return false;
+      }
       return (
-        Object.values(this.$root.current_publication_medias).findIndex(
-          s => s.slugMediaName === this.metaFileName
+        this.$root.settings.medias_present_in_writeup.findIndex(
+          s => s === this.metaFileName
         ) > -1
       );
 
@@ -202,11 +207,16 @@ export default {
       $event.dataTransfer.setData("text/plain", JSON.stringify(this.media));
       $event.dataTransfer.effectAllowed = "move";
 
+      this.is_dragged = true;
+
       this.$root.settings.media_being_dragged = media.metaFileName;
     },
     endMediaDrag() {
       console.log(`METHODS • MediaLibrary / endMediaDrag`);
-      this.$root.settings.media_being_dragged = false;
+      setTimeout(() => {
+        this.is_dragged = false;
+        this.$root.settings.media_being_dragged = false;
+      }, 500);
     }
   }
 };
@@ -221,8 +231,45 @@ export default {
   // width: var(--media-width);
   // height: var(--media-width);
 
+  transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
+
   &:hover {
     background-color: rgba(255, 255, 255, 0.4);
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 5px;
+    height: 5px;
+    margin: 5px;
+
+    background-color: #8894a0;
+    border-radius: 50%;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  &.is--inWriteUp {
+    &::after {
+      opacity: 1;
+    }
+  }
+
+  &.is--draggable_to_writeup {
+    // border: 4px dotted rgba(255, 255, 255, 0.5);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+    .mediaContainer {
+      cursor: -webkit-grab;
+      cursor: -moz-grab;
+    }
+  }
+
+  &.is--dragged {
+    opacity: 0.4;
   }
 
   .mediaContainer {
@@ -238,7 +285,7 @@ export default {
       margin: 0;
       padding: 0;
       object-fit: scale-down;
-      object-position: 50% 47%;
+      object-position: 50% 48%;
     }
 
     &::after {

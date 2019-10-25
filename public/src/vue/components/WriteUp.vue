@@ -163,7 +163,10 @@ export default {
       }
 
       this.show_createwriteup_section = false;
-      // this.$eventHub.$on('socketio.media_created_or_updated', this.newTextMediaCreated);
+
+      this.$eventHub.$on("socketio.media_created_or_updated", m =>
+        this.openWriteupMedia(m.metaFileName)
+      );
       this.$root.createMedia({
         slugFolderName: this.slugFolderName,
         type: "projects",
@@ -219,6 +222,7 @@ export default {
   position: relative;
   // margin: var(--spacing);
   // margin: 0 auto;
+  background-color: var(--color-WriteUp);
   height: 100%;
   overflow: auto;
 

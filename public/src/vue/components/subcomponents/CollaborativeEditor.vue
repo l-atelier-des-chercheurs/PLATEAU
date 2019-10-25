@@ -27,81 +27,156 @@ let Block = Quill.import("blots/block");
 let BlockEmbed = Quill.import("blots/block/embed");
 const Module = Quill.import("core/module");
 
-class ImageBlot extends BlockEmbed {
-  static blotName = "image";
-  static tagName = ["figure", "image"];
+class MediaBlot extends BlockEmbed {
+  static blotName = "media";
+  static tagName = "figure";
+  static className = "ql-mediacard";
 
-  static create(value) {
+  static create({ type, src, caption, metaFileName }) {
     let node = super.create();
-    let img = window.document.createElement("img");
-    if (value.alt || value.caption) {
-      img.setAttribute("alt", value.alt || value.caption);
+    console.log(`CollaborativeEditor • MediaBlot : create for type = ${type}`);
+
+    let tag;
+
+    if (!type || !metaFileName) {
+      alert(
+        `Missing type or metaFileName : type = ${type} and metaFileName = ${metaFileName}`
+      );
+      return;
     }
-    if (value.src || typeof value === "string") {
-      img.setAttribute("src", value.src || value);
+
+    if (type === "image") {
+      tag = window.document.createElement("img");
+    } else if (type === "video") {
+      tag = window.document.createElement("video");
+      tag.setAttribute("controls", true);
     }
-    node.appendChild(img);
-    if (value.caption) {
-      let caption = window.document.createElement("figcaption");
-      caption.innerHTML = value.caption;
-      node.appendChild(caption);
+
+    if (src) {
+      tag.setAttribute("src", src);
     }
-    node.className = "ql-card-editable ql-card-figure";
+    tag.setAttribute("draggable", false);
+    node.appendChild(tag);
+    if (caption) {
+      let caption_tag = window.document.createElement("figcaption");
+      caption_tag.innerHTML = caption;
+      node.appendChild(caption_tag);
+    }
+    node.dataset.type = type;
+    node.dataset.metaFileName = metaFileName;
+    node.setAttribute("draggable", false);
+
+    node.addEventListener("dragstart", $event => {
+      $event.dataTransfer.setData("text/plain", "media_in_quill");
+      $event.dataTransfer.effectAllowed = "move";
+      // this.is_dragged = true;
+      // this.$root.settings.media_being_dragged = media.metaFileName;
+    });
+
+    node.style.animation = "scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
+    node.addEventListener("animationend", () => {
+      node.style.animation = "";
+    });
+
     return node;
   }
 
   constructor(node) {
     super(node);
+
+    let removeButton;
+    let caption;
+    let captionInput;
+
     node.__onSelect = () => {
-      if (!node.querySelector("input")) {
-        let caption = node.querySelector("figcaption");
-        let captionInput = window.document.createElement("input");
-        captionInput.setAttribute("type", "text");
-        captionInput.placeholder = "Type your caption...";
-        if (caption) {
-          captionInput.value = caption.innerText;
-          caption.innerHTML = "";
-          caption.appendChild(captionInput);
-        } else {
-          caption = window.document.createElement("figcaption");
-          caption.appendChild(captionInput);
-          node.appendChild(caption);
-        }
-        captionInput.addEventListener("blur", () => {
-          let value = captionInput.value;
-          if (!value || value === "") {
-            caption.remove();
-          } else {
-            captionInput.remove();
-            caption.innerText = value;
-          }
+      node.classList.add("is--focused");
+
+      removeButton = window.document.createElement("button");
+      removeButton.innerHTML = "×";
+      removeButton.setAttribute("type", "button");
+      removeButton.classList.add("_button_removeMedia");
+      removeButton.addEventListener("click", () => {
+        node.__onDeselect();
+        const quill = Quill.find(node.parentElement.parentElement);
+        quill.enable(true);
+        node.style.animation = "scale-out 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
+        node.addEventListener("animationend", () => {
+          node.remove();
         });
-        captionInput.focus();
+      });
+      node.appendChild(removeButton);
+
+      caption = node.querySelector("figcaption");
+      captionInput = window.document.createElement("input");
+      captionInput.setAttribute("type", "text");
+      captionInput.placeholder = "Légende…";
+
+      if (caption) {
+        captionInput.value = caption.innerText;
+        caption.innerHTML = "";
+        caption.appendChild(captionInput);
+      } else {
+        caption = window.document.createElement("figcaption");
+        caption.appendChild(captionInput);
+        node.appendChild(caption);
       }
+    };
+    node.__onDeselect = () => {
+      let value = captionInput.value;
+      if (!value || value === "") {
+        caption.remove();
+      } else {
+        captionInput.remove();
+        caption.innerText = value;
+      }
+
+      node.classList.remove("is--focused");
+
+      removeButton.remove();
     };
   }
 
   static value(node) {
-    let img = node.querySelector("img");
-    let figcaption = node.querySelector("figcaption");
-    if (!img) return false;
-    return {
-      alt: img.getAttribute("alt"),
-      src: img.getAttribute("src"),
-      caption: figcaption ? figcaption.innerText : null
-    };
+    if (node.dataset.type === "image") {
+      let img = node.querySelector("img");
+      let figcaption = node.querySelector("figcaption");
+      if (!img) return false;
+      return {
+        alt: img.getAttribute("alt"),
+        src: img.getAttribute("src"),
+        metaFileName: node.dataset.metaFileName,
+        type: node.dataset.type,
+        caption: figcaption ? figcaption.innerText : null
+      };
+    } else if (node.dataset.type === "video") {
+      let video = node.querySelector("video");
+      let figcaption = node.querySelector("figcaption");
+      if (!video) return false;
+      return {
+        alt: video.getAttribute("alt"),
+        src: video.getAttribute("src"),
+        metaFileName: node.dataset.metaFileName,
+        type: node.dataset.type,
+        caption: figcaption ? figcaption.innerText : null
+      };
+    }
   }
 }
 
 class CardEditableModule extends Module {
   constructor(quill, options) {
     super(quill, options);
+
+    let is_selected = false;
+
     let listener = e => {
       if (!document.body.contains(quill.root)) {
         return document.body.removeEventListener("click", listener);
       }
-      let elm = e.target.closest(".ql-card-editable");
+      let elm = e.target.closest(".ql-mediacard");
       let deselectCard = () => {
+        console.log("deselectCard");
+        is_selected = false;
         if (elm.__onDeselect) {
           elm.__onDeselect(quill);
         } else {
@@ -112,8 +187,11 @@ class CardEditableModule extends Module {
           );
         }
       };
-      if (elm && elm.__blot && elm.__onSelect) {
+      if (elm && elm.__blot && elm.__onSelect && !is_selected) {
         quill.disable();
+
+        is_selected = true;
+
         elm.__onSelect(quill);
         let handleKeyPress = e => {
           if (e.keyCode === 27 || e.keyCode === 13) {
@@ -123,14 +201,20 @@ class CardEditableModule extends Module {
           }
         };
         let handleClick = e => {
-          if (e.which === 1 && !elm.contains(e.target)) {
+          if (e.which === 1 && !e.path.includes(elm)) {
             window.removeEventListener("click", handleClick);
             quill.enable(true);
             deselectCard();
           }
         };
+        let handleDrag = e => {
+          window.removeEventListener("dragover", handleDrag);
+          quill.enable(true);
+          deselectCard();
+        };
         window.addEventListener("keypress", handleKeyPress);
         window.addEventListener("click", handleClick);
+        window.addEventListener("dragover", handleDrag);
       }
     };
     quill.emitter.listenDOM("click", document.body, listener);
@@ -140,54 +224,11 @@ class CardEditableModule extends Module {
 Quill.register(
   {
     // Other formats or modules
-    "formats/image": ImageBlot,
+    "formats/media": MediaBlot,
     "modules/cardEditable": CardEditableModule
   },
   true
 );
-
-class VideoBlot extends BlockEmbed {
-  static create(url) {
-    let node = super.create();
-    node.setAttribute("src", url);
-    node.setAttribute("controls", true);
-
-    return node;
-  }
-
-  static formats(node) {
-    // We still need to report unregistered embed formats
-    let format = {};
-    if (node.hasAttribute("height")) {
-      format.height = node.getAttribute("height");
-    }
-    if (node.hasAttribute("width")) {
-      format.width = node.getAttribute("width");
-    }
-    return format;
-  }
-
-  static value(node) {
-    return node.getAttribute("src");
-  }
-
-  format(name, value) {
-    // Handle unregistered embed formats
-    if (name === "height" || name === "width") {
-      if (value) {
-        this.domNode.setAttribute(name, value);
-      } else {
-        this.domNode.removeAttribute(name, value);
-      }
-    } else {
-      super.format(name, value);
-    }
-  }
-}
-VideoBlot.blotName = "video";
-VideoBlot.tagName = "video";
-VideoBlot.className = "ql-card-figure";
-Quill.register(VideoBlot);
 
 //// see https://stackoverflow.com/a/46064381
 // class MediaBlot extends BlockEmbed {
@@ -241,11 +282,13 @@ export default {
 
       is_focused: false,
       is_being_dragover: false,
+
       debounce_textUpdate: undefined,
       caret_position: {
         top: undefined,
         left: undefined
       },
+      focused_lines: [],
 
       custom_toolbar: {
         container: [
@@ -298,11 +341,13 @@ export default {
         "header",
         "blockquote",
         "list",
-        "image",
-        "video"
+        "media"
       ],
       placeholder: "…"
     });
+
+    this.$refs.editor.dataset.quill = this.editor;
+
     this.editor.root.innerHTML = this.value;
     this.cancelDragOver = debounce(this.cancelDragOver, 300);
 
@@ -314,6 +359,8 @@ export default {
 
     const cursorsOne = this.editor.getModule("cursors");
     cursorsOne.createCursor(1, "User 1", "#0a997f");
+
+    this.editor.focus();
 
     this.$nextTick(() => {
       if (this.$root.state.mode !== "live") {
@@ -327,6 +374,7 @@ export default {
           "input",
           this.editor.getText() ? this.editor.root.innerHTML : ""
         );
+        this.updateFocusedLines();
         // cursorsOne.moveCursor(1, range);
       });
 
@@ -336,11 +384,12 @@ export default {
         else if (range !== null && oldRange === null) this.is_focused = true;
 
         // cursorsOne.moveCursor(1, range);
-
         if (!!range && range.length == 0) {
           console.log("User cursor is on", range.index);
           this.updateCaretPosition();
         }
+
+        this.updateFocusedLines();
       });
     });
 
@@ -350,6 +399,8 @@ export default {
     if (!!this.socket) {
       this.socket.close();
     }
+
+    this.$root.settings.medias_present_in_writeup = [];
   },
   watch: {
     "$root.preview_mode": function() {
@@ -361,6 +412,9 @@ export default {
     },
     spellcheck: function() {
       this.setSpellCheck();
+    },
+    value: function() {
+      this.broadcastMediasPresentInWriteup();
     }
   },
   computed: {
@@ -407,6 +461,7 @@ export default {
               this.editor.getContents()
             )}`
           );
+
           doc.create(this.editor.getContents(), "rich-text");
         } else {
           console.log(
@@ -435,6 +490,8 @@ export default {
           }
         });
 
+        this.broadcastMediasPresentInWriteup();
+
         doc.on("op", (op, source) => {
           if (source === this.editor_id) return;
           console.log(`ON • CollaborativeEditor: operation applied to quill`);
@@ -443,10 +500,33 @@ export default {
       });
     },
     updateCaretPosition() {
-      console.log(`METHODS • CollaborativeEditor: updateCaretPosition`);
+      console.log(`CollaborativeEditor • METHODS: updateCaretPosition`);
       var selection = this.editor.getSelection(true);
       const caretPos = this.editor.getBounds(selection);
       this.caret_position = { top: caretPos.top, left: caretPos.left };
+    },
+    updateFocusedLines() {
+      console.log(`CollaborativeEditor • METHODS: updateFocusedLines`);
+
+      // if (oldRange && oldRange.index) {
+      //   const line = this.editor.getLine(oldRange.index);
+      //   if (line) {
+      //     line[0].domNode.classList.remove("is--focused");
+      //   }
+      // }
+
+      this.editor
+        .getLines()
+        .map(b => b.domNode.classList.remove("is--focused"));
+
+      const range = this.editor.getSelection();
+
+      if (range && range.index) {
+        const line = this.editor.getLine(range.index);
+        if (line) {
+          line[0].domNode.classList.add("is--focused");
+        }
+      }
     },
     wsState(state, reason) {
       console.log(
@@ -461,6 +541,9 @@ export default {
         console.log(
           `CollaborativeEditor • updateTextMedia: saving new snapshop`
         );
+
+        this.broadcastMediasPresentInWriteup();
+
         this.$root.editMedia({
           type: "projects",
           slugFolderName: this.slugFolderName,
@@ -470,6 +553,27 @@ export default {
           }
         });
       }, 500);
+    },
+    broadcastMediasPresentInWriteup() {
+      console.log(`CollaborativeEditor • broadcastMediasPresentInWriteup`);
+
+      // var t0 = performance.now();
+
+      const _medias_present = this.editor.getLines().reduce((acc, _blot) => {
+        if (_blot.domNode.dataset && _blot.domNode.dataset.metaFileName) {
+          if (!acc.includes(_blot.domNode.dataset.metaFileName)) {
+            acc.push(_blot.domNode.dataset.metaFileName);
+          }
+        }
+        return acc;
+      }, []);
+
+      // var t1 = performance.now();
+      // console.log(
+      //   "L'appel à faire quelqueChose a pris " + (t1 - t0) + " millisecondes."
+      // );
+
+      this.$root.settings.medias_present_in_writeup = _medias_present;
     },
     setSpellCheck() {
       console.log(
@@ -483,9 +587,6 @@ export default {
     },
     addMediaAtIndex(index, media) {
       console.log(`CollaborativeEditor • addMediaAtIndex ${index}`);
-
-      debugger;
-
       const mediaURL =
         this.$root.state.mode === "export_publication"
           ? `./${this.slugFolderName}/${media.media_filename}`
@@ -494,18 +595,31 @@ export default {
       if (media.type === "image") {
         const thumb = media.thumbs.find(m => m.size === 1600);
         if (!!thumb) {
-          // this.editor.insertText(index, "\n", Quill.sources.USER);
+          // this.editor.insertText(index + 1, "\n", Quill.sources.USER);
           this.editor.insertEmbed(
             index,
-            "image",
-            thumb.path,
+            "media",
+            {
+              type: media.type,
+              src: thumb.path,
+              metaFileName: media.metaFileName
+            },
             Quill.sources.USER
           );
           this.editor.setSelection(index + 1, Quill.sources.SILENT);
         }
       } else if (media.type === "video") {
         // this.editor.insertText(index, "\n", Quill.sources.USER);
-        this.editor.insertEmbed(index, "video", mediaURL, Quill.sources.USER);
+        this.editor.insertEmbed(
+          index,
+          "media",
+          {
+            type: media.type,
+            src: mediaURL,
+            metaFileName: media.metaFileName
+          },
+          Quill.sources.USER
+        );
         this.editor.setSelection(index + 1, Quill.sources.SILENT);
       } else {
         this.$alertify
@@ -515,14 +629,22 @@ export default {
       }
     },
     ondragover($event) {
-      // console.log(`METHODS • CollaborativeEditor / dragover`);
+      console.log(
+        `METHODS • CollaborativeEditor / dragover on ${$event.currentTarget.className}`
+      );
       this.is_being_dragover = true;
+      this.removeDragoverFromBlots();
+
+      const _blot = this.getBlockFromElement($event.target);
+      if (_blot) _blot.domNode.classList.add("is--dragover");
+
       this.cancelDragOver();
     },
     cancelDragOver() {
       if (this.$root.state.dev_mode === "debug") {
         console.log(`METHODS • AddMedia / cancelDragOver`);
       }
+      this.removeDragoverFromBlots();
       this.is_being_dragover = false;
     },
 
@@ -533,38 +655,72 @@ export default {
       $event.preventDefault();
       $event.dataTransfer.dropEffect = "move";
 
-      const data = JSON.parse($event.dataTransfer.getData("text/plain"));
-      console.log(data);
+      this.removeDragoverFromBlots();
 
-      if (data.media_filename) {
-        // drop sur l’éditor et pas sur une ligne
-        if ($event.target.classList.contains("ql-editor")) {
-          this.addMediaAtIndex(this.editor.scroll.length() - 1, data);
-          return;
-        }
+      if ($event.dataTransfer.getData("text/plain") === "media_in_quill") {
+        console.log(
+          `METHODS • CollaborativeEditor / dropHandler: drag and dropped a media from quill`
+        );
+        let _blot = this.getBlockFromElement($event.target);
+        const index = this.editor.getIndex(_blot);
 
-        let _target = $event.target;
-        while (!_target.parentElement.classList.contains("ql-editor")) {
-          _target = $event.target.parentElement;
+        // find which blot was dragged (A)
 
-          if (_target === null) {
-            break;
+        // find where it was dropped (B)
+
+        // move delta from A to B
+
+        console.log(`_blot is currently at index ${index}`);
+      } else if ($event.dataTransfer.getData("text/plain")) {
+        console.log(
+          `METHODS • CollaborativeEditor / dropHandler: dropped a media from the library`
+        );
+
+        const data = JSON.parse($event.dataTransfer.getData("text/plain"));
+        console.log(data);
+
+        if (data.media_filename) {
+          // drop sur l’éditor et pas sur une ligne
+          if ($event.target.classList.contains("ql-editor")) {
+            console.log(
+              "dropped on editor and not on line, will insert at the end of doc"
+            );
+            this.addMediaAtIndex(this.editor.getLength() - 1, data);
+            return;
           }
-        }
 
-        let _blot = Quill.find(_target);
-        if (_blot) {
-          // const _blotIndex = this.editor.getLines().findIndex(b => b === _blot);
-          // let [line, offset] = this.editor.getLine(_blotIndex);
-          const idx = this.editor.getIndex(_blot);
-          this.addMediaAtIndex(idx, data);
-        } else {
-          this.$alertify
-            .closeLogOnClick(true)
-            .delay(4000)
-            .error(this.$t("notifications.failed_to_find_block_line"));
+          let _blot = this.getBlockFromElement($event.target);
+
+          if (!_blot) {
+            this.$alertify
+              .closeLogOnClick(true)
+              .delay(4000)
+              .error(this.$t("notifications.failed_to_find_block_line"));
+            return;
+          }
+
+          _blot = _blot.next ? _blot.next : _blot;
+
+          const index = this.editor.getIndex(_blot);
+          this.addMediaAtIndex(index, data);
         }
       }
+    },
+    removeDragoverFromBlots() {
+      this.editor
+        .getLines()
+        .map(b => b.domNode.classList.remove("is--dragover"));
+    },
+    getBlockFromElement(_target) {
+      while (!_target.parentElement.classList.contains("ql-editor")) {
+        _target = _target.parentElement;
+        if (_target === null || !_target.parentElement) break;
+      }
+      let _blot = Quill.find(_target);
+      if (_blot) {
+        return _blot;
+      }
+      return false;
     }
   }
 };
@@ -574,7 +730,6 @@ export default {
 .m_collaborativeEditor {
   position: relative;
   font-family: "Work Sans";
-  margin: 0.5em 0;
   // margin-left: 3em;
   padding: 0 0.1em;
 
@@ -586,13 +741,13 @@ export default {
     &.is--dragover {
       .ql-editor {
         > * {
-          background-image: linear-gradient(
-            90deg,
-            #ccc,
-            #ccc 50%,
-            transparent 0,
-            transparent
-          );
+          // background-image: linear-gradient(
+          //   90deg,
+          //   #ccc,
+          //   #ccc 50%,
+          //   transparent 0,
+          //   transparent
+          // );
 
           // background-size: 250% 4px;
         }
@@ -650,7 +805,6 @@ export default {
   }
 
   .ql-container {
-    max-width: 65ch;
     margin: 0 auto;
 
     &.ql-snow {
@@ -663,21 +817,24 @@ export default {
     padding: 0;
     overflow: visible;
     min-height: 80vh;
-    caret-color: #111;
+    caret-color: var(--active-color);
     line-height: inherit;
-    margin-left: 70px;
+    padding: 1em 20px 33vh;
 
     > * {
       position: relative;
       z-index: 1;
 
-      margin: 0;
+      // attention : à cause du drop il vaut mieux ne pas utiliser de margin
+      // sinon pas moyen de savoir sur quel item c’est droppé
+      margin: 0 auto;
       padding: 0;
+      max-width: var(--size-column-width);
 
       background-position: 0 calc(100% - 3px);
       background-repeat: no-repeat;
       background-size: 250% 1px;
-      transition: all 0.5s linear;
+      transition: transform 0.5s linear;
       background-image: linear-gradient(
         90deg,
         transparent,
@@ -693,31 +850,74 @@ export default {
       //   transparent
       // );
 
-      &.ql-card-figure {
+      &.ql-mediacard {
         transform-origin: right center;
-        animation: scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        border-radius: 0px;
+        // margin-top: var(--spacing);
+        // margin-bottom: var(--spacing);
+        padding-top: calc(var(--spacing) / 2);
+        padding-bottom: calc(var(--spacing) / 2);
+
         img {
           display: block;
-          margin: var(--spacing) 0;
+        }
+        video {
+          display: block;
+          &:focus {
+            outline: 0;
+          }
         }
 
         figcaption {
           text-align: center;
-          margin-top: 0em;
           font-size: 75%;
           // font-weight: 600;
-          // color: #999;
+          color: #444;
+          margin: 0 auto;
+          padding: 0.4em 0;
+          max-width: 33ch;
+
+          input {
+            text-align: center;
+            background-color: #eee;
+            border: 0;
+            border-radius: 4px;
+          }
+        }
+
+        &:hover {
+          box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
+        }
+
+        &.is--focused {
+          outline: 0;
+          box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
         }
       }
 
       @keyframes scale-in {
         0% {
           opacity: 0;
+          max-height: 0px;
           transform: scale(0.9, 1);
         }
         100% {
           opacity: 1;
+          max-height: 50vh;
           transform: scale(1, 1);
+        }
+      }
+      @keyframes scale-out {
+        0% {
+          opacity: 1;
+          max-height: 50vh;
+          transform: scale(1, 1);
+        }
+        100% {
+          opacity: 0;
+          max-height: 0px;
+          margin: 0;
+          transform: scale(0.9, 1);
         }
       }
 
@@ -757,9 +957,18 @@ export default {
   }
 
   .ql-editor.ql-blank::before {
-    left: 0;
-    color: rgba(0, 0, 0, 0.4);
+    display: block;
+
+    // position: relative;
+    max-width: var(--size-column-width);
+    margin: 0 auto;
+    left: 20px;
+    color: rgba(0, 0, 0, 0.6);
     font-style: normal;
+
+    &:hover {
+      color: black;
+    }
   }
 
   .mediaTextContent {
@@ -780,7 +989,7 @@ export default {
     // lh : 1.41
     // scale : 1.31
 
-    font-size: 1em;
+    font-size: 1.1em;
     line-height: 1.4375em;
     // max-width: 773px;
     // margin: auto;
@@ -1001,7 +1210,8 @@ export default {
   border: none;
   color: white;
   border-radius: 0 0 4px 4px;
-  top: 121px;
+  // top: 121px;
+  bottom: 10px;
   position: fixed;
   z-index: 10;
   left: 10px;
@@ -1047,23 +1257,71 @@ export default {
   stroke: #0a997f;
 }
 
+.ql-snow.ql-toolbar button:hover,
+.ql-snow .ql-toolbar button:hover,
+.ql-snow.ql-toolbar button:focus,
+.ql-snow .ql-toolbar button:focus,
+.ql-snow.ql-toolbar button.ql-active,
+.ql-snow .ql-toolbar button.ql-active,
+.ql-snow.ql-toolbar .ql-picker-label:hover,
+.ql-snow .ql-toolbar .ql-picker-label:hover,
+.ql-snow.ql-toolbar .ql-picker-label.ql-active,
+.ql-snow .ql-toolbar .ql-picker-label.ql-active,
+.ql-snow.ql-toolbar .ql-picker-item:hover,
+.ql-snow .ql-toolbar .ql-picker-item:hover,
+.ql-snow.ql-toolbar .ql-picker-item.ql-selected,
+.ql-snow .ql-toolbar .ql-picker-item.ql-selected {
+  color: #0a997f;
+}
+
+.ql-snow.ql-toolbar button:hover .ql-fill,
+.ql-snow .ql-toolbar button:hover .ql-fill,
+.ql-snow.ql-toolbar button:focus .ql-fill,
+.ql-snow .ql-toolbar button:focus .ql-fill,
+.ql-snow.ql-toolbar button.ql-active .ql-fill,
+.ql-snow .ql-toolbar button.ql-active .ql-fill,
+.ql-snow.ql-toolbar .ql-picker-label:hover .ql-fill,
+.ql-snow .ql-toolbar .ql-picker-label:hover .ql-fill,
+.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-fill,
+.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-fill,
+.ql-snow.ql-toolbar .ql-picker-item:hover .ql-fill,
+.ql-snow .ql-toolbar .ql-picker-item:hover .ql-fill,
+.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-fill,
+.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-fill,
+.ql-snow.ql-toolbar button:hover .ql-stroke.ql-fill,
+.ql-snow .ql-toolbar button:hover .ql-stroke.ql-fill,
+.ql-snow.ql-toolbar button:focus .ql-stroke.ql-fill,
+.ql-snow .ql-toolbar button:focus .ql-stroke.ql-fill,
+.ql-snow.ql-toolbar button.ql-active .ql-stroke.ql-fill,
+.ql-snow .ql-toolbar button.ql-active .ql-stroke.ql-fill,
+.ql-snow.ql-toolbar .ql-picker-label:hover .ql-stroke.ql-fill,
+.ql-snow .ql-toolbar .ql-picker-label:hover .ql-stroke.ql-fill,
+.ql-snow.ql-toolbar .ql-picker-label.ql-active .ql-stroke.ql-fill,
+.ql-snow .ql-toolbar .ql-picker-label.ql-active .ql-stroke.ql-fill,
+.ql-snow.ql-toolbar .ql-picker-item:hover .ql-stroke.ql-fill,
+.ql-snow .ql-toolbar .ql-picker-item:hover .ql-stroke.ql-fill,
+.ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke.ql-fill,
+.ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke.ql-fill {
+  fill: #0a997f;
+}
+
 .ql-editor {
   counter-reset: listCounter;
 
   & > * {
     counter-increment: listCounter;
 
-    &::after {
-      content: counter(listCounter);
+    &::before {
+      content: "●";
 
       font-family: "IBM Plex Sans", "OutputSansVariable";
       position: absolute;
-      top: 0;
+      top: 2px;
       right: 100%;
       margin-right: 1em;
 
       font-size: 0.6rem;
-      font-weight: 200;
+      font-weight: 400;
       text-align: right;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1078,16 +1336,34 @@ export default {
       /* background-color: transparent; */
       /* line-height: 8px; */
       /* margin-top: 8px; */
+      color: transparent;
       color: hsl(210, 11%, 58%);
 
       transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
     }
 
-    &:hover,
+    &.is--focused,
+    &.is--dragover {
+      &::before {
+        content: counter(listCounter);
+        color: #8894a0;
+      }
+    }
+
+    &::after {
+      content: "";
+      display: block;
+      width: 100%;
+      height: 0;
+      margin: 0;
+      background-color: var(--color-MediaLibrary);
+    }
+
     &.is--dragover {
       &::after {
-        font-weight: 900;
-        color: #333;
+        margin: var(--spacing) 0;
+        height: 4px;
+        transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
       }
     }
   }
@@ -1098,5 +1374,16 @@ export default {
 
   left: 50%;
   top: 50%;
+}
+
+._button_removeMedia {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: white;
+  text-decoration: none;
+  line-height: 0;
+  width: 1em;
+  height: 1em;
 }
 </style>
