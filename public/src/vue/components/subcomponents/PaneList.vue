@@ -94,6 +94,10 @@ export default {
   // overrided by pane type color
   --color-active: #ccc;
 
+  &[disabled] {
+    cursor: pointer;
+  }
+
   > div {
     display: flex;
     align-items: center;

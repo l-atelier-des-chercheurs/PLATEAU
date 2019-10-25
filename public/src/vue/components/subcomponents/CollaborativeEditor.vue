@@ -365,6 +365,7 @@ export default {
           "input",
           this.editor.getText() ? this.editor.root.innerHTML : ""
         );
+        this.updateFocusedLines();
         // cursorsOne.moveCursor(1, range);
       });
 
@@ -379,7 +380,7 @@ export default {
           this.updateCaretPosition();
         }
 
-        this.updateFocusedLines({ oldRange, range });
+        this.updateFocusedLines();
       });
     });
 
@@ -495,10 +496,7 @@ export default {
       const caretPos = this.editor.getBounds(selection);
       this.caret_position = { top: caretPos.top, left: caretPos.left };
     },
-    updateFocusedLines({
-      oldRange = undefined,
-      range = this.editor.getSelection()
-    }) {
+    updateFocusedLines() {
       console.log(`CollaborativeEditor • METHODS: updateFocusedLines`);
 
       // if (oldRange && oldRange.index) {
@@ -507,9 +505,12 @@ export default {
       //     line[0].domNode.classList.remove("is--focused");
       //   }
       // }
+
       this.editor
         .getLines()
         .map(b => b.domNode.classList.remove("is--focused"));
+
+      const range = this.editor.getSelection();
 
       if (range && range.index) {
         const line = this.editor.getLine(range.index);
@@ -716,13 +717,13 @@ export default {
     &.is--dragover {
       .ql-editor {
         > * {
-          background-image: linear-gradient(
-            90deg,
-            #ccc,
-            #ccc 50%,
-            transparent 0,
-            transparent
-          );
+          // background-image: linear-gradient(
+          //   90deg,
+          //   #ccc,
+          //   #ccc 50%,
+          //   transparent 0,
+          //   transparent
+          // );
 
           // background-size: 250% 4px;
         }
@@ -867,10 +868,6 @@ export default {
         &.is--focused {
           outline: 0;
           box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
-        }
-
-        &.is--dragovered {
-          background-color: var(--color-MediaLibrary);
         }
       }
 
@@ -1291,7 +1288,7 @@ export default {
     counter-increment: listCounter;
 
     &::before {
-      content: "•";
+      content: "●";
 
       font-family: "IBM Plex Sans", "OutputSansVariable";
       position: absolute;
@@ -1325,7 +1322,7 @@ export default {
     &.is--dragover {
       &::before {
         content: counter(listCounter);
-        color: hsl(210, 11%, 58%);
+        color: #8894a0;
       }
     }
 

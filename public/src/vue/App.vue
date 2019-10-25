@@ -184,8 +184,8 @@ input[type="text"] {
   -khtml-user-drag: element;
   -webkit-user-drag: element;
 
-  cursor: -webkit-grabbing;
-  cursor: -moz-grabbing;
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
 }
 
 .splitpanes__pane {
@@ -199,6 +199,10 @@ input[type="text"] {
   background-color: transparent;
   // border-left: 1px solid #eee;
   cursor: pointer;
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
+}
+.splitpanes--dragging .splitpanes__splitter {
   cursor: -webkit-grabbing;
   cursor: -moz-grabbing;
 }
@@ -287,6 +291,7 @@ input[type="text"] {
   min-width: 100px;
   font-family: inherit;
   font-weight: 200;
+  display: flex;
 
   --c-orange: var(--active-color);
 
@@ -323,6 +328,7 @@ input[type="text"] {
   .plyr__controls {
     background: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
     color: white;
+    width: 100%;
   }
 
   .plyr__control--overlaid {
