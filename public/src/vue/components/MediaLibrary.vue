@@ -5,7 +5,7 @@
         <div class="m_library--content">
           <div class="m_actionbar" v-show="$root.state.connected">
             <div class="m_actionbar--buttonBar">
-              <button
+              <!-- <button
                 type="button"
                 class="barButton barButton_capture"
                 v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
@@ -14,7 +14,7 @@
                 disabled
               >
                 <span>{{ $t('capture') }}</span>
-              </button>
+              </button>-->
               <label
                 v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
                 :key="`add_${field.key}`"
@@ -416,7 +416,8 @@ export default {
         .confirm(
           this.$t("sureToRemoveMedia"),
           () => {
-            this.$root.settings.current_writeup_media_metaFileName = false;
+            this.show_media_detail_for = false;
+
             this.$root.removeMedia({
               type: "projects",
               slugFolderName: this.slugProjectName,
@@ -541,7 +542,7 @@ export default {
 }
 
 .m_library--mediaFocus {
-  box-shadow: 0 -5px 23px rgba(0, 0, 0, 0.4);
+  // box-shadow: 0 10px 23px rgba(0, 0, 0, 0.4);
 
   .mediaContainer {
     position: absolute;
