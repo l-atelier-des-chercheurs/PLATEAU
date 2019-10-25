@@ -2,11 +2,11 @@
   <SlickList
     class="m_slicklist"
     axis="x"
-    v-model="$root.settings.project_active_panes_in_order"
+    v-model="$root.settings.project_panes_in_order"
     :useDragHandle="true"
   >
     <SlickItem
-      v-for="(item, index) in $root.settings.project_active_panes_in_order"
+      v-for="(item, index) in $root.settings.project_panes_in_order"
       :index="index"
       :key="item.key"
     >
@@ -118,7 +118,9 @@ export default {
     opacity: 0;
 
     &:checked + div {
-      background-color: #ccc;
+      // background-color: #ccc;
+      border-color: var(--color-active);
+      background: var(--color-active);
     }
   }
 }

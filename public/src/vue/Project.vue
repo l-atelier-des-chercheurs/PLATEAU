@@ -1,6 +1,6 @@
 <template>
   <splitpanes class="m_project" watch-slots>
-    <template v-for="pane in $root.settings.project_active_panes_in_order">
+    <template v-for="pane in $root.settings.project_panes_in_order">
       <pane v-if="pane.key === 'WriteUp' && pane.enabled" :key="pane.key" min-size="1">
         <WriteUp :slugFolderName="slugProjectName" :medias="project.medias" :read_only="read_only" />
       </pane>

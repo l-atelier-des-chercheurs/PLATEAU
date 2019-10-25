@@ -2,6 +2,7 @@
   <div id="app">
     <Topbar />
 
+    {{ $root.do_navigation.current_slugProjectName }}
     <template>
       <component
         :is="$root.do_navigation.view"
@@ -52,7 +53,6 @@ export default {
   --page-height: 11in;
   --active-color: rgb(52, 122, 213);
   // --active-color: #aaa;
-
   --color-WriteUp: #fff;
   --color-MediaLibrary: #f9ca00;
   --color-Composition: #2c75c5;
