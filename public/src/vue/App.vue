@@ -1,16 +1,12 @@
 <template>
   <div id="app">
     <Topbar />
-
-    {{ $root.do_navigation.current_slugProjectName }}
-    <template>
-      <component
-        :is="$root.do_navigation.view"
-        :projects="$root.store.projects"
-        :project="$root.currentProject"
-        :slugProjectName="$root.do_navigation.current_slugProjectName"
-      />
-    </template>
+    <component
+      :is="$root.do_navigation.view"
+      :projects="$root.store.projects"
+      :project="$root.currentProject"
+      :slugProjectName="$root.do_navigation.current_slugProjectName"
+    />
   </div>
 </template>
 
