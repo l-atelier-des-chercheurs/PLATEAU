@@ -198,8 +198,14 @@ class CardEditableModule extends Module {
             deselectCard();
           }
         };
+        let handleDrag = e => {
+          window.removeEventListener("dragover", handleDrag);
+          quill.enable(true);
+          deselectCard();
+        };
         window.addEventListener("keypress", handleKeyPress);
         window.addEventListener("click", handleClick);
+        window.addEventListener("dragover", handleDrag);
       }
     };
     quill.emitter.listenDOM("click", document.body, listener);
@@ -495,12 +501,15 @@ export default {
     }) {
       console.log(`CollaborativeEditor • METHODS: updateFocusedLines`);
 
-      if (oldRange && oldRange.index) {
-        const line = this.editor.getLine(oldRange.index);
-        if (line) {
-          line[0].domNode.classList.remove("is--focused");
-        }
-      }
+      // if (oldRange && oldRange.index) {
+      //   const line = this.editor.getLine(oldRange.index);
+      //   if (line) {
+      //     line[0].domNode.classList.remove("is--focused");
+      //   }
+      // }
+      this.editor
+        .getLines()
+        .map(b => b.domNode.classList.remove("is--focused"));
 
       if (range && range.index) {
         const line = this.editor.getLine(range.index);
@@ -617,7 +626,7 @@ export default {
       this.removeDragoverFromBlots();
 
       const _blot = this.getBlockFromElement($event.target);
-      _blot.domNode.classList.add("is--dragover");
+      if (_blot) _blot.domNode.classList.add("is--dragover");
 
       this.cancelDragOver();
     },
@@ -680,7 +689,7 @@ export default {
     getBlockFromElement(_target) {
       while (!_target.parentElement.classList.contains("ql-editor")) {
         _target = _target.parentElement;
-        if (_target === null) break;
+        if (_target === null || !_target.parentElement) break;
       }
       let _blot = Quill.find(_target);
       if (_blot) {
@@ -791,6 +800,8 @@ export default {
       position: relative;
       z-index: 1;
 
+      // attention : à cause du drop il vaut mieux ne pas utiliser de margin
+      // sinon pas moyen de savoir sur quel item c’est droppé
       margin: 0 auto;
       padding: 0;
       max-width: var(--size-column-width);
@@ -817,8 +828,10 @@ export default {
       &.ql-mediacard {
         transform-origin: right center;
         border-radius: 0px;
-        margin-top: var(--spacing);
-        margin-bottom: var(--spacing);
+        // margin-top: var(--spacing);
+        // margin-bottom: var(--spacing);
+        padding-top: calc(var(--spacing) / 2);
+        padding-bottom: calc(var(--spacing) / 2);
 
         img {
           display: block;
@@ -1278,7 +1291,7 @@ export default {
     counter-increment: listCounter;
 
     &::before {
-      content: counter(listCounter);
+      content: "•";
 
       font-family: "IBM Plex Sans", "OutputSansVariable";
       position: absolute;
