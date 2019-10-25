@@ -63,39 +63,67 @@ class MediaBlot extends BlockEmbed {
     }
     node.dataset.type = type;
     node.dataset.metaFileName = metaFileName;
+
+    node.style.animation = "scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
+    node.addEventListener("animationend", () => {
+      node.style.animation = "";
+    });
+
     return node;
   }
 
   constructor(node) {
     super(node);
+
+    let removeButton;
+    let caption;
+    let captionInput;
+
     node.__onSelect = () => {
-      if (!node.querySelector("input")) {
-        let caption = node.querySelector("figcaption");
-        let captionInput = window.document.createElement("input");
-        captionInput.setAttribute("type", "text");
-        captionInput.placeholder = "Légende…";
-        if (caption) {
-          captionInput.value = caption.innerText;
-          caption.innerHTML = "";
-          caption.appendChild(captionInput);
-        } else {
-          caption = window.document.createElement("figcaption");
-          caption.appendChild(captionInput);
-          node.appendChild(caption);
-        }
-        captionInput.addEventListener("blur", () => {
-          let value = captionInput.value;
-          if (!value || value === "") {
-            caption.remove();
-          } else {
-            captionInput.remove();
-            caption.innerText = value;
-          }
-          node.classList.remove("is--focused");
+      node.classList.add("is--focused");
+
+      removeButton = window.document.createElement("button");
+      removeButton.innerHTML = "×";
+      removeButton.setAttribute("type", "button");
+      removeButton.classList.add("_button_removeMedia");
+      removeButton.addEventListener("click", () => {
+        node.__onDeselect();
+        const quill = Quill.find(node.parentElement.parentElement);
+        quill.enable(true);
+        node.style.animation = "scale-out 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
+        node.addEventListener("animationend", () => {
+          node.remove();
         });
-        node.classList.add("is--focused");
-        captionInput.focus();
+      });
+      node.appendChild(removeButton);
+
+      caption = node.querySelector("figcaption");
+      captionInput = window.document.createElement("input");
+      captionInput.setAttribute("type", "text");
+      captionInput.placeholder = "Légende…";
+
+      if (caption) {
+        captionInput.value = caption.innerText;
+        caption.innerHTML = "";
+        caption.appendChild(captionInput);
+      } else {
+        caption = window.document.createElement("figcaption");
+        caption.appendChild(captionInput);
+        node.appendChild(caption);
       }
+    };
+    node.__onDeselect = () => {
+      let value = captionInput.value;
+      if (!value || value === "") {
+        caption.remove();
+      } else {
+        captionInput.remove();
+        caption.innerText = value;
+      }
+
+      node.classList.remove("is--focused");
+
+      removeButton.remove();
     };
   }
 
@@ -129,12 +157,17 @@ class MediaBlot extends BlockEmbed {
 class CardEditableModule extends Module {
   constructor(quill, options) {
     super(quill, options);
+
+    let is_selected = false;
+
     let listener = e => {
       if (!document.body.contains(quill.root)) {
         return document.body.removeEventListener("click", listener);
       }
       let elm = e.target.closest(".ql-mediacard");
       let deselectCard = () => {
+        console.log("deselectCard");
+        is_selected = false;
         if (elm.__onDeselect) {
           elm.__onDeselect(quill);
         } else {
@@ -145,8 +178,11 @@ class CardEditableModule extends Module {
           );
         }
       };
-      if (elm && elm.__blot && elm.__onSelect) {
+      if (elm && elm.__blot && elm.__onSelect && !is_selected) {
         quill.disable();
+
+        is_selected = true;
+
         elm.__onSelect(quill);
         let handleKeyPress = e => {
           if (e.keyCode === 27 || e.keyCode === 13) {
@@ -156,7 +192,7 @@ class CardEditableModule extends Module {
           }
         };
         let handleClick = e => {
-          if (e.which === 1 && !elm.contains(e.target)) {
+          if (e.which === 1 && !e.path.includes(elm)) {
             window.removeEventListener("click", handleClick);
             quill.enable(true);
             deselectCard();
@@ -231,6 +267,7 @@ export default {
 
       is_focused: false,
       is_being_dragover: false,
+
       debounce_textUpdate: undefined,
       caret_position: {
         top: undefined,
@@ -293,6 +330,9 @@ export default {
       ],
       placeholder: "…"
     });
+
+    this.$refs.editor.dataset.quill = this.editor;
+
     this.editor.root.innerHTML = this.value;
     this.cancelDragOver = debounce(this.cancelDragOver, 300);
 
@@ -304,6 +344,8 @@ export default {
 
     const cursorsOne = this.editor.getModule("cursors");
     cursorsOne.createCursor(1, "User 1", "#0a997f");
+
+    this.editor.focus();
 
     this.$nextTick(() => {
       if (this.$root.state.mode !== "live") {
@@ -331,7 +373,7 @@ export default {
           this.updateCaretPosition();
         }
 
-        this.updateFocusedLines(oldRange, range);
+        this.updateFocusedLines({ oldRange, range });
       });
     });
 
@@ -447,7 +489,10 @@ export default {
       const caretPos = this.editor.getBounds(selection);
       this.caret_position = { top: caretPos.top, left: caretPos.left };
     },
-    updateFocusedLines(oldRange, range) {
+    updateFocusedLines({
+      oldRange = undefined,
+      range = this.editor.getSelection()
+    }) {
       console.log(`CollaborativeEditor • METHODS: updateFocusedLines`);
 
       if (oldRange && oldRange.index) {
@@ -531,7 +576,7 @@ export default {
       if (media.type === "image") {
         const thumb = media.thumbs.find(m => m.size === 1600);
         if (!!thumb) {
-          // this.editor.insertText(index, "\n", Quill.sources.USER);
+          // this.editor.insertText(index + 1, "\n", Quill.sources.USER);
           this.editor.insertEmbed(
             index,
             "media",
@@ -565,14 +610,22 @@ export default {
       }
     },
     ondragover($event) {
-      // console.log(`METHODS • CollaborativeEditor / dragover`);
+      console.log(
+        `METHODS • CollaborativeEditor / dragover on ${$event.currentTarget.className}`
+      );
       this.is_being_dragover = true;
+      this.removeDragoverFromBlots();
+
+      const _blot = this.getBlockFromElement($event.target);
+      _blot.domNode.classList.add("is--dragover");
+
       this.cancelDragOver();
     },
     cancelDragOver() {
       if (this.$root.state.dev_mode === "debug") {
         console.log(`METHODS • AddMedia / cancelDragOver`);
       }
+      this.removeDragoverFromBlots();
       this.is_being_dragover = false;
     },
 
@@ -583,38 +636,57 @@ export default {
       $event.preventDefault();
       $event.dataTransfer.dropEffect = "move";
 
+      this.removeDragoverFromBlots();
+
+      if (!$event.dataTransfer.getData("text/plain")) {
+        console.log(`METHODS • CollaborativeEditor / dropHandler: not valid`);
+        return;
+      }
+
       const data = JSON.parse($event.dataTransfer.getData("text/plain"));
       console.log(data);
 
       if (data.media_filename) {
         // drop sur l’éditor et pas sur une ligne
         if ($event.target.classList.contains("ql-editor")) {
-          this.addMediaAtIndex(this.editor.scroll.length() - 1, data);
+          console.log(
+            "dropped on editor and not on line, will insert at the end of doc"
+          );
+          this.addMediaAtIndex(this.editor.getLength() - 1, data);
           return;
         }
 
-        let _target = $event.target;
-        while (!_target.parentElement.classList.contains("ql-editor")) {
-          _target = $event.target.parentElement;
+        let _blot = this.getBlockFromElement($event.target);
 
-          if (_target === null) {
-            break;
-          }
-        }
-
-        let _blot = Quill.find(_target);
-        if (_blot) {
-          // const _blotIndex = this.editor.getLines().findIndex(b => b === _blot);
-          // let [line, offset] = this.editor.getLine(_blotIndex);
-          const idx = this.editor.getIndex(_blot);
-          this.addMediaAtIndex(idx, data);
-        } else {
+        if (!_blot) {
           this.$alertify
             .closeLogOnClick(true)
             .delay(4000)
             .error(this.$t("notifications.failed_to_find_block_line"));
+          return;
         }
+
+        _blot = _blot.next ? _blot.next : _blot;
+
+        const index = this.editor.getIndex(_blot);
+        this.addMediaAtIndex(index, data);
       }
+    },
+    removeDragoverFromBlots() {
+      this.editor
+        .getLines()
+        .map(b => b.domNode.classList.remove("is--dragover"));
+    },
+    getBlockFromElement(_target) {
+      while (!_target.parentElement.classList.contains("ql-editor")) {
+        _target = _target.parentElement;
+        if (_target === null) break;
+      }
+      let _blot = Quill.find(_target);
+      if (_blot) {
+        return _blot;
+      }
+      return false;
     }
   }
 };
@@ -744,40 +816,74 @@ export default {
 
       &.ql-mediacard {
         transform-origin: right center;
-        animation: scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        border-radius: 0px;
         margin-top: var(--spacing);
         margin-bottom: var(--spacing);
 
         img {
           display: block;
         }
+        video {
+          display: block;
+          &:focus {
+            outline: 0;
+          }
+        }
 
         figcaption {
           text-align: center;
-          margin-top: 0em;
           font-size: 75%;
           // font-weight: 600;
-          // color: #999;
+          color: #444;
+          margin: 0 auto;
+          padding: 0.4em 0;
+          max-width: 33ch;
+
+          input {
+            text-align: center;
+            background-color: #eee;
+            border: 0;
+            border-radius: 4px;
+          }
         }
 
-        > *:not(figcaption) {
-          // padding-right: 1px;
+        &:hover {
+          box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
         }
 
         &.is--focused {
           outline: 0;
-          box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
+          box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
+        }
+
+        &.is--dragovered {
+          background-color: var(--color-MediaLibrary);
         }
       }
 
       @keyframes scale-in {
         0% {
           opacity: 0;
+          max-height: 0px;
           transform: scale(0.9, 1);
         }
         100% {
           opacity: 1;
+          max-height: 50vh;
           transform: scale(1, 1);
+        }
+      }
+      @keyframes scale-out {
+        0% {
+          opacity: 1;
+          max-height: 50vh;
+          transform: scale(1, 1);
+        }
+        100% {
+          opacity: 0;
+          max-height: 0px;
+          margin: 0;
+          transform: scale(0.9, 1);
         }
       }
 
@@ -817,9 +923,18 @@ export default {
   }
 
   .ql-editor.ql-blank::before {
-    left: 0;
-    color: rgba(0, 0, 0, 0.4);
+    display: block;
+
+    // position: relative;
+    max-width: var(--size-column-width);
+    margin: 0 auto;
+    left: 20px;
+    color: rgba(0, 0, 0, 0.6);
     font-style: normal;
+
+    &:hover {
+      color: black;
+    }
   }
 
   .mediaTextContent {
@@ -1162,7 +1277,7 @@ export default {
   & > * {
     counter-increment: listCounter;
 
-    &::after {
+    &::before {
       content: counter(listCounter);
 
       font-family: "IBM Plex Sans", "OutputSansVariable";
@@ -1188,14 +1303,33 @@ export default {
       /* line-height: 8px; */
       /* margin-top: 8px; */
       color: transparent;
+      color: hsl(210, 11%, 58%);
 
       transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
     }
 
     &.is--focused,
     &.is--dragover {
-      &::after {
+      &::before {
+        content: counter(listCounter);
         color: hsl(210, 11%, 58%);
+      }
+    }
+
+    &::after {
+      content: "";
+      display: block;
+      width: 100%;
+      height: 0;
+      margin: 0;
+      background-color: var(--color-MediaLibrary);
+    }
+
+    &.is--dragover {
+      &::after {
+        margin: var(--spacing) 0;
+        height: 4px;
+        transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
       }
     }
   }
@@ -1206,5 +1340,16 @@ export default {
 
   left: 50%;
   top: 50%;
+}
+
+._button_removeMedia {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: white;
+  text-decoration: none;
+  line-height: 0;
+  width: 1em;
+  height: 1em;
 }
 </style>
