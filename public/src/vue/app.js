@@ -335,10 +335,10 @@ let vm = new Vue({
         console.log(
           `ROOT EVENT: var has changed: settings.project_panes_in_order`
         );
-        console.log(`panes data`);
-        this.$root.settings.project_panes_in_order.map(pp =>
-          console.log(`${pp.key} = ${pp.enabled}`)
-        );
+        // console.log(`panes data`);
+        // this.$root.settings.project_panes_in_order.map(pp =>
+        //   console.log(`${pp.key} = ${pp.enabled}`)
+        // );
         localstore.set(
           `panes.${this.$root.do_navigation.current_slugProjectName}`,
           this.$root.settings.project_panes_in_order
