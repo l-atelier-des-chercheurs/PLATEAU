@@ -55,6 +55,7 @@ class MediaBlot extends BlockEmbed {
     if (src) {
       tag.setAttribute("src", src);
     }
+    tag.setAttribute("draggable", false);
     node.appendChild(tag);
     if (caption) {
       let caption_tag = window.document.createElement("figcaption");
@@ -63,6 +64,14 @@ class MediaBlot extends BlockEmbed {
     }
     node.dataset.type = type;
     node.dataset.metaFileName = metaFileName;
+    node.setAttribute("draggable", false);
+
+    node.addEventListener("dragstart", $event => {
+      $event.dataTransfer.setData("text/plain", "media_in_quill");
+      $event.dataTransfer.effectAllowed = "move";
+      // this.is_dragged = true;
+      // this.$root.settings.media_being_dragged = media.metaFileName;
+    });
 
     node.style.animation = "scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
     node.addEventListener("animationend", () => {
@@ -648,38 +657,53 @@ export default {
 
       this.removeDragoverFromBlots();
 
-      if (!$event.dataTransfer.getData("text/plain")) {
-        console.log(`METHODS • CollaborativeEditor / dropHandler: not valid`);
-        return;
-      }
-
-      const data = JSON.parse($event.dataTransfer.getData("text/plain"));
-      console.log(data);
-
-      if (data.media_filename) {
-        // drop sur l’éditor et pas sur une ligne
-        if ($event.target.classList.contains("ql-editor")) {
-          console.log(
-            "dropped on editor and not on line, will insert at the end of doc"
-          );
-          this.addMediaAtIndex(this.editor.getLength() - 1, data);
-          return;
-        }
-
+      if ($event.dataTransfer.getData("text/plain") === "media_in_quill") {
+        console.log(
+          `METHODS • CollaborativeEditor / dropHandler: drag and dropped a media from quill`
+        );
         let _blot = this.getBlockFromElement($event.target);
-
-        if (!_blot) {
-          this.$alertify
-            .closeLogOnClick(true)
-            .delay(4000)
-            .error(this.$t("notifications.failed_to_find_block_line"));
-          return;
-        }
-
-        _blot = _blot.next ? _blot.next : _blot;
-
         const index = this.editor.getIndex(_blot);
-        this.addMediaAtIndex(index, data);
+
+        // find which blot was dragged (A)
+
+        // find where it was dropped (B)
+
+        // move delta from A to B
+
+        console.log(`_blot is currently at index ${index}`);
+      } else if ($event.dataTransfer.getData("text/plain")) {
+        console.log(
+          `METHODS • CollaborativeEditor / dropHandler: dropped a media from the library`
+        );
+
+        const data = JSON.parse($event.dataTransfer.getData("text/plain"));
+        console.log(data);
+
+        if (data.media_filename) {
+          // drop sur l’éditor et pas sur une ligne
+          if ($event.target.classList.contains("ql-editor")) {
+            console.log(
+              "dropped on editor and not on line, will insert at the end of doc"
+            );
+            this.addMediaAtIndex(this.editor.getLength() - 1, data);
+            return;
+          }
+
+          let _blot = this.getBlockFromElement($event.target);
+
+          if (!_blot) {
+            this.$alertify
+              .closeLogOnClick(true)
+              .delay(4000)
+              .error(this.$t("notifications.failed_to_find_block_line"));
+            return;
+          }
+
+          _blot = _blot.next ? _blot.next : _blot;
+
+          const index = this.editor.getIndex(_blot);
+          this.addMediaAtIndex(index, data);
+        }
       }
     },
     removeDragoverFromBlots() {
