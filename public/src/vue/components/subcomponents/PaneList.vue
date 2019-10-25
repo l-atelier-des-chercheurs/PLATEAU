@@ -110,6 +110,10 @@ export default {
     }
   }
 
+  &[for="enable_pane_for_WriteUp"] > div {
+    border: 1px solid transparent;
+  }
+
   > input {
     flex: 0 0 auto;
     margin-right: calc(var(--spacing) / 2);
@@ -119,7 +123,8 @@ export default {
 
     &:checked + div {
       // background-color: #ccc;
-      border-color: var(--color-active);
+      // border-color: var(--color-active);
+      border-color: black;
       background: var(--color-active);
     }
   }
