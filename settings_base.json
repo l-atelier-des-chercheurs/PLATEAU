@@ -96,6 +96,7 @@
               "audio",
               "text",
               "writeup",
+              "composition",
               "document",
               "other"
             ],
@@ -112,6 +113,10 @@
           },
           "caption": {
             "type": "string"
+          },
+          "canvas_information": {
+            "type": "string",
+            "escape": false
           }
         }
       }

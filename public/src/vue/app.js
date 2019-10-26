@@ -186,6 +186,7 @@ let vm = new Vue({
       medias_present_in_writeup: [],
 
       current_writeup_media_metaFileName: false,
+      current_composition_media_metaFileName: false,
       media_being_dragged: false,
 
       current_author: false,

@@ -2,20 +2,28 @@
   <splitpanes class="m_project" watch-slots>
     <template v-for="pane in $root.settings.project_panes_in_order">
       <pane v-if="pane.key === 'WriteUp' && pane.enabled" :key="pane.key" min-size="1">
-        <WriteUp :slugFolderName="slugProjectName" :medias="project.medias" :read_only="read_only" />
+        <WriteUp
+          :slugFolderName="slugProjectName"
+          :writeup_medias="writeup_medias"
+          :read_only="read_only"
+        />
       </pane>
 
       <pane v-else-if="pane.key === 'MediaLibrary' && pane.enabled" :key="pane.key">
-        <MediaLibrary :slugProjectName="slugProjectName" :project="project" :read_only="false" />
+        <MediaLibrary
+          :slugProjectName="slugProjectName"
+          :project="project"
+          :library_medias="library_medias"
+          :read_only="false"
+        />
       </pane>
 
       <pane v-else-if="pane.key === 'Composition' && pane.enabled" :key="pane.key">
-        <div class="m_composition">
-          <div class>
-            <i>à venir</i>
-            <br />projection/composition
-          </div>
-        </div>
+        <Composition
+          :slugFolderName="slugProjectName"
+          :composition_medias="composition_medias"
+          :read_only="read_only"
+        />
       </pane>
 
       <pane v-else-if="pane.key === 'Capture' && pane.enabled" :key="pane.key">
@@ -32,6 +40,7 @@
 import MediaLibrary from "./components/MediaLibrary.vue";
 import WriteUp from "./components/WriteUp.vue";
 import Capture from "./components/Capture.vue";
+import Composition from "./components/Composition.vue";
 import { Splitpanes, Pane } from "splitpanes";
 
 export default {
@@ -43,6 +52,7 @@ export default {
     MediaLibrary,
     WriteUp,
     Capture,
+    Composition,
     Splitpanes,
     Pane
   },
@@ -58,7 +68,33 @@ export default {
   mounted() {},
   beforeDestroy() {},
   watch: {},
-  computed: {},
+  computed: {
+    writeup_medias() {
+      return Object.values(this.project.medias).filter(
+        m => m.hasOwnProperty("type") && m.type === "writeup"
+      );
+    },
+    composition_medias() {
+      return Object.values(this.project.medias).filter(
+        m => m.hasOwnProperty("type") && m.type === "composition"
+      );
+    },
+    library_medias() {
+      if (
+        !this.project.hasOwnProperty("medias") ||
+        typeof this.project.medias !== "object"
+      ) {
+        return [];
+      }
+
+      return Object.values(this.project.medias).filter(
+        m =>
+          m.hasOwnProperty("type") &&
+          m.type !== "writeup" &&
+          m.type !== "composition"
+      );
+    }
+  },
   methods: {}
 };
 </script>
@@ -76,11 +112,5 @@ export default {
   > * {
     height: 100%;
   }
-}
-
-.m_composition {
-  background-color: var(--color-Composition);
-  padding: var(--spacing);
-  height: 100%;
 }
 </style>

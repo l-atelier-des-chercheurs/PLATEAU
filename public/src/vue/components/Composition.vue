@@ -1,7 +1,7 @@
 <template>
-  <div class="m_writeup">
+  <div class="m_composition">
     <div class>
-      <table class v-if="mode === 'writeup_list'">
+      <table class v-if="mode === 'composition_list'">
         <thead>
           <tr>
             <th style>{{ $t('documents') }}</th>
@@ -10,7 +10,7 @@
           </tr>
         </thead>
         <transition-group tag="tbody" name="list-complete">
-          <tr v-for="w in writeup_medias" :key="w.metaFileName">
+          <tr v-for="w in composition_medias" :key="w.metaFileName">
             <td>{{ w.name }}</td>
             <td
               :title="$moment(w.date_modified).format('l LTS')"
@@ -19,24 +19,24 @@
               <button
                 type="button"
                 class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
-                @click="openWriteupMedia(w.metaFileName)"
+                @click="openCompositionMedia(w.metaFileName)"
               >{{ $t('open') }}</button>
             </td>
             <td>
               <button
                 type="button"
                 class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
-                @click="removeWriteupMedia(w.metaFileName)"
+                @click="removeCompositionMedia(w.metaFileName)"
               >{{ $t('remove') }}</button>
             </td>
           </tr>
           <tr :key="'create'">
-            <template v-if="!show_createwriteup_section">
+            <template v-if="!show_createcomposition_section">
               <td colspan="4">
                 <button
                   type="button"
                   class="_create_button"
-                  @click="show_createwriteup_section = !show_createwriteup_section"
+                  @click="show_createcomposition_section = !show_createcomposition_section"
                 >{{ $t('create') }}</button>
               </td>
             </template>
@@ -49,46 +49,46 @@
                 <button
                   type="button"
                   class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-                  @click="createWriteupMedia"
+                  @click="createCompositionMedia"
                 >{{ $t('create') }}</button>
               </td>
             </template>
           </tr>
         </transition-group>
       </table>
-      <div v-else-if="mode === 'single_writeup'" class="text-centered">
+      <div v-else-if="mode === 'single_composition'" class="text-centered">
         <button
           class="button_backtolist"
           type="button"
-          @click="closeWriteupMedia"
+          @click="closeCompositionMedia"
         >← {{ $t('back_to_list') }}</button>
       </div>
     </div>
 
-    <WriteUpEditor
-      v-if="current_writeup_media"
+    <CompositionEditor
+      v-if="current_composition_media"
       class="bg-blanc c-noir"
       :slugFolderName="slugFolderName"
-      :media="current_writeup_media"
+      :media="current_composition_media"
       :readonly="read_only"
-      @remove="removeWriteupMedia($root.settings.current_writeup_media_metaFileName)"
+      @remove="removeCompositionMedia($root.settings.current_composition_media_metaFileName)"
     />
   </div>
 </template>
 <script>
-import WriteUpEditor from "./subcomponents/WriteUpEditor.vue";
+import CompositionEditor from "./subcomponents/CompositionEditor.vue";
 
 export default {
   props: {
     slugFolderName: String,
-    writeup_medias: Array
+    composition_medias: Array
   },
   components: {
-    WriteUpEditor
+    CompositionEditor
   },
   data() {
     return {
-      show_createwriteup_section: false
+      show_createcomposition_section: false
     };
   },
 
@@ -98,25 +98,25 @@ export default {
 
   watch: {},
   computed: {
-    sorted_writeup_medias() {
-      return this.writeup_medias.sort((a, b) =>
+    sorted_composition_medias() {
+      return this.composition_medias.sort((a, b) =>
         a.date_modified.localeCompare(b.date_modified)
       );
     },
-    current_writeup_media() {
-      if (this.$root.settings.current_writeup_media_metaFileName === false)
+    current_composition_media() {
+      if (this.$root.settings.current_composition_media_metaFileName === false)
         return false;
-      return this.writeup_medias.filter(
+      return this.composition_medias.filter(
         m =>
           m.metaFileName ===
-          this.$root.settings.current_writeup_media_metaFileName
+          this.$root.settings.current_composition_media_metaFileName
       )[0];
     },
     mode() {
-      if (this.$root.settings.current_writeup_media_metaFileName) {
-        return "single_writeup";
+      if (this.$root.settings.current_composition_media_metaFileName) {
+        return "single_composition";
       }
-      return "writeup_list";
+      return "composition_list";
     }
   },
   methods: {
@@ -144,9 +144,9 @@ export default {
         });
       }
     },
-    createWriteupMedia() {
+    createCompositionMedia() {
       if (window.state.dev_mode === "debug") {
-        console.log("METHODS • AddMediaButton: createWriteupMedia");
+        console.log("METHODS • AddMediaButton: createCompositionMedia");
       }
 
       let name = this.$refs.nameInput.value;
@@ -154,7 +154,7 @@ export default {
         name = this.$t("untitled_document");
       }
 
-      if (this.writeup_medias.filter(w => w.name === name).length > 0) {
+      if (this.composition_medias.filter(w => w.name === name).length > 0) {
         this.$alertify
           .closeLogOnClick(true)
           .delay(4000)
@@ -162,49 +162,53 @@ export default {
         return false;
       }
 
-      this.show_createwriteup_section = false;
+      this.show_createcomposition_section = false;
 
       this.$eventHub.$on("socketio.media_created_or_updated", m =>
-        this.openWriteupMedia(m.metaFileName)
+        this.openCompositionMedia(m.metaFileName)
       );
       this.$root.createMedia({
         slugFolderName: this.slugFolderName,
         type: "projects",
         additionalMeta: {
           name,
-          type: "writeup"
+          type: "composition"
         }
       });
     },
-    openWriteupMedia(metaFileName) {
+    openCompositionMedia(metaFileName) {
       if (window.state.dev_mode === "debug") {
-        console.log(`METHODS • WriteUp: openWriteupMedia / ${metaFileName}`);
+        console.log(
+          `METHODS • Composition: openCompositionMedia / ${metaFileName}`
+        );
       }
 
-      this.$root.settings.current_writeup_media_metaFileName = false;
+      this.$root.settings.current_composition_media_metaFileName = false;
       this.$nextTick(() => {
-        this.$root.settings.current_writeup_media_metaFileName = metaFileName;
+        this.$root.settings.current_composition_media_metaFileName = metaFileName;
       });
     },
-    closeWriteupMedia() {
+    closeCompositionMedia() {
       if (window.state.dev_mode === "debug") {
-        console.log(`METHODS • WriteUp: closeWriteupMedia`);
+        console.log(`METHODS • Composition: closeCompositionMedia`);
       }
 
-      this.$root.settings.current_writeup_media_metaFileName = false;
+      this.$root.settings.current_composition_media_metaFileName = false;
     },
-    removeWriteupMedia(metaFileName) {
+    removeCompositionMedia(metaFileName) {
       if (window.state.dev_mode === "debug") {
-        console.log(`METHODS • WriteUp: removeWriteupMedia / ${metaFileName}`);
+        console.log(
+          `METHODS • Composition: removeCompositionMedia / ${metaFileName}`
+        );
       }
 
       this.$alertify
         .okBtn(this.$t("yes"))
         .cancelBtn(this.$t("cancel"))
         .confirm(
-          this.$t("sureToRemoveWriteup"),
+          this.$t("sureToRemoveComposition"),
           () => {
-            this.$root.settings.current_writeup_media_metaFileName = false;
+            this.$root.settings.current_composition_media_metaFileName = false;
             this.$root.removeMedia({
               type: "projects",
               slugFolderName: this.slugFolderName,
@@ -218,11 +222,10 @@ export default {
 };
 </script>
 <style lang="scss">
-.m_writeup {
+.m_composition {
   position: relative;
-  // margin: var(--spacing);
-  // margin: 0 auto;
-  background-color: var(--color-WriteUp);
+  background-color: var(--color-Composition);
+  padding: var(--spacing);
   height: 100%;
   overflow: auto;
 
