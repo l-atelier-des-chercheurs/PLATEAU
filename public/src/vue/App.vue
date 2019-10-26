@@ -48,6 +48,7 @@ export default {
   --border-color: #222;
   --page-height: 11in;
   --active-color: rgb(52, 122, 213);
+  --active-color: var(--c-orange);
   // --active-color: #aaa;
   --color-WriteUp: #fff;
   --color-MediaLibrary: #f9ca00;

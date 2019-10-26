@@ -19,6 +19,19 @@ module.exports = (function() {
       open: 'Ouvrir',
       back: 'Retour',
       at: 'à',
+      settings: 'Règlages',
+
+      photo: 'photo',
+      video: 'vidéo',
+      stopmotion: 'animation',
+      audio: 'son',
+      vecto: 'formes',
+      image: 'image',
+      text: 'texte',
+      document: 'document',
+      other: 'autre',
+      with_sound: 'avec le son',
+      generate: 'Générer',
 
       WriteUp: 'Document',
       Capture: 'Capture',
@@ -35,7 +48,9 @@ module.exports = (function() {
       drop_here_to_import: 'Déposez vos contenus ici pour les importer',
 
       notifications: {
-        connected_to_plateau: 'Connection à plateau active'
+        connected_to_plateau: 'Connection à plateau active',
+        using_saved_password:
+          'Connection à plateau en utilisant le mot de passe enregistré'
       }
     },
     en: {
@@ -56,6 +71,19 @@ module.exports = (function() {
       open: 'Open',
       back: 'Back',
       at: 'at',
+      settings: 'Settings',
+
+      photo: 'picture',
+      video: 'video',
+      stopmotion: 'stop motion',
+      audio: 'sound',
+      vecto: 'shapes',
+      image: 'image',
+      text: 'text',
+      document: 'document',
+      other: 'other',
+      with_sound: 'with sound',
+      generate: 'Generate',
 
       WriteUp: 'Document',
       Capture: 'Capture',
@@ -72,7 +100,9 @@ module.exports = (function() {
       drop_here_to_import: 'Drop your content here to import',
 
       notifications: {
-        connected_to_plateau: 'Connection to plateau is active'
+        connected_to_plateau: 'Connection to plateau is active',
+        using_saved_password:
+          'Connecting to plateau using the password that was saved'
       }
     }
   };

@@ -19,12 +19,11 @@
       </pane>
 
       <pane v-else-if="pane.key === 'Capture' && pane.enabled" :key="pane.key">
-        <div class="m_capture">
-          <div class>
-            <i>à venir</i>
-            <br />capture
-          </div>
-        </div>
+        <Capture
+          :slugProjectName="slugProjectName"
+          :project="project"
+          :read_only="!$root.state.connected"
+        />
       </pane>
     </template>
   </splitpanes>
@@ -32,6 +31,7 @@
 <script>
 import MediaLibrary from "./components/MediaLibrary.vue";
 import WriteUp from "./components/WriteUp.vue";
+import Capture from "./components/Capture.vue";
 import { Splitpanes, Pane } from "splitpanes";
 
 export default {
@@ -42,6 +42,7 @@ export default {
   components: {
     MediaLibrary,
     WriteUp,
+    Capture,
     Splitpanes,
     Pane
   },
@@ -79,12 +80,6 @@ export default {
 
 .m_composition {
   background-color: var(--color-Composition);
-  padding: var(--spacing);
-  height: 100%;
-}
-
-.m_capture {
-  background-color: var(--color-Capture);
   padding: var(--spacing);
   height: 100%;
 }
