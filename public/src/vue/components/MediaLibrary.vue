@@ -131,7 +131,7 @@
     <transition name="fade_fast" :duration="150">
       <div
         v-if="!read_only && show_drop_container && !$root.settings.media_being_dragged"
-        @drop="dropHandler($event)"
+        @drop="ondrop($event)"
         class="_drop_indicator"
       >
         <div>
@@ -459,9 +459,9 @@ export default {
       }
       this.show_drop_container = false;
     },
-    dropHandler($event) {
+    ondrop($event) {
       if (this.$root.state.dev_mode === "debug") {
-        console.log(`METHODS • AddMedia / dropHandler`);
+        console.log(`METHODS • AddMedia / ondrop`);
       }
 
       // Prevent default behavior (Prevent file from being opened)

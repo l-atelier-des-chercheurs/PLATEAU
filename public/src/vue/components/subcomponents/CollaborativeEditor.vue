@@ -7,7 +7,7 @@
     }"
     autofocus="autofocus"
     @dragover="ondragover($event)"
-    @drop="dropHandler($event)"
+    @drop="ondrop($event)"
   >
     <!-- connection_state : {{ connection_state }} -->
     <!-- <br /> -->
@@ -66,6 +66,8 @@ class MediaBlot extends BlockEmbed {
     node.dataset.metaFileName = metaFileName;
     node.setAttribute("draggable", false);
 
+    // todo for later: allow drag from cards in quill
+    // to move inside document or to composition
     node.addEventListener("dragstart", $event => {
       $event.dataTransfer.setData("text/plain", "media_in_quill");
       $event.dataTransfer.effectAllowed = "move";
@@ -623,8 +625,8 @@ export default {
       this.is_being_dragover = false;
     },
 
-    dropHandler($event) {
-      console.log(`METHODS • CollaborativeEditor / dropHandler`);
+    ondrop($event) {
+      console.log(`METHODS • CollaborativeEditor / ondrop`);
 
       // Prevent default behavior (Prevent file from being opened)
       $event.preventDefault();
@@ -634,7 +636,7 @@ export default {
 
       if ($event.dataTransfer.getData("text/plain") === "media_in_quill") {
         console.log(
-          `METHODS • CollaborativeEditor / dropHandler: drag and dropped a media from quill`
+          `METHODS • CollaborativeEditor / ondrop: drag and dropped a media from quill`
         );
         let _blot = this.getBlockFromElement($event.target);
         const index = this.editor.getIndex(_blot);
@@ -648,7 +650,7 @@ export default {
         console.log(`_blot is currently at index ${index}`);
       } else if ($event.dataTransfer.getData("text/plain")) {
         console.log(
-          `METHODS • CollaborativeEditor / dropHandler: dropped a media from the library`
+          `METHODS • CollaborativeEditor / ondrop: dropped a media from the library`
         );
 
         const data = JSON.parse($event.dataTransfer.getData("text/plain"));
@@ -804,6 +806,7 @@ export default {
       right: 0;
       top: 0;
       bottom: 0;
+      pointer-events: none;
 
       background-color: #ccc;
 

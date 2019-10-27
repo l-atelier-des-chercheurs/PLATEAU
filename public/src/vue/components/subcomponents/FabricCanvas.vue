@@ -5,17 +5,15 @@
       'is--receptiveToDrop' : !!$root.settings.media_being_dragged,
       'is--dragover' : is_being_dragover  
     }"
+    @dragover="ondragover($event)"
+    @drop="ondrop($event)"
   >
-    <canvas
-      ref="canvas"
-      width="1024"
-      height="768"
-      @dragover="ondragover($event)"
-      @drop="dropHandler($event)"
-    />
+    <canvas ref="canvas" :width="canvas_properties.width" :height="canvas_properties.height" />
   </div>
 </template>
 <script>
+import debounce from "debounce";
+
 export default {
   props: {
     medias: Array,
@@ -28,13 +26,19 @@ export default {
     return {
       canvas: undefined,
       new_line: undefined,
-      isDown: false
+      isDown: false,
+      canvas_properties: {
+        width: 1024,
+        height: 768
+      }
     };
   },
 
   created() {},
   mounted() {
     document.addEventListener("keyup", this.captureKeyListener);
+
+    this.cancelDragOver = debounce(this.cancelDragOver, 300);
 
     this.$eventHub.$on("remove_selection", this.removeSelection);
 
@@ -53,7 +57,7 @@ export default {
       var pointer = this.canvas.getPointer(o.e);
       var points = [pointer.x, pointer.y, pointer.x, pointer.y];
 
-      if (!this.drawing_options.select_mode) {
+      if (this.drawing_options.mode === "drawing") {
         // this.new_line = new fabric.Line(points, {
         //   fill: this.drawing_options.color,
         //   stroke: this.drawing_options.color,
@@ -68,7 +72,7 @@ export default {
       if (!this.isDown) return;
       var pointer = this.canvas.getPointer(o.e);
 
-      if (!this.drawing_options.select_mode) {
+      if (this.drawing_options.mode === "drawing") {
         // this.new_line.set({ x2: pointer.x, y2: pointer.y });
         // this.new_line.setCoords();
         this.canvas.renderAll();
@@ -79,7 +83,7 @@ export default {
       if (!this.isDown) return;
 
       this.isDown = false;
-      if (!this.drawing_options.select_mode) {
+      if (this.drawing_options.mode === "select") {
         // this.new_line.setCoords();
         this.updateCanvas();
       }
@@ -110,22 +114,22 @@ export default {
   computed: {},
   methods: {
     captureKeyListener(event) {
-      if (this.drawing_options.select_mode && event.key === "Backspace") {
+      if (this.drawing_options.mode === "select" && event.key === "Backspace") {
         this.removeSelection();
       }
     },
     setDrawingOptions() {
-      this.canvas.selection = this.drawing_options.select_mode;
+      this.canvas.selection = this.drawing_options.mode === "select";
       this.canvas.forEachObject(o => {
-        o.evented = this.drawing_options.select_mode;
+        o.evented = this.drawing_options.mode === "select";
       });
-      if (!this.drawing_options.select_mode) {
+      if (this.drawing_options.mode === "drawing") {
         this.canvas.defaultCursor = "Handwriting";
         // this.canvas.defaultCursor = "crosshair";
       } else {
       }
 
-      this.canvas.isDrawingMode = !this.drawing_options.select_mode;
+      this.canvas.isDrawingMode = this.drawing_options.mode === "drawing";
       this.canvas.freeDrawingBrush.color = this.drawing_options.color;
       this.canvas.freeDrawingBrush.width = this.drawing_options.width;
     },
@@ -151,67 +155,70 @@ export default {
     },
     ondragover($event) {
       console.log(
-        `METHODS • CollaborativeEditor / dragover on ${$event.currentTarget.className}`
+        `METHODS • FabricCanvas / dragover on ${$event.currentTarget.className}`
       );
       this.is_being_dragover = true;
       this.cancelDragOver();
     },
-    dropHandler($event) {
-      console.log(`METHODS • CollaborativeEditor / dropHandler`);
+    cancelDragOver() {
+      if (this.$root.state.dev_mode === "debug") {
+        console.log(`METHODS • AddMedia / cancelDragOver`);
+      }
+      this.removeDragoverFromBlots();
+      this.is_being_dragover = false;
+    },
+
+    ondrop($event) {
+      console.log(`METHODS • FabricCanvas / ondrop`);
 
       // Prevent default behavior (Prevent file from being opened)
       $event.preventDefault();
       $event.dataTransfer.dropEffect = "move";
 
-      this.removeDragoverFromBlots();
-
       if ($event.dataTransfer.getData("text/plain") === "media_in_quill") {
         console.log(
-          `METHODS • CollaborativeEditor / dropHandler: drag and dropped a media from quill`
+          `METHODS • FabricCanvas / ondrop: drag and dropped a media from quill / writeup`
         );
-        let _blot = this.getBlockFromElement($event.target);
-        const index = this.editor.getIndex(_blot);
-
-        // find which blot was dragged (A)
-
-        // find where it was dropped (B)
-
-        // move delta from A to B
-
-        console.log(`_blot is currently at index ${index}`);
+        $event.target;
       } else if ($event.dataTransfer.getData("text/plain")) {
         console.log(
-          `METHODS • CollaborativeEditor / dropHandler: dropped a media from the library`
+          `METHODS • FabricCanvas / ondrop: dropped a media from the library`
         );
 
-        const data = JSON.parse($event.dataTransfer.getData("text/plain"));
-        console.log(data);
+        const media = JSON.parse($event.dataTransfer.getData("text/plain"));
 
-        if (data.media_filename) {
+        if (media.media_filename) {
           // drop sur l’éditor et pas sur une ligne
-          if ($event.target.classList.contains("ql-editor")) {
-            console.log(
-              "dropped on editor and not on line, will insert at the end of doc"
-            );
-            this.addMediaAtIndex(this.editor.getLength() - 1, data);
-            return;
-          }
-
-          let _blot = this.getBlockFromElement($event.target);
-
-          if (!_blot) {
-            this.$alertify
-              .closeLogOnClick(true)
-              .delay(4000)
-              .error(this.$t("notifications.failed_to_find_block_line"));
-            return;
-          }
-
-          _blot = _blot.next ? _blot.next : _blot;
-
-          const index = this.editor.getIndex(_blot);
-          this.addMediaAtIndex(index, data);
+          this.addMediaToCanvas(media);
         }
+      }
+    },
+    addMediaToCanvas(media) {
+      const mediaURL =
+        this.$root.state.mode === "export_publication"
+          ? `./${this.slugFolderName}/${media.media_filename}`
+          : `/${this.slugFolderName}/${media.media_filename}`;
+
+      debugger;
+
+      if (media.type === "image") {
+        const thumb = media.thumbs.find(m => m.size === 1600);
+
+        const media_width = thumb.size;
+        const media_height = media.ratio ? media_width * media.ratio : 900;
+
+        fabric.Image.fromURL(thumb.path, oImg => {
+          // scale image down, and flip it, before adding it onto canvas
+          oImg.set({
+            left: this.canvas_properties.width / 2 - 100,
+            top: this.canvas_properties.height / 2 - 100,
+            width: media_width,
+            height: media_height,
+            scaleX: 0.1,
+            scaleY: 0.1
+          });
+          this.canvas.add(oImg);
+        });
       }
     }
   }
@@ -223,15 +230,14 @@ export default {
     background-color: white;
     margin: var(--spacing) auto;
 
-    &::after {
+    &::before {
       content: "";
       position: absolute;
       left: 0;
       right: 0;
       top: 0;
       bottom: 0;
-
-      background-color: #ccc;
+      pointer-events: none;
 
       // Colors
       $bg-color: #fff;
@@ -259,7 +265,7 @@ export default {
   }
 
   &.is--receptiveToDrop {
-    > .canvas-container::after {
+    > .canvas-container::before {
       opacity: 1;
     }
   }

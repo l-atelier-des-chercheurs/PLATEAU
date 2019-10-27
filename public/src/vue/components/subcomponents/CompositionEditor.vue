@@ -46,6 +46,18 @@
       ref="textField"
       :read_only="read_only"
     />-->
+    <div v-for="mode in ['select', 'drawing']" :key="mode">
+      <input type="radio" :id="mode" :name="mode" :value="mode" v-model="drawing_options.mode" />
+      <label :for="mode">
+        <span>{{ mode }}</span>
+      </label>
+    </div>
+
+    <label>
+      <input type="color" v-model="drawing_options.color" />
+      Couleur
+    </label>
+
     <FabricCanvas
       :medias="sortedMedias"
       :media="media"
@@ -80,7 +92,7 @@ export default {
 
       drawing_options: {
         width: 4,
-        select_mode: false,
+        mode: "select",
         color: "#000"
       }
     };
