@@ -9,6 +9,7 @@ module.exports = (function() {
       actions: 'Actions',
       name: 'Nom',
       documents: 'Documents',
+      compositions: 'Compositions',
       showing: 'Affichage de',
       medias_of: 'médias sur',
       create: 'Créer',
@@ -20,6 +21,8 @@ module.exports = (function() {
       back: 'Retour',
       at: 'à',
       settings: 'Règlages',
+      new_project: 'Nouveau Projet',
+      project: 'Projet',
 
       photo: 'photo',
       video: 'vidéo',
@@ -61,6 +64,7 @@ module.exports = (function() {
       actions: 'Actions',
       name: 'Name',
       documents: 'Documents',
+      compositions: 'Compositions',
       showing: 'Showing',
       medias_of: 'medias of',
       create: 'Create',
@@ -72,6 +76,8 @@ module.exports = (function() {
       back: 'Back',
       at: 'at',
       settings: 'Settings',
+      new_project: 'New Project',
+      project: 'Project',
 
       photo: 'picture',
       video: 'video',

@@ -45,15 +45,6 @@
       ref="textField"
       :read_only="read_only"
     />
-    <!-- connection_state : {{ connection_state }} -->
-    <!-- <div>
-      <button
-        type="button"
-        class="button_saveContent"
-        @click="updateWriteupContent"
-        :disabled="!hasAnyChangesBeenMadeToContent"
-      >{{ $t('save_changes') }}</button>
-    </div>-->
   </div>
 </template>
 <script>

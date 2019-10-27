@@ -230,31 +230,6 @@ Quill.register(
   true
 );
 
-//// see https://stackoverflow.com/a/46064381
-// class MediaBlot extends BlockEmbed {
-//   static create(value) {
-//     let node = super.create();
-
-//     debugger;
-//     if (value.type === "image") {
-//       node.innerHTML = `<img src="${value.url}">`;
-//     }
-//     // node.setAttribute("src", value.url);
-//     return node;
-//   }
-
-//   static value(node) {
-//     return {
-//       // alt: node.getAttribute("alt"),
-//       type: node.getAttribute("src"),
-//       url: node.getAttribute("src")
-//     };
-//   }
-// }
-// MediaBlot.blotName = "media";
-// MediaBlot.tagName = "div";
-// Quill.register(MediaBlot);
-
 Quill.register("modules/cursors", QuillCursors);
 ShareDB.types.register(require("rich-text").type);
 
@@ -735,9 +710,10 @@ export default {
 
   &.is--receptiveToDrop {
     .ql-editor {
-      background-attachment: #fff;
+      &::after {
+        opacity: 1;
+      }
     }
-
     &.is--dragover {
       .ql-editor {
         > * {
@@ -820,6 +796,40 @@ export default {
     caret-color: var(--active-color);
     line-height: inherit;
     padding: 1em 20px 33vh;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+
+      background-color: #ccc;
+
+      // Colors
+      $bg-color: #fff;
+      $dot-color: var(--color-MediaLibrary);
+
+      // Dimensions
+      $dot-size: 2px;
+      $dot-space: 22px;
+
+      background: linear-gradient(
+            90deg,
+            $bg-color ($dot-space - $dot-size),
+            transparent 1%
+          )
+          center,
+        linear-gradient($bg-color ($dot-space - $dot-size), transparent 1%)
+          center,
+        $dot-color;
+      background-size: $dot-space $dot-space;
+
+      opacity: 0;
+
+      transition: opacity 0.4s linear;
+    }
 
     > * {
       position: relative;

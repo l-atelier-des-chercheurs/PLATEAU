@@ -1,6 +1,18 @@
 <template>
-  <div>
-    <canvas ref="canvas" width="1200" :height="map_height" />
+  <div
+    class="m_fabricCanvas"
+    :class="{ 
+      'is--receptiveToDrop' : !!$root.settings.media_being_dragged,
+      'is--dragover' : is_being_dragover  
+    }"
+  >
+    <canvas
+      ref="canvas"
+      width="1024"
+      height="768"
+      @dragover="ondragover($event)"
+      @drop="dropHandler($event)"
+    />
   </div>
 </template>
 <script>
@@ -8,9 +20,7 @@ export default {
   props: {
     medias: Array,
     media: Object,
-    map_height: Number,
     slugFolderName: String,
-    current_mode: String,
     drawing_options: Object
   },
   components: {},
@@ -32,11 +42,8 @@ export default {
       enableRetinaScaling: false
     });
 
-    if (
-      this.media.hasOwnProperty("canvas_information") &&
-      this.media.canvas_information !== ""
-    ) {
-      this.canvas.loadFromJSON(JSON.parse(this.media.canvas_information));
+    if (this.media.hasOwnProperty("content") && this.media.content !== "") {
+      this.canvas.loadFromJSON(JSON.parse(this.media.content));
     }
 
     this.setDrawingOptions();
@@ -74,11 +81,11 @@ export default {
       this.isDown = false;
       if (!this.drawing_options.select_mode) {
         // this.new_line.setCoords();
-        this.updateLinksList();
+        this.updateCanvas();
       }
 
       if (o.target) {
-        this.updateLinksList();
+        this.updateCanvas();
       }
     });
     // this.setMedias();
@@ -89,9 +96,8 @@ export default {
   },
 
   watch: {
-    "media.canvas_information": function() {
-      debugger;
-      this.canvas.loadFromJSON(JSON.parse(this.media.canvas_information));
+    "media.content": function() {
+      this.canvas.loadFromJSON(JSON.parse(this.media.content));
       this.setDrawingOptions();
     },
     drawing_options: {
@@ -123,80 +129,139 @@ export default {
       this.canvas.freeDrawingBrush.color = this.drawing_options.color;
       this.canvas.freeDrawingBrush.width = this.drawing_options.width;
     },
-    setMedias() {
-      if (this.medias.length === 0) {
-        return;
-      }
-
-      this.medias.map(m => {
-        if (m.type === "image") {
-          fabric.Image.fromURL(this.linkToImageThumb(m), oImg => {
-            // scale image down, and flip it, before adding it onto canvas
-            oImg.set({
-              left: m.x,
-              top: m.y,
-              width: m.width,
-              height: m.height
-            });
-            this.canvas.add(oImg);
-          });
-        } else if (m.type === "text") {
-          const text = new fabric.Text(m.content, {
-            left: m.x,
-            top: m.y,
-            width: m.width,
-            height: m.height
-          });
-          this.canvas.add(text);
-        }
-      });
-    },
-    linkToImageThumb(media) {
-      if (!media.hasOwnProperty("thumbs")) {
-        return this.mediaURL(media);
-      }
-
-      let pathToSmallestThumb = media.thumbs.filter(m => m.size === 1600)[0]
-        .path;
-
-      if (
-        // if image is gif and context is not 'preview', let’s show the original gif
-        this.mediaURL(media)
-          .toLowerCase()
-          .endsWith(".gif") ||
-        pathToSmallestThumb === undefined
-      ) {
-        return this.mediaURL(media);
-      }
-
-      let url = `/${pathToSmallestThumb}`;
-      return url;
-    },
-    mediaURL: function(media) {
-      return `/${this.slugFolderName}/${media.media_filename}`;
-    },
     removeSelection: function() {
       this.canvas.getActiveObjects().forEach(obj => {
         this.canvas.remove(obj);
       });
       this.canvas.discardActiveObject().renderAll();
 
-      this.updateLinksList();
+      this.updateCanvas();
     },
-    updateLinksList: function() {
-      const canvas_information = JSON.stringify(this.canvas.toJSON());
+    updateCanvas: function() {
+      const content = JSON.stringify(this.canvas.toJSON());
 
       this.$root.editMedia({
         type: "projects",
         slugFolderName: this.slugFolderName,
         slugMediaName: this.media.metaFileName,
         data: {
-          canvas_information
+          content
         }
       });
+    },
+    ondragover($event) {
+      console.log(
+        `METHODS • CollaborativeEditor / dragover on ${$event.currentTarget.className}`
+      );
+      this.is_being_dragover = true;
+      this.cancelDragOver();
+    },
+    dropHandler($event) {
+      console.log(`METHODS • CollaborativeEditor / dropHandler`);
+
+      // Prevent default behavior (Prevent file from being opened)
+      $event.preventDefault();
+      $event.dataTransfer.dropEffect = "move";
+
+      this.removeDragoverFromBlots();
+
+      if ($event.dataTransfer.getData("text/plain") === "media_in_quill") {
+        console.log(
+          `METHODS • CollaborativeEditor / dropHandler: drag and dropped a media from quill`
+        );
+        let _blot = this.getBlockFromElement($event.target);
+        const index = this.editor.getIndex(_blot);
+
+        // find which blot was dragged (A)
+
+        // find where it was dropped (B)
+
+        // move delta from A to B
+
+        console.log(`_blot is currently at index ${index}`);
+      } else if ($event.dataTransfer.getData("text/plain")) {
+        console.log(
+          `METHODS • CollaborativeEditor / dropHandler: dropped a media from the library`
+        );
+
+        const data = JSON.parse($event.dataTransfer.getData("text/plain"));
+        console.log(data);
+
+        if (data.media_filename) {
+          // drop sur l’éditor et pas sur une ligne
+          if ($event.target.classList.contains("ql-editor")) {
+            console.log(
+              "dropped on editor and not on line, will insert at the end of doc"
+            );
+            this.addMediaAtIndex(this.editor.getLength() - 1, data);
+            return;
+          }
+
+          let _blot = this.getBlockFromElement($event.target);
+
+          if (!_blot) {
+            this.$alertify
+              .closeLogOnClick(true)
+              .delay(4000)
+              .error(this.$t("notifications.failed_to_find_block_line"));
+            return;
+          }
+
+          _blot = _blot.next ? _blot.next : _blot;
+
+          const index = this.editor.getIndex(_blot);
+          this.addMediaAtIndex(index, data);
+        }
+      }
     }
   }
 };
 </script>
-<style>
+<style lang="scss">
+.m_fabricCanvas {
+  > .canvas-container {
+    background-color: white;
+    margin: var(--spacing) auto;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+
+      background-color: #ccc;
+
+      // Colors
+      $bg-color: #fff;
+      $dot-color: var(--color-Composition);
+
+      // Dimensions
+      $dot-size: 2px;
+      $dot-space: 22px;
+
+      background: linear-gradient(
+            90deg,
+            $bg-color ($dot-space - $dot-size),
+            transparent 1%
+          )
+          center,
+        linear-gradient($bg-color ($dot-space - $dot-size), transparent 1%)
+          center,
+        $dot-color;
+      background-size: $dot-space $dot-space;
+
+      opacity: 0;
+
+      transition: opacity 0.4s linear;
+    }
+  }
+
+  &.is--receptiveToDrop {
+    > .canvas-container::after {
+      opacity: 1;
+    }
+  }
+}
 </style>

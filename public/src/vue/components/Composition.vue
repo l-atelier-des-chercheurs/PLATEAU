@@ -4,7 +4,7 @@
       <table class v-if="mode === 'composition_list'">
         <thead>
           <tr>
-            <th style>{{ $t('documents') }}</th>
+            <th style>{{ $t('compositions') }}</th>
             <th>{{ $t('date_modified') }}</th>
             <th colspan="2">{{ $t('actions') }}</th>
           </tr>

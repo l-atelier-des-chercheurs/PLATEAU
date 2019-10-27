@@ -1,12 +1,12 @@
 
 <template>
-  <div class="m_writeupeditor">
-    <div class="m_writeupeditor--topbar padding-small">
+  <div class="m_compositioneditor">
+    <div class="m_compositioneditor--topbar padding-small">
       <template v-if="!show_rename_field">
-        <span class="m_writeupeditor--topbar--title padding-verysmall">{{ media.name }}</span>
+        <span class="m_compositioneditor--topbar--title padding-verysmall">{{ media.name }}</span>
       </template>
       <template v-else>
-        <form class="padding-verysmall" v-on:submit.prevent="renameWriteup()">
+        <form class="padding-verysmall" v-on:submit.prevent="renameComposition()">
           <div class="input-group">
             <span class="input-addon input-addon-xs">Nom</span>
             <input type="text" ref="nameInput" class="input-xs" v-model="new_name" required />
@@ -17,7 +17,7 @@
           </div>
         </form>
       </template>
-      <span class="m_writeupeditor--topbar--buttons" v-if="!show_rename_field">
+      <span class="m_compositioneditor--topbar--buttons" v-if="!show_rename_field">
         <button
           type="button"
           class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
@@ -46,16 +46,12 @@
       ref="textField"
       :read_only="read_only"
     />-->
-    <!-- :key="map_height" -->
     <FabricCanvas
       :medias="sortedMedias"
       :media="media"
-      :map_height="map_height"
       :project="project"
       :slugFolderName="slugFolderName"
-      :current_mode="current_mode"
       :drawing_options="drawing_options"
-      :class="{ 'is--clickthrough' : current_mode !== 'drawing' }"
     />
   </div>
 </template>
@@ -86,9 +82,7 @@ export default {
         width: 4,
         select_mode: false,
         color: "#000"
-      },
-
-      map_height: 1200
+      }
     };
   },
 
@@ -113,21 +107,7 @@ export default {
     textChange(delta, oldDelta, source) {
       // if source === 'user'
     },
-    updateWriteupContent() {
-      if (window.state.dev_mode === "debug") {
-        console.log("METHODS • AddMediaButton: updateWriteupContent");
-      }
-
-      this.$root.editMedia({
-        type: "projects",
-        slugFolderName: this.slugFolderName,
-        slugMediaName: this.media.metaFileName,
-        data: {
-          content: this.content
-        }
-      });
-    },
-    renameWriteup() {
+    renameComposition() {
       if (this.new_name === "") {
       }
 
@@ -150,12 +130,12 @@ export default {
   /* padding-left: 1em; */
 }
 
-.m_writeupeditor {
+.m_compositioneditor {
   margin: 0 auto;
   --size-column-width: 600px;
 }
 
-.m_writeupeditor--topbar {
+.m_compositioneditor--topbar {
   border-bottom: 1px solid black;
   margin: 0 auto;
   max-width: var(--size-column-width);
@@ -165,12 +145,12 @@ export default {
   align-items: center;
 }
 
-.m_writeupeditor--topbar--title {
+.m_compositioneditor--topbar--title {
   display: block;
   flex-grow: 0;
   font-size: 1.4em;
 }
-.m_writeupeditor--topbar--buttons {
+.m_compositioneditor--topbar--buttons {
   /* text-align: right; */
   float: right;
 }

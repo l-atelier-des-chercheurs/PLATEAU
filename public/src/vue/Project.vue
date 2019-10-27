@@ -1,7 +1,7 @@
 <template>
-  <splitpanes class="m_project" watch-slots>
+  <splitpanes class="m_project" watch-slots @resized="resized()">
     <template v-for="pane in $root.settings.project_panes_in_order">
-      <pane v-if="pane.key === 'WriteUp' && pane.enabled" :key="pane.key" min-size="1">
+      <pane v-if="pane.key === 'WriteUp' && pane.enabled" :key="pane.key">
         <WriteUp
           :slugFolderName="slugProjectName"
           :writeup_medias="writeup_medias"
@@ -67,7 +67,16 @@ export default {
   created() {},
   mounted() {},
   beforeDestroy() {},
-  watch: {},
+  watch: {
+    "$root.settings.project_panes_in_order": {
+      handler() {
+        setTimeout(() => {
+          this.$forceUpdate();
+        }, 500);
+      },
+      deep: true
+    }
+  },
   computed: {
     writeup_medias() {
       return Object.values(this.project.medias).filter(
@@ -95,7 +104,11 @@ export default {
       );
     }
   },
-  methods: {}
+  methods: {
+    resized() {
+      console.log(`Project / methods: resized`);
+    }
+  }
 };
 </script>
 <style lang="scss">

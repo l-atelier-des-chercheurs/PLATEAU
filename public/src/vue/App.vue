@@ -226,7 +226,7 @@ input[type="text"] {
   transition: opacity 0.4s;
   background-color: rgba(255, 255, 255, 1);
   opacity: 0;
-  z-index: 10000;
+  z-index: 1;
 }
 .splitpanes__splitter:hover:before {
   // opacity: 1;
@@ -259,7 +259,7 @@ input[type="text"] {
   transition: all 0.4s;
   background-color: #000;
   opacity: 1;
-  z-index: 10000;
+  z-index: 1;
 }
 .splitpanes__splitter:hover:after {
   opacity: 1;

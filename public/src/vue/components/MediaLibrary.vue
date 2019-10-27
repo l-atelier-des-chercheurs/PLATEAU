@@ -250,8 +250,6 @@ export default {
     sortedMedias() {
       var sortable = [];
 
-      debugger;
-
       if (this.library_medias.length === 0) {
         return sortable;
       }

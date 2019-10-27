@@ -5,12 +5,12 @@
       'is--inWriteUp' : is_media_in_publi, 
       'is--fav' : media.fav,
       'is--ownMedia' : media_made_by_current_author,
-      'is--draggable_to_writeup' : $root.settings.current_writeup_media_metaFileName,
+      'is--draggable_to_writeup' : $root.settings.current_writeup_media_metaFileName || $root.settings.current_composition_media_metaFileName,
       'is--dragged' : is_dragged
     }"
     @dragstart="startMediaDrag( media, $event)"
     @dragend="endMediaDrag()"
-    :draggable="!!$root.settings.current_writeup_media_metaFileName"
+    :draggable="!!$root.settings.current_writeup_media_metaFileName || $root.settings.current_composition_media_metaFileName"
   >
     <div draggable="false">
       <figure
@@ -55,28 +55,6 @@
             :preview_size="preview_size"
           />
           <figcaption class="m_media--caption" v-if="!!media.caption">{{ media.caption }}</figcaption>
-
-          <!-- <transition name="slideright" :duration="400">
-            <div
-              v-if="$root.settings.current_writeup_media_metaFileName"
-              class="m_media--add_to_recipe"
-              @click.stop="addToCurrentWriteup()"
-            >
-              <button
-                type="button"
-                class="button_addToPubli button-greenthin button-square"
-                :title="instructions_depending_on_media_in_publi"
-                @click.stop="addToCurrentWriteup()"
-                v-tippy="{ 
-                  placement : 'left',
-                  delay: [600, 0]
-                }"
-              >
-                <template v-if="!is_media_in_publi">→</template>
-                <template v-else>→</template>
-              </button>
-            </div>
-          </transition>-->
         </div>
 
         <figcaption v-if="is_hovered && false">
