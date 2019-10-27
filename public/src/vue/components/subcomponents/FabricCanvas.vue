@@ -42,6 +42,16 @@ export default {
 
     this.$eventHub.$on("remove_selection", this.removeSelection);
 
+    // store relative URL for images thumbs
+    // TODO: also work out a solution when media is directly embedded (for example, videos)
+    fabric.Image.prototype.toObject = (function(toObject) {
+      return function() {
+        return fabric.util.object.extend(toObject.call(this), {
+          src: "_thumbs" + this.getSrc().split("_thumbs")[1]
+        });
+      };
+    })(fabric.Image.prototype.toObject);
+
     this.canvas = new fabric.Canvas(this.$refs.canvas, {
       enableRetinaScaling: false
     });
@@ -198,8 +208,6 @@ export default {
         this.$root.state.mode === "export_publication"
           ? `./${this.slugFolderName}/${media.media_filename}`
           : `/${this.slugFolderName}/${media.media_filename}`;
-
-      debugger;
 
       if (media.type === "image") {
         const thumb = media.thumbs.find(m => m.size === 1600);
