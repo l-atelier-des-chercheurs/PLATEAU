@@ -18,6 +18,8 @@
           <path class="st0" d="M4,8H2.6L0,4.1L2.6,0h1.4L2.1,4.1L4,8z" />
         </svg>
         plateau
+        &nbsp;
+        <small>{{ $root.state.appVersion }}</small>
       </h1>
     </div>
 
