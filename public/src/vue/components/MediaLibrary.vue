@@ -131,7 +131,7 @@
     <transition name="fade_fast" :duration="150">
       <div
         v-if="!read_only && show_drop_container && !$root.settings.media_being_dragged"
-        @drop="dropHandler($event)"
+        @drop="ondrop($event)"
         class="_drop_indicator"
       >
         <div>
@@ -155,6 +155,7 @@ export default {
   props: {
     project: Object,
     slugProjectName: String,
+    library_medias: Array,
     read_only: Boolean
   },
   components: {
@@ -181,7 +182,6 @@ export default {
       show_drop_container: false,
       show_media_detail_for: false,
 
-      media_metaFileName_initially_present: [],
       last_media_added: [],
       media_dragged: false,
 
@@ -233,49 +233,28 @@ export default {
 
     document.addEventListener("dragover", this.ondragover);
   },
-  watch: {
-    "project.medias": function() {
-      if (this.media_metaFileName_initially_present.length === 0) {
-        this.media_metaFileName_initially_present = Object.keys(
-          this.project.medias
-        );
-      } else {
-        this.last_media_added = Object.keys(this.project.medias).filter(
-          s => !this.media_metaFileName_initially_present.includes(s)
-        );
-      }
-    }
-  },
+  watch: {},
 
   computed: {
     numberOfMedias() {
-      if (!this.project.hasOwnProperty("medias")) {
-        return 0;
-      }
-      return Object.keys(this.libraryMedias).length;
+      return this.library_medias.length;
     },
     mediaKeywords() {
-      // grab all keywords from this.project.medias
-      return this.getAllKeywordsFrom(this.libraryMedias);
+      // grab all keywords from this.library_medias
+      return this.getAllKeywordsFrom(this.library_medias);
     },
     mediaAuthors() {
-      return this.$root.getAllAuthorsFrom(this.libraryMedias);
-    },
-
-    libraryMedias() {
-      return Object.values(this.project.medias).filter(
-        m => m.hasOwnProperty("type") && m.type !== "writeup"
-      );
+      return this.$root.getAllAuthorsFrom(this.library_medias);
     },
 
     sortedMedias() {
       var sortable = [];
 
-      if (!this.project.hasOwnProperty("medias")) {
+      if (this.library_medias.length === 0) {
         return sortable;
       }
 
-      this.libraryMedias.map(media => {
+      this.library_medias.map(media => {
         let orderBy;
 
         if (this.mediaSort.type === "date") {
@@ -326,7 +305,9 @@ export default {
       // array order is garanteed while objects properties aren’t,
       // that’s why we use an array here
       let sortedMedias = sortedSortable.reduce((accumulator, d) => {
-        let sortedMediaObj = this.project.medias[d.slugMediaName];
+        let sortedMediaObj = this.library_medias.find(
+          m => m.metaFileName === d.slugMediaName
+        );
         sortedMediaObj.slugMediaName = d.slugMediaName;
         accumulator.push(sortedMediaObj);
         return accumulator;
@@ -478,9 +459,9 @@ export default {
       }
       this.show_drop_container = false;
     },
-    dropHandler($event) {
+    ondrop($event) {
       if (this.$root.state.dev_mode === "debug") {
-        console.log(`METHODS • AddMedia / dropHandler`);
+        console.log(`METHODS • AddMedia / ondrop`);
       }
 
       // Prevent default behavior (Prevent file from being opened)

@@ -1,11 +1,12 @@
+
 <template>
-  <div class="m_writeupeditor">
-    <div class="m_writeupeditor--topbar padding-small">
+  <div class="m_compositioneditor">
+    <div class="m_compositioneditor--topbar padding-small">
       <template v-if="!show_rename_field">
-        <span class="m_writeupeditor--topbar--title padding-verysmall">{{ media.name }}</span>
+        <span class="m_compositioneditor--topbar--title padding-verysmall">{{ media.name }}</span>
       </template>
       <template v-else>
-        <form class="padding-verysmall" v-on:submit.prevent="renameWriteup()">
+        <form class="padding-verysmall" v-on:submit.prevent="renameComposition()">
           <div class="input-group">
             <span class="input-addon input-addon-xs">Nom</span>
             <input type="text" ref="nameInput" class="input-xs" v-model="new_name" required />
@@ -16,7 +17,7 @@
           </div>
         </form>
       </template>
-      <span class="m_writeupeditor--topbar--buttons" v-if="!show_rename_field">
+      <span class="m_compositioneditor--topbar--buttons" v-if="!show_rename_field">
         <button
           type="button"
           class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
@@ -34,7 +35,7 @@
       </span>
     </div>
 
-    <CollaborativeEditor
+    <!-- <CollaborativeEditor
       v-model="content"
       :media_metaFileName="media.metaFileName"
       :slugFolderName="slugFolderName"
@@ -44,11 +45,30 @@
       @connectionStateChanged="_connection_state => connection_state = _connection_state"
       ref="textField"
       :read_only="read_only"
+    />-->
+    <div v-for="mode in ['select', 'drawing']" :key="mode">
+      <input type="radio" :id="mode" :name="mode" :value="mode" v-model="drawing_options.mode" />
+      <label :for="mode">
+        <span>{{ mode }}</span>
+      </label>
+    </div>
+
+    <label>
+      <input type="color" v-model="drawing_options.color" />
+      Couleur
+    </label>
+
+    <FabricCanvas
+      :medias="sortedMedias"
+      :media="media"
+      :project="project"
+      :slugFolderName="slugFolderName"
+      :drawing_options="drawing_options"
     />
   </div>
 </template>
 <script>
-import CollaborativeEditor from "./CollaborativeEditor.vue";
+import FabricCanvas from "./FabricCanvas.vue";
 
 export default {
   props: {
@@ -60,7 +80,7 @@ export default {
     }
   },
   components: {
-    CollaborativeEditor
+    FabricCanvas
   },
   data() {
     return {
@@ -68,7 +88,13 @@ export default {
       connection_state: "",
       show_rename_field: false,
       new_name: this.media.name,
-      spellcheck: true
+      spellcheck: true,
+
+      drawing_options: {
+        width: 4,
+        mode: "select",
+        color: "#000"
+      }
     };
   },
 
@@ -93,21 +119,7 @@ export default {
     textChange(delta, oldDelta, source) {
       // if source === 'user'
     },
-    updateWriteupContent() {
-      if (window.state.dev_mode === "debug") {
-        console.log("METHODS • AddMediaButton: updateWriteupContent");
-      }
-
-      this.$root.editMedia({
-        type: "projects",
-        slugFolderName: this.slugFolderName,
-        slugMediaName: this.media.metaFileName,
-        data: {
-          content: this.content
-        }
-      });
-    },
-    renameWriteup() {
+    renameComposition() {
       if (this.new_name === "") {
       }
 
@@ -130,12 +142,12 @@ export default {
   /* padding-left: 1em; */
 }
 
-.m_writeupeditor {
+.m_compositioneditor {
   margin: 0 auto;
   --size-column-width: 600px;
 }
 
-.m_writeupeditor--topbar {
+.m_compositioneditor--topbar {
   border-bottom: 1px solid black;
   margin: 0 auto;
   max-width: var(--size-column-width);
@@ -145,12 +157,12 @@ export default {
   align-items: center;
 }
 
-.m_writeupeditor--topbar--title {
+.m_compositioneditor--topbar--title {
   display: block;
   flex-grow: 0;
   font-size: 1.4em;
 }
-.m_writeupeditor--topbar--buttons {
+.m_compositioneditor--topbar--buttons {
   /* text-align: right; */
   float: right;
 }

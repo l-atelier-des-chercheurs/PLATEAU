@@ -58,7 +58,7 @@ export default {
   methods: {}
 };
 </script>
-<style lang="scss" scoped>
+<style lang="scss">
 .m_slicklist {
   width: 500px;
   height: auto;
@@ -93,6 +93,7 @@ export default {
   cursor: pointer;
   // overrided by pane type color
   --color-active: #ccc;
+  --height-panebutton: 32px;
 
   &[disabled] {
     cursor: pointer;
@@ -104,8 +105,8 @@ export default {
     background-color: #fff;
     // color: white;
     padding: 0 var(--spacing);
-    border-radius: 1em;
-    height: 2em;
+    border-radius: calc(var(--height-panebutton) / 2);
+    height: var(--height-panebutton);
     transition: all 0.4s ease-out;
 
     span {
@@ -137,14 +138,15 @@ export default {
 .handle {
   position: relative;
   display: block;
-  width: 18px;
-  height: 18px;
+  width: var(--height-panebutton);
+  height: var(--height-panebutton);
 
-  border: 4px solid transparent;
-  border-radius: 9px;
+  margin: -8px 0px -8px -12px;
 
-  background-color: var(--color-active);
-  margin-right: 10px;
+  padding: 10px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+
   cursor: col-resize;
   transform: rotate(90deg);
 
@@ -152,11 +154,18 @@ export default {
     content: "";
     display: block;
     position: absolute;
-    width: 100%;
-    height: 100%;
+    width: 10px;
+    height: 10px;
     background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><path d="M0 7.5v5h50v-5H0zm0 15v5h50v-5H0zm0 15v5h50v-5H0z" color="%23000"/></svg>');
     background-size: contain;
     background-repeat: no-repeat;
+  }
+
+  &:hover {
+    border-color: #000;
+    background-color: var(--color-active);
+    ::before {
+    }
   }
 }
 </style>

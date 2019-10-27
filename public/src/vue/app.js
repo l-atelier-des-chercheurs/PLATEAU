@@ -161,9 +161,32 @@ let vm = new Vue({
         }
       ],
 
+      capture_options: {
+        selected_mode: '',
+        selected_devicesId: {
+          audioinput: '',
+          videoinput: '',
+          audiooutput: ''
+        },
+        ideal_camera_resolution: {
+          name: '',
+          width: '',
+          height: ''
+        },
+
+        distant_flux: {
+          active: false,
+          username: `dodoc-${(
+            Math.random().toString(36) + '00000000000000000'
+          ).slice(2, 3 + 2)}`,
+          callee_username: ''
+        }
+      },
+
       medias_present_in_writeup: [],
 
       current_writeup_media_metaFileName: false,
+      current_composition_media_metaFileName: false,
       media_being_dragged: false,
 
       current_author: false,
