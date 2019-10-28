@@ -1473,13 +1473,6 @@ export default {
     }
   }
 }
-.ql-clipboard {
-  position: fixed;
-  display: none;
-
-  left: 50%;
-  top: 50%;
-}
 
 ._button_removeMedia {
   position: absolute;
