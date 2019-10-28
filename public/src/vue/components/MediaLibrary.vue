@@ -43,7 +43,7 @@
             </div>
 
             <div class="m_actionbar--text">
-              {{ $t('showing') }}
+              {{ $t('showing') }}&nbsp;
               <span
                 :class="{ 'c-rouge' : sortedMedias.length !== numberOfMedias }"
               >
@@ -52,7 +52,7 @@
                 {{ numberOfMedias }}
               </span>
               <template v-if="$root.allKeywords.length >= 0">
-                —
+                &nbsp;—
                 <button
                   type="button"
                   class="button-nostyle text-uc button-triangle"
@@ -76,7 +76,7 @@
             </div>
           </div>
 
-          <transition-group tag="div" name="list-complete">
+          <transition-group tag="div" class="m_library--chronology" name="list-complete">
             <!-- <MediaCard
               v-for="media in sortedMedias"
               :key="media.slugMediaName"
@@ -86,11 +86,13 @@
               :class="{ 'is--just_added' : last_media_added.includes(media.slugMediaName) }"
             />-->
             <div v-for="item in groupedMedias" :key="item[0]">
-              <h3
-                class="font-folder_title margin-sides-small margin-none margin-bottom-small"
-              >{{ $root.formatDateToHuman(item[0]) }}</h3>
+              <h3>{{ $root.formatDateToHuman(item[0]) }}</h3>
 
-              <transition-group tag="div" class="m_library--medias" name="list-complete">
+              <transition-group
+                tag="div"
+                class="m_library--chronology--medias"
+                name="list-complete"
+              >
                 <div v-for="media in item[1]" :key="media.slugMediaName">
                   <MediaCard
                     :key="media.slugMediaName"
@@ -550,9 +552,25 @@ export default {
     border-top: 0;
     border-left: 0 solid #000;
   }
+
+  .m_actionbar--text {
+    font-size: 0.8em;
+    line-height: 1.25;
+    display: flex;
+    align-items: center;
+  }
 }
 
-.m_library--medias {
+.m_library--chronology {
+  h3 {
+    // font-weight: normal;
+    font-size: 75%;
+    margin: var(--spacing);
+    margin-bottom: calc(var(--spacing) / 2);
+  }
+}
+
+.m_library--chronology--medias {
   --media-width: 80px;
   --grid-gap: 0.5em;
 
@@ -563,7 +581,6 @@ export default {
   padding: 0 var(--spacing);
 
   height: 100%;
-  overflow: auto;
 
   figure {
     margin: 0;

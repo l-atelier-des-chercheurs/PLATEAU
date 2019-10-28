@@ -990,8 +990,10 @@ export default {
         100% {
           opacity: 0;
           max-height: 0px;
-          margin: 0;
-          padding: 0;
+          margin-top: 0;
+          margin-bottom: 0;
+          padding-top: 0;
+          padding-bottom: 0;
           transform: scale(0.9, 1);
         }
       }
@@ -1385,18 +1387,6 @@ export default {
 .ql-editor {
   counter-reset: listCounter;
 
-  &:focus > * {
-    &.is--focused,
-    &.is--dragover {
-      &::before {
-        content: counter(listCounter);
-        // font-size: 0.8rem;
-        color: var(--active-color);
-        color: hsl(210, 11%, 58%);
-      }
-    }
-  }
-
   & > * {
     counter-increment: listCounter;
 
@@ -1420,11 +1410,21 @@ export default {
       // float: left;
       width: var(--spacing);
       max-width: 100px;
-      padding: 0 calc(var(--spacing) / 4) 0 calc(var(--spacing) / 4 * 2);
+      padding-right: calc(var(--spacing) / 2);
       color: transparent;
       color: hsl(210, 11%, 58%);
 
       transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    &.is--focused,
+    &.is--dragover {
+      &::before {
+        content: counter(listCounter);
+        // font-size: 0.8rem;
+        color: var(--active-color);
+        color: hsl(210, 11%, 58%);
+      }
     }
 
     &::after {
