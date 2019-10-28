@@ -2,6 +2,7 @@
   <div
     class="m_collaborativeEditor quillWrapper"
     :class="{ 
+      'is--focused' : is_focused,
       'is--receptiveToDrop' : !!$root.settings.media_being_dragged,
       'is--dragover' : is_being_dragover  
     }"
@@ -138,6 +139,10 @@ class MediaBlot extends BlockEmbed {
     };
   }
 
+  deleteAt() {
+    // prevent removing on backspace after block
+  }
+
   static value(node) {
     if (node.dataset.type === "image") {
       let img = node.querySelector("img");
@@ -235,6 +240,49 @@ Quill.register(
 Quill.register("modules/cursors", QuillCursors);
 ShareDB.types.register(require("rich-text").type);
 
+var quill_kb_bindings = {
+  // This will overwrite the default binding also named 'tab'
+  // tab: {
+  //   key: 9,
+  //   handler: function() {
+  //     // Handle tab
+  //   }
+  // },
+
+  // There is no default binding named 'custom'
+  // so this will be added without overwriting anything
+  backspace: {
+    key: 8,
+    handler: function(range, context) {
+      debugger;
+      if (
+        range.index &&
+        this.quill.getLine(range.index) &&
+        this.quill.getLine(range.index)[0].domNode.dataset &&
+        this.quill.getLine(range.index)[0].domNode.dataset.metaFileName
+      ) {
+        debugger;
+      }
+      return true;
+    }
+  }
+
+  // list: {
+  //   key: "backspace",
+  //   format: ["list"],
+  //   handler: function(range, context) {
+  //     if (context.offset === 0) {
+  //       // When backspace on the first character of a list,
+  //       // remove the list instead
+  //       this.quill.format("list", false, Quill.sources.USER);
+  //     } else {
+  //       // Otherwise propogate to Quill's default
+  //       return true;
+  //     }
+  //   }
+  // }
+};
+
 export default {
   props: {
     value: {
@@ -306,6 +354,9 @@ export default {
           hideDelayMs: 5000,
           hideSpeedMs: 0,
           selectionChangeSource: null
+        },
+        keyboard: {
+          bindings: quill_kb_bindings
         }
       },
       bounds: this.$refs.editor,
@@ -708,7 +759,13 @@ export default {
   position: relative;
   font-family: "Work Sans";
   // margin-left: 3em;
-  padding: 0 0.1em;
+  // padding: 0 0.1em;
+
+  --active-color: black;
+
+  &.is--focussed {
+    background-color: blue;
+  }
 
   &.is--receptiveToDrop {
     .ql-editor {
@@ -795,9 +852,9 @@ export default {
     padding: 0;
     overflow: visible;
     min-height: 80vh;
-    caret-color: var(--active-color);
+    // caret-color: var(--active-color);
     line-height: inherit;
-    padding: 1em 20px 33vh;
+    padding: var(--spacing) calc(var(--spacing) * 2) 33vh;
 
     &::after {
       content: "";
@@ -1321,6 +1378,17 @@ export default {
 .ql-editor {
   counter-reset: listCounter;
 
+  &:focus > * {
+    &.is--focused,
+    &.is--dragover {
+      &::before {
+        content: counter(listCounter);
+        // font-size: 0.8rem;
+        color: var(--active-color);
+      }
+    }
+  }
+
   & > * {
     counter-increment: listCounter;
 
@@ -1331,36 +1399,24 @@ export default {
       position: absolute;
       top: 2px;
       right: 100%;
-      margin-right: 1em;
+      margin-right: var(--spacing);
+      margin-right: 0;
 
       font-size: 0.6rem;
-      font-weight: 400;
-      text-align: right;
+      font-weight: 600;
+      text-align: center;
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
       // display: inline-block;
       // float: left;
-      width: 100px;
+      width: var(--spacing);
       max-width: 100px;
-      // margin-left: -106px;
-      // margin-right: 16px;
-      /* font-weight: normal; */
-      /* background-color: transparent; */
-      /* line-height: 8px; */
-      /* margin-top: 8px; */
+      padding: 0 calc(var(--spacing) / 4) 0 calc(var(--spacing) / 4 * 2);
       color: transparent;
       color: hsl(210, 11%, 58%);
 
       transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-    }
-
-    &.is--focused,
-    &.is--dragover {
-      &::before {
-        content: counter(listCounter);
-        color: #8894a0;
-      }
     }
 
     &::after {

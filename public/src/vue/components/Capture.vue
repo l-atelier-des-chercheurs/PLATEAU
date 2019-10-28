@@ -1760,7 +1760,7 @@ var equalizer = (function() {
         label {
           display: inline-block;
           margin: 0 auto;
-          background-color: #e45a6b;
+          background-color: var(--c-rouge);
           padding-left: ~"calc(var(--spacing)/4)";
           padding-right: ~"calc(var(--spacing)/4)";
           margin-bottom: ~"calc(var(--spacing)/4)";
@@ -1777,7 +1777,7 @@ var equalizer = (function() {
           // .font-small;
 
           > * {
-            background-color: #e45a6b;
+            background-color: var(--c-rouge);
             color: white;
             border-radius: 4px;
             width: auto;
@@ -1819,9 +1819,9 @@ var equalizer = (function() {
         height: 100%;
 
         // border-bottom: 2px solid @c-gris;
-        border-right: 2px solid #e45a6b;
+        border-right: 2px solid var(--c-rouge);
 
-        // .custom_scrollbar(8px, 5px, 6px, transparent, #e45a6b);
+        // .custom_scrollbar(8px, 5px, 6px, transparent, var(--c-rouge));
       }
 
       .m_panel--previewCard--live--stopmotionlist {
@@ -1996,7 +1996,7 @@ var equalizer = (function() {
       top: 0;
       right: 0;
       bottom: 0;
-      background-color: #e45a6b;
+      background-color: var(--c-rouge);
       z-index: 100;
     }
   }
@@ -2070,7 +2070,7 @@ var equalizer = (function() {
           }
 
           &.is--active {
-            background-color: #e45a6b;
+            background-color: var(--c-rouge);
             color: #f9ca00;
           }
         }
@@ -2111,7 +2111,7 @@ var equalizer = (function() {
     align-items: center;
     background-color: fade(#000, 90%);
     --loader-bg-color: transparent;
-    --loader-border-color: #e45a6b;
+    --loader-border-color: var(--c-rouge);
 
     .m_mediaValidationButtons--overlay--percent {
       position: absolute;

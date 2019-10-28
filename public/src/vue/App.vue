@@ -43,17 +43,22 @@ export default {
 
 <style lang="less">
 :root {
-  --spacing: 0.7em;
+  --spacing: 0.9rem;
   --border-width: 1pt;
   --border-color: #222;
   --page-height: 11in;
   --active-color: rgb(52, 122, 213);
+
+  --c-orange: #f9ca00;
+  --c-rouge: #e45a6b;
+  --c-bleu: #2c75c5;
+
   --active-color: var(--c-orange);
   // --active-color: #aaa;
   --color-WriteUp: #fff;
-  --color-MediaLibrary: #f9ca00;
-  --color-Composition: #2c75c5;
-  --color-Capture: #e45a6b;
+  --color-MediaLibrary: var(--c-orange);
+  --color-Composition: var(--c-bleu);
+  --color-Capture: var(--c-rouge);
 }
 
 ::-moz-selection {
