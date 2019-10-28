@@ -4,14 +4,15 @@
     :class="{ 
       'is--focused' : is_focused,
       'is--receptiveToDrop' : !!$root.settings.media_being_dragged,
-      'is--dragover' : is_being_dragover  
+      'is--dragover' : is_being_dragover  ,
+      'is--disabled' : editor_not_enabled
     }"
     autofocus="autofocus"
     @dragover="ondragover($event)"
     @drop="ondrop($event)"
   >
-    <!-- connection_state : {{ connection_state }} -->
-    <!-- <br /> -->
+    connection_state : {{ connection_state }}
+    <br />
     <div ref="editor" class="mediaTextContent" />
     <!-- <div class="_customCaret" :style="_customCaret_style" /> -->
   </div>
@@ -287,6 +288,10 @@ export default {
       type: String,
       default: "…"
     },
+    enable_collaboration: {
+      type: Boolean,
+      default: false
+    },
     media: Object,
     slugFolderName: String,
     spellcheck: {
@@ -320,14 +325,11 @@ export default {
           ["bold", "italic", "link", "blockquote"],
           [{ list: "ordered" }, { list: "bullet" }],
           ["clean"]
-        ],
-        handlers: {
-          image: ""
-        }
+        ]
       },
 
       socket: null,
-      connection_state: undefined,
+      connection_state: !this.enable_collaboration ? "disabled" : "connecting…",
       requested_resource_url: undefined
     };
   },
@@ -375,7 +377,6 @@ export default {
 
     this.$refs.editor.dataset.quill = this.editor;
 
-    this.editor.root.innerHTML = this.value;
     this.cancelDragOver = debounce(this.cancelDragOver, 300);
 
     this.setSpellCheck();
@@ -387,14 +388,13 @@ export default {
     const cursorsOne = this.editor.getModule("cursors");
     cursorsOne.createCursor(1, "User 1", "#0a997f");
 
-    this.editor.focus();
-
     this.$nextTick(() => {
-      if (this.$root.state.mode !== "live") {
-        return;
+      if (this.$root.state.mode === "live" && this.enable_collaboration) {
+        this.initWebsocketMode();
+        this.editor.focus();
+      } else {
+        this.editor.root.innerHTML = this.value;
       }
-
-      this.initWebsocketMode();
 
       this.editor.on("text-change", (delta, oldDelta, source) => {
         this.$emit(
@@ -442,6 +442,13 @@ export default {
     },
     value: function() {
       this.broadcastMediasPresentInWriteup();
+    },
+    editor_not_enabled: function() {
+      if (this.editor_not_enabled) {
+        this.editor.disable();
+      } else {
+        this.editor.enable();
+      }
     }
   },
   computed: {
@@ -449,10 +456,14 @@ export default {
       return {
         transform: `translate3d(${this.caret_position.left}px, ${this.caret_position.top}px, 0px)`
       };
+    },
+    editor_not_enabled() {
+      return this.enable_collaboration && this.connection_state !== "connected";
     }
   },
   methods: {
     initWebsocketMode() {
+      console.log(`CollaborativeEditor / initWebsocketMode`);
       const params = new URLSearchParams({
         type: "projects",
         slugFolderName: this.slugFolderName,
@@ -468,7 +479,7 @@ export default {
         requested_querystring;
 
       console.log(
-        `MOUNTED • CollaborativeEditor: will connect to ws server with ${this.requested_resource_url}`
+        `CollaborativeEditor / initWebsocketMode : will connect to ws server with ${this.requested_resource_url}`
       );
 
       this.socket = new ReconnectingWebSocket(this.requested_resource_url);
@@ -764,6 +775,21 @@ export default {
 
   &.is--focussed {
     background-color: blue;
+  }
+
+  &.is--disabled {
+    .ql-toolbar {
+      background-color: var(--c-rouge);
+      color: black;
+      &::before {
+        content: "disconnected";
+        display: block;
+      }
+      > * {
+        display: none !important;
+      }
+    }
+    // border-left: 2px solid rgba(255, 0, 0, 0.5);
   }
 
   &.is--receptiveToDrop {
@@ -1289,7 +1315,8 @@ export default {
   /* border-left: 0; */
   border: none;
   color: white;
-  border-radius: 0 0 4px 4px;
+  // border-radius: 0 0 4px 4px;
+  border-radius: 4px;
   // top: 121px;
   bottom: 10px;
   position: fixed;
