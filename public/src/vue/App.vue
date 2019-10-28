@@ -52,6 +52,7 @@ export default {
   --c-orange: #f9ca00;
   --c-rouge: #e45a6b;
   --c-bleu: #2c75c5;
+  --c-noir: #333;
 
   --active-color: var(--c-orange);
   // --active-color: #aaa;
