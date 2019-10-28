@@ -254,14 +254,12 @@ var quill_kb_bindings = {
   backspace: {
     key: 8,
     handler: function(range, context) {
-      debugger;
       if (
         range.index &&
         this.quill.getLine(range.index) &&
         this.quill.getLine(range.index)[0].domNode.dataset &&
         this.quill.getLine(range.index)[0].domNode.dataset.metaFileName
       ) {
-        debugger;
       }
       return true;
     }
@@ -670,7 +668,7 @@ export default {
     },
     cancelDragOver() {
       if (this.$root.state.dev_mode === "debug") {
-        console.log(`METHODS • AddMedia / cancelDragOver`);
+        console.log(`METHODS • CollaborativeEditor / cancelDragOver`);
       }
       this.removeDragoverFromBlots();
       this.is_being_dragover = false;
@@ -957,11 +955,17 @@ export default {
 
         &:hover {
           box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
+          margin-top: calc(var(--spacing) / 2);
+          margin-bottom: calc(var(--spacing) / 2);
+          padding: 0;
         }
 
         &.is--focused {
           outline: 0;
           box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
+          margin-top: calc(var(--spacing) / 2);
+          margin-bottom: calc(var(--spacing) / 2);
+          padding: 0;
         }
       }
 
@@ -987,6 +991,7 @@ export default {
           opacity: 0;
           max-height: 0px;
           margin: 0;
+          padding: 0;
           transform: scale(0.9, 1);
         }
       }
@@ -1177,6 +1182,8 @@ export default {
     }
     ol li:before {
       content: counter(list-0, decimal) ". ";
+      font-size: 75%;
+      font-weight: 600;
     }
 
     strong,
@@ -1385,6 +1392,7 @@ export default {
         content: counter(listCounter);
         // font-size: 0.8rem;
         color: var(--active-color);
+        color: hsl(210, 11%, 58%);
       }
     }
   }
@@ -1393,7 +1401,7 @@ export default {
     counter-increment: listCounter;
 
     &::before {
-      content: "●";
+      content: "";
 
       font-family: "IBM Plex Sans", "OutputSansVariable";
       position: absolute;
