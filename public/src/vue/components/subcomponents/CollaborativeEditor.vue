@@ -366,6 +366,7 @@ export default {
         "link",
         "header",
         "blockquote",
+        "indent",
         "list",
         "media"
       ],
