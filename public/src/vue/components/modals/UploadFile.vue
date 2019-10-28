@@ -228,7 +228,7 @@ export default {
 
     transform: scale(var(--progress-percent), 1);
     transform-origin: left center;
-    background-color: #e45a6b;
+    background-color: var(--c-rouge);
 
     transition: all 0.1s;
   }
@@ -243,7 +243,7 @@ export default {
   }
   &.is--failed {
     &::before {
-      background-color: #e45a6b;
+      background-color: var(--c-rouge);
     }
   }
 

@@ -224,7 +224,7 @@ export default {
     height: 5px;
     margin: 5px;
 
-    background-color: #8894a0;
+    background-color: #000;
     border-radius: 50%;
     opacity: 0;
     transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);

@@ -43,7 +43,7 @@
             </div>
 
             <div class="m_actionbar--text">
-              {{ $t('showing') }}
+              {{ $t('showing') }}&nbsp;
               <span
                 :class="{ 'c-rouge' : sortedMedias.length !== numberOfMedias }"
               >
@@ -52,7 +52,7 @@
                 {{ numberOfMedias }}
               </span>
               <template v-if="$root.allKeywords.length >= 0">
-                —
+                &nbsp;—
                 <button
                   type="button"
                   class="button-nostyle text-uc button-triangle"
@@ -76,15 +76,34 @@
             </div>
           </div>
 
-          <transition-group class="m_library--medias" name="list-complete">
-            <MediaCard
+          <transition-group tag="div" class="m_library--chronology" name="list-complete">
+            <!-- <MediaCard
               v-for="media in sortedMedias"
               :key="media.slugMediaName"
               :media="media"
               :metaFileName="media.metaFileName"
               :slugProjectName="slugProjectName"
               :class="{ 'is--just_added' : last_media_added.includes(media.slugMediaName) }"
-            />
+            />-->
+            <div v-for="item in groupedMedias" :key="item[0]">
+              <h3>{{ $root.formatDateToHuman(item[0]) }}</h3>
+
+              <transition-group
+                tag="div"
+                class="m_library--chronology--medias"
+                name="list-complete"
+              >
+                <div v-for="media in item[1]" :key="media.slugMediaName">
+                  <MediaCard
+                    :key="media.slugMediaName"
+                    :media="media"
+                    :metaFileName="media.metaFileName"
+                    :slugProjectName="media.slugProjectName"
+                    :preview_size="180"
+                  ></MediaCard>
+                </div>
+              </transition-group>
+            </div>
           </transition-group>
         </div>
       </pane>
@@ -314,6 +333,29 @@ export default {
       }, []);
 
       return sortedMedias;
+    },
+    groupedMedias: function() {
+      let mediaGroup = this.$_.groupBy(this.sortedMedias, media => {
+        let _date;
+
+        if (media.hasOwnProperty("date_created") && !!media.date_created) {
+          _date = media.date_created;
+        } else if (
+          media.hasOwnProperty("date_uploaded") &&
+          !!media.date_uploaded
+        ) {
+          _date = media.date_uploaded;
+        } else {
+          return this.$t("invalid_date");
+        }
+
+        var dateMoment = this.$moment(_date);
+        return dateMoment.format("YYYY-MM-DD");
+      });
+      mediaGroup = this.$_.pairs(mediaGroup);
+      mediaGroup = this.$_.sortBy(mediaGroup);
+      mediaGroup = mediaGroup.reverse();
+      return mediaGroup;
     }
   },
   methods: {
@@ -501,10 +543,34 @@ export default {
 }
 
 .m_actionbar {
-  padding: 0 var(--spacing);
+  // padding: 0 var(--spacing);
+  display: flex;
+
+  > * {
+    padding: calc(var(--spacing) / 4) calc(var(--spacing) / 2);
+    border: 1px solid black;
+    border-top: 0;
+    border-left: 0 solid #000;
+  }
+
+  .m_actionbar--text {
+    font-size: 0.8em;
+    line-height: 1.25;
+    display: flex;
+    align-items: center;
+  }
 }
 
-.m_library--medias {
+.m_library--chronology {
+  h3 {
+    // font-weight: normal;
+    font-size: 75%;
+    margin: var(--spacing);
+    margin-bottom: calc(var(--spacing) / 2);
+  }
+}
+
+.m_library--chronology--medias {
   --media-width: 80px;
   --grid-gap: 0.5em;
 
@@ -515,7 +581,6 @@ export default {
   padding: 0 var(--spacing);
 
   height: 100%;
-  overflow: auto;
 
   figure {
     margin: 0;

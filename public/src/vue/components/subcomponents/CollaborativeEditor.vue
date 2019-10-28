@@ -2,6 +2,7 @@
   <div
     class="m_collaborativeEditor quillWrapper"
     :class="{ 
+      'is--focused' : is_focused,
       'is--receptiveToDrop' : !!$root.settings.media_being_dragged,
       'is--dragover' : is_being_dragover  
     }"
@@ -138,6 +139,10 @@ class MediaBlot extends BlockEmbed {
     };
   }
 
+  deleteAt() {
+    // prevent removing on backspace after block
+  }
+
   static value(node) {
     if (node.dataset.type === "image") {
       let img = node.querySelector("img");
@@ -235,6 +240,47 @@ Quill.register(
 Quill.register("modules/cursors", QuillCursors);
 ShareDB.types.register(require("rich-text").type);
 
+var quill_kb_bindings = {
+  // This will overwrite the default binding also named 'tab'
+  // tab: {
+  //   key: 9,
+  //   handler: function() {
+  //     // Handle tab
+  //   }
+  // },
+
+  // There is no default binding named 'custom'
+  // so this will be added without overwriting anything
+  backspace: {
+    key: 8,
+    handler: function(range, context) {
+      if (
+        range.index &&
+        this.quill.getLine(range.index) &&
+        this.quill.getLine(range.index)[0].domNode.dataset &&
+        this.quill.getLine(range.index)[0].domNode.dataset.metaFileName
+      ) {
+      }
+      return true;
+    }
+  }
+
+  // list: {
+  //   key: "backspace",
+  //   format: ["list"],
+  //   handler: function(range, context) {
+  //     if (context.offset === 0) {
+  //       // When backspace on the first character of a list,
+  //       // remove the list instead
+  //       this.quill.format("list", false, Quill.sources.USER);
+  //     } else {
+  //       // Otherwise propogate to Quill's default
+  //       return true;
+  //     }
+  //   }
+  // }
+};
+
 export default {
   props: {
     value: {
@@ -306,6 +352,9 @@ export default {
           hideDelayMs: 5000,
           hideSpeedMs: 0,
           selectionChangeSource: null
+        },
+        keyboard: {
+          bindings: quill_kb_bindings
         }
       },
       bounds: this.$refs.editor,
@@ -619,7 +668,7 @@ export default {
     },
     cancelDragOver() {
       if (this.$root.state.dev_mode === "debug") {
-        console.log(`METHODS • AddMedia / cancelDragOver`);
+        console.log(`METHODS • CollaborativeEditor / cancelDragOver`);
       }
       this.removeDragoverFromBlots();
       this.is_being_dragover = false;
@@ -708,7 +757,13 @@ export default {
   position: relative;
   font-family: "Work Sans";
   // margin-left: 3em;
-  padding: 0 0.1em;
+  // padding: 0 0.1em;
+
+  --active-color: black;
+
+  &.is--focussed {
+    background-color: blue;
+  }
 
   &.is--receptiveToDrop {
     .ql-editor {
@@ -795,9 +850,9 @@ export default {
     padding: 0;
     overflow: visible;
     min-height: 80vh;
-    caret-color: var(--active-color);
+    // caret-color: var(--active-color);
     line-height: inherit;
-    padding: 1em 20px 33vh;
+    padding: var(--spacing) calc(var(--spacing) * 2) 33vh;
 
     &::after {
       content: "";
@@ -900,11 +955,17 @@ export default {
 
         &:hover {
           box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
+          margin-top: calc(var(--spacing) / 2);
+          margin-bottom: calc(var(--spacing) / 2);
+          padding: 0;
         }
 
         &.is--focused {
           outline: 0;
           box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
+          margin-top: calc(var(--spacing) / 2);
+          margin-bottom: calc(var(--spacing) / 2);
+          padding: 0;
         }
       }
 
@@ -929,7 +990,10 @@ export default {
         100% {
           opacity: 0;
           max-height: 0px;
-          margin: 0;
+          margin-top: 0;
+          margin-bottom: 0;
+          padding-top: 0;
+          padding-bottom: 0;
           transform: scale(0.9, 1);
         }
       }
@@ -1120,6 +1184,8 @@ export default {
     }
     ol li:before {
       content: counter(list-0, decimal) ". ";
+      font-size: 75%;
+      font-weight: 600;
     }
 
     strong,
@@ -1325,30 +1391,26 @@ export default {
     counter-increment: listCounter;
 
     &::before {
-      content: "●";
+      content: "";
 
       font-family: "IBM Plex Sans", "OutputSansVariable";
       position: absolute;
       top: 2px;
       right: 100%;
-      margin-right: 1em;
+      margin-right: var(--spacing);
+      margin-right: 0;
 
       font-size: 0.6rem;
-      font-weight: 400;
-      text-align: right;
+      font-weight: 600;
+      text-align: center;
       text-overflow: ellipsis;
       white-space: nowrap;
       overflow: hidden;
       // display: inline-block;
       // float: left;
-      width: 100px;
+      width: var(--spacing);
       max-width: 100px;
-      // margin-left: -106px;
-      // margin-right: 16px;
-      /* font-weight: normal; */
-      /* background-color: transparent; */
-      /* line-height: 8px; */
-      /* margin-top: 8px; */
+      padding-right: calc(var(--spacing) / 2);
       color: transparent;
       color: hsl(210, 11%, 58%);
 
@@ -1359,7 +1421,9 @@ export default {
     &.is--dragover {
       &::before {
         content: counter(listCounter);
-        color: #8894a0;
+        // font-size: 0.8rem;
+        color: var(--active-color);
+        color: hsl(210, 11%, 58%);
       }
     }
 

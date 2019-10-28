@@ -1,37 +1,39 @@
 <template>
   <div class="m_writeupeditor">
     <div class="m_writeupeditor--topbar padding-small">
-      <template v-if="!show_rename_field">
-        <span class="m_writeupeditor--topbar--title padding-verysmall">{{ media.name }}</span>
-      </template>
-      <template v-else>
-        <form class="padding-verysmall" v-on:submit.prevent="renameWriteup()">
-          <div class="input-group">
-            <span class="input-addon input-addon-xs">Nom</span>
-            <input type="text" ref="nameInput" class="input-xs" v-model="new_name" required />
-            <button
-              type="submit"
-              class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
-            >{{ $t('save') }}</button>
-          </div>
-        </form>
-      </template>
-      <span class="m_writeupeditor--topbar--buttons" v-if="!show_rename_field">
-        <button
-          type="button"
-          class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
-          @click="show_rename_field = !show_rename_field"
-        >{{ $t('rename') }}</button>
-        <button
-          type="button"
-          class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
-          @click="$emit('remove')"
-        >{{ $t('remove') }}</button>
-        <!-- <span>
+      <div>
+        <template v-if="!show_rename_field">
+          <span class="m_writeupeditor--topbar--title padding-verysmall">{{ media.name }}</span>
+        </template>
+        <template v-else>
+          <form class="padding-verysmall" v-on:submit.prevent="renameWriteup()">
+            <div class="input-group">
+              <span class="input-addon input-addon-xs">Nom</span>
+              <input type="text" ref="nameInput" class="input-xs" v-model="new_name" required />
+              <button
+                type="submit"
+                class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
+              >{{ $t('save') }}</button>
+            </div>
+          </form>
+        </template>
+        <span class="m_writeupeditor--topbar--buttons" v-if="!show_rename_field">
+          <button
+            type="button"
+            class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
+            @click="show_rename_field = !show_rename_field"
+          >{{ $t('rename') }}</button>
+          <button
+            type="button"
+            class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
+            @click="$emit('remove')"
+          >{{ $t('remove') }}</button>
+          <!-- <span>
           <label for="spellcheck">spellcheck</label>
           <input type="checkbox" v-model="spellcheck" name="spellcheck" id="spellcheck" />
-        </span>-->
-      </span>
+          </span>-->
+        </span>
+      </div>
     </div>
 
     <CollaborativeEditor
@@ -125,7 +127,7 @@ export default {
   }
 };
 </script>
-<style>
+<style lang="scss">
 .quillWrapper .ql-toolbar {
   /* padding-left: 1em; */
 }
@@ -136,22 +138,30 @@ export default {
 }
 
 .m_writeupeditor--topbar {
-  border-bottom: 1px solid black;
   margin: 0 auto;
-  max-width: var(--size-column-width);
+  /* padding: 0 var(--spacing); */
   /* padding: calc(var(--size-skipline) / 2) calc(var(--size-skipline)); */
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: var(--spacing) calc(var(--spacing) * 2) 0;
+
+  > * {
+    border-bottom: 1px solid black;
+    max-width: var(--size-column-width);
+    margin: 0 auto;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: center;
+  }
 }
 
 .m_writeupeditor--topbar--title {
   display: block;
-  flex-grow: 0;
+  // flex-grow: 0;
   font-size: 1.4em;
 }
 .m_writeupeditor--topbar--buttons {
+  align-self: right;
+  flex-grow: 0;
   /* text-align: right; */
-  float: right;
 }
 </style>
