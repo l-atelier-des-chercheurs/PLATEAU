@@ -11,8 +11,8 @@
     @dragover="ondragover($event)"
     @drop="ondrop($event)"
   >
-    connection_state : {{ connection_state }}
-    <br />
+    <!-- connection_state : {{ connection_state }}
+    <br />-->
     <div ref="editor" class="mediaTextContent" />
     <!-- <div class="_customCaret" :style="_customCaret_style" /> -->
   </div>
@@ -37,6 +37,8 @@ class MediaBlot extends BlockEmbed {
   static create({ type, src, caption, metaFileName }) {
     let node = super.create();
     console.log(`CollaborativeEditor • MediaBlot : create for type = ${type}`);
+
+    node.setAttribute("contenteditable", false);
 
     let tag;
 
@@ -105,7 +107,10 @@ class MediaBlot extends BlockEmbed {
         quill.enable(true);
         node.style.animation = "scale-out 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
         node.addEventListener("animationend", () => {
-          node.remove();
+          const _block = Quill.find(node);
+          super.remove();
+          // node.remove();
+          // supprimer du bloc proprement
         });
       });
       node.appendChild(removeButton);
@@ -140,9 +145,12 @@ class MediaBlot extends BlockEmbed {
     };
   }
 
-  deleteAt() {
-    // prevent removing on backspace after block
-  }
+  // deleteAt() {
+  //   console.log("deleteAt for custom mediablock: prevented");
+
+  //   return false;
+  //   // prevent removing on backspace after block
+  // }
 
   static value(node) {
     if (node.dataset.type === "image") {
@@ -209,7 +217,8 @@ class CardEditableModule extends Module {
           }
         };
         let handleClick = e => {
-          if (e.which === 1 && !e.path.includes(elm)) {
+          const path = e.path || (e.composedPath && e.composedPath());
+          if (e.which === 1 && !path.includes(elm)) {
             window.removeEventListener("click", handleClick);
             quill.enable(true);
             deselectCard();
@@ -303,6 +312,7 @@ export default {
   data() {
     return {
       editor: null,
+      doc: undefined,
       editor_id: (Math.random().toString(36) + "00000000000000000").slice(
         2,
         3 + 5
@@ -360,6 +370,8 @@ export default {
         }
       },
       bounds: this.$refs.editor,
+      scrollingContainer: "#quill_scrolling_container",
+
       theme: "snow",
       formats: [
         "bold",
@@ -401,7 +413,11 @@ export default {
           "input",
           this.editor.getText() ? this.editor.root.innerHTML : ""
         );
-        this.updateFocusedLines();
+
+        this.$nextTick(() => {
+          this.updateFocusedLines();
+        });
+
         // cursorsOne.moveCursor(1, range);
       });
 
@@ -499,7 +515,7 @@ export default {
               this.editor.getContents()
             )}`
           );
-
+          this.editor.root.innerHTML = this.value;
           doc.create(this.editor.getContents(), "rich-text");
         } else {
           console.log(
@@ -535,6 +551,12 @@ export default {
           console.log(`ON • CollaborativeEditor: operation applied to quill`);
           this.editor.updateContents(op);
         });
+      });
+
+      doc.on("error", err => {
+        // soucis : les situations ou le serveur a été fermé et en le rouvrant il ne possède plus d’instance du doc dans sharedb…
+
+        this.$forceUpdate();
       });
     },
     updateCaretPosition() {
@@ -630,41 +652,46 @@ export default {
           ? `./${this.slugFolderName}/${media.media_filename}`
           : `/${this.slugFolderName}/${media.media_filename}`;
 
-      if (media.type === "image") {
-        const thumb = media.thumbs.find(m => m.size === 1600);
-        if (!!thumb) {
-          // this.editor.insertText(index + 1, "\n", Quill.sources.USER);
+      this.editor.focus();
+      this.editor.setSelection(index, Quill.sources.SILENT);
+
+      this.$nextTick(() => {
+        if (media.type === "image") {
+          const thumb = media.thumbs.find(m => m.size === 1600);
+          if (!!thumb) {
+            // this.editor.insertText(index + 1, "\n", Quill.sources.USER);
+            this.editor.insertEmbed(
+              index,
+              "media",
+              {
+                type: media.type,
+                src: thumb.path,
+                metaFileName: media.metaFileName
+              },
+              Quill.sources.USER
+            );
+            this.editor.setSelection(index + 1, Quill.sources.SILENT);
+          }
+        } else if (media.type === "video") {
+          // this.editor.insertText(index, "\n", Quill.sources.USER);
           this.editor.insertEmbed(
             index,
             "media",
             {
               type: media.type,
-              src: thumb.path,
+              src: mediaURL,
               metaFileName: media.metaFileName
             },
             Quill.sources.USER
           );
           this.editor.setSelection(index + 1, Quill.sources.SILENT);
+        } else {
+          this.$alertify
+            .closeLogOnClick(true)
+            .delay(4000)
+            .error(this.$t("notifications.media_type_not_handled"));
         }
-      } else if (media.type === "video") {
-        // this.editor.insertText(index, "\n", Quill.sources.USER);
-        this.editor.insertEmbed(
-          index,
-          "media",
-          {
-            type: media.type,
-            src: mediaURL,
-            metaFileName: media.metaFileName
-          },
-          Quill.sources.USER
-        );
-        this.editor.setSelection(index + 1, Quill.sources.SILENT);
-      } else {
-        this.$alertify
-          .closeLogOnClick(true)
-          .delay(4000)
-          .error(this.$t("notifications.media_type_not_handled"));
-      }
+      });
     },
     ondragover($event) {
       console.log(
@@ -780,10 +807,17 @@ export default {
   &.is--disabled {
     .ql-toolbar {
       background-color: var(--c-rouge);
-      color: black;
+      color: white;
+
       &::before {
-        content: "disconnected";
         display: block;
+      }
+
+      html[lang="en"] &::before {
+        content: "Connection lost, attempting to reconnect…";
+      }
+      html[lang="fr"] &::before {
+        content: "Connexion au serveur perdue, reconnexion en cours…";
       }
       > * {
         display: none !important;
@@ -930,6 +964,7 @@ export default {
       background-repeat: no-repeat;
       background-size: 250% 1px;
       transition: transform 0.5s linear;
+
       background-image: linear-gradient(
         90deg,
         transparent,
@@ -946,7 +981,7 @@ export default {
       // );
 
       &.ql-mediacard {
-        transform-origin: right center;
+        transform-origin: center top;
         border-radius: 0px;
         // margin-top: var(--spacing);
         // margin-bottom: var(--spacing);
@@ -982,17 +1017,11 @@ export default {
 
         &:hover {
           box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
-          margin-top: calc(var(--spacing) / 2);
-          margin-bottom: calc(var(--spacing) / 2);
-          padding: 0;
         }
 
         &.is--focused {
           outline: 0;
           box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
-          margin-top: calc(var(--spacing) / 2);
-          margin-bottom: calc(var(--spacing) / 2);
-          padding: 0;
         }
       }
 
@@ -1000,7 +1029,7 @@ export default {
         0% {
           opacity: 0;
           max-height: 0px;
-          transform: scale(0.9, 1);
+          transform: scale(1, 0.6);
         }
         100% {
           opacity: 1;
@@ -1021,7 +1050,7 @@ export default {
           margin-bottom: 0;
           padding-top: 0;
           padding-bottom: 0;
-          transform: scale(0.9, 1);
+          transform: scale(1, 0.6);
         }
       }
 
@@ -1473,6 +1502,9 @@ export default {
     }
   }
 }
+// .ql-clipboard {
+//   position: fixed;
+// }
 
 ._button_removeMedia {
   position: absolute;
@@ -1481,7 +1513,8 @@ export default {
   background: white;
   text-decoration: none;
   line-height: 0;
-  width: 1em;
-  height: 1em;
+  width: 1.5em;
+  height: 1.5em;
+  border-bottom-left-radius: 2px;
 }
 </style>
