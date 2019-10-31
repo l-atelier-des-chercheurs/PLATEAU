@@ -141,7 +141,7 @@ export default {
   width: var(--height-panebutton);
   height: var(--height-panebutton);
 
-  margin: -8px 0px -8px -12px;
+  margin: -8px 2px -8px -15px;
 
   padding: 10px;
   border: 1px solid transparent;
