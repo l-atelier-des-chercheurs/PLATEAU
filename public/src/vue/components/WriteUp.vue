@@ -1,5 +1,5 @@
 <template>
-  <div class="m_writeup">
+  <div class="m_writeup" id="quill_scrolling_container">
     <div class>
       <table class v-if="mode === 'writeup_list'">
         <thead>
@@ -224,7 +224,7 @@ export default {
   // margin: 0 auto;
   background-color: var(--color-WriteUp);
   height: 100%;
-  overflow: auto;
+  overflow-y: auto;
 
   table {
     width: 100%;
