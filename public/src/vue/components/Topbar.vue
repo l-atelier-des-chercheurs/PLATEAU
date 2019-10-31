@@ -1,85 +1,86 @@
 <template>
-  <div class="m_topbar" :class="`mode--${$root.do_navigation.view}`">
-    <div @click="$root.navigation_back()">
-      <h1>
-        <svg
-          v-if="$root.do_navigation.view === 'Project'"
-          version="1.1"
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-          x="0px"
-          y="0px"
-          width="4.1px"
-          height="8px"
-          viewBox="0 0 4.1 8"
-          style="enable-background:new 0 0 4.1 8;"
-          xml:space="preserve"
-        >
-          <path class="st0" d="M4,8H2.6L0,4.1L2.6,0h1.4L2.1,4.1L4,8z" />
-        </svg>
-        plateau
-        &nbsp;
-        <small>{{ $root.state.appVersion }}</small>
-      </h1>
-    </div>
-
-    <div class="m_topbar--separator">/</div>
-
-    <template v-if="$root.state.mode === 'live' && !$root.state.authentificated">
-      <div class="m_inputSessionPassword" v-if="$root.show_session_password_prompt">
-        <form @submit.prevent="submitPassword">
-          <label for="inp" class="inp">
-            <span class="label">Connexion&nbsp;password</span>
-            <input type="password" v-model="pwd" required autofocus autoselect placeholder />
-            <span class="border"></span>
-          </label>
-          <span class="switch switch-xs margin-bottom-small">
-            <input
-              id="remember_password_on_this_device"
-              type="checkbox"
-              v-model="remember_password_on_this_device"
-            />
-            <label for="remember_password_on_this_device">remember password on this device</label>
-          </span>
-
-          <input type="submit" value="submit" />
-        </form>
-      </div>
-    </template>
-    <template v-else>
-      <transition-group class="m_topbar--list" tag="div" name="list-complete" :duration="300">
-        <button
-          type="button"
-          v-if="$root.do_navigation.view === 'List'"
-          @click="$root.show_create_project_modal = !$root.show_create_project_modal"
-          :key="`new_project`"
-        >
+  <div>
+    <div class="m_topbar" :class="`mode--${$root.do_navigation.view}`">
+      <div @click="$root.navigation_back()">
+        <h1>
           <svg
-            class="picto"
+            v-if="$root.do_navigation.view === 'Project'"
             version="1.1"
             xmlns="http://www.w3.org/2000/svg"
             xmlns:xlink="http://www.w3.org/1999/xlink"
             x="0px"
             y="0px"
-            width="11.4px"
-            height="11.4px"
-            viewBox="0 0 10 10"
-            style="enable-background:new 0 0 11.4 11.4;"
+            width="4.1px"
+            height="8px"
+            viewBox="0 0 4.1 8"
+            style="enable-background:new 0 0 4.1 8;"
             xml:space="preserve"
           >
-            <path
-              class="st0"
-              d="M5.3,8.9H3.7L3.2,8.4V5.8H0.5L0,5.3V3.7l0.5-0.5h2.7V0.5L3.7,0h1.6l0.5,0.5v2.7l2.7,0l0.5,0.5v1.6L8.4,5.8 l-2.7,0v2.7L5.3,8.9z M4.2,7.9h0.6V5.3l0.5-0.5l2.7,0V4.2l-2.7,0L4.8,3.7V1H4.2v2.7L3.7,4.2H1v0.6h2.7l0.5,0.5V7.9z"
-            />
+            <path class="st0" d="M4,8H2.6L0,4.1L2.6,0h1.4L2.1,4.1L4,8z" />
           </svg>
-          {{ $t('new_project') }}
-        </button>
-        <span
-          v-if="$root.do_navigation.view === 'Project'"
-          :key="`projectname`"
-          @click="$root.navigation_back()"
-        >{{ $root.currentProject.name }}</span>
-        <!-- <button
+          plateau
+          &nbsp;
+          <small>{{ $root.state.appVersion }}</small>
+        </h1>
+      </div>
+
+      <div class="m_topbar--separator">/</div>
+
+      <template v-if="$root.state.mode === 'live' && !$root.state.authentificated">
+        <div class="m_inputSessionPassword" v-if="$root.show_session_password_prompt">
+          <form @submit.prevent="submitPassword">
+            <label for="inp" class="inp">
+              <span class="label">Connexion&nbsp;password</span>
+              <input type="password" v-model="pwd" required autofocus autoselect placeholder />
+              <span class="border"></span>
+            </label>
+            <span class="switch switch-xs margin-bottom-small">
+              <input
+                id="remember_password_on_this_device"
+                type="checkbox"
+                v-model="remember_password_on_this_device"
+              />
+              <label for="remember_password_on_this_device">remember password on this device</label>
+            </span>
+
+            <input type="submit" value="submit" />
+          </form>
+        </div>
+      </template>
+      <template v-else>
+        <transition-group class="m_topbar--list" tag="div" name="list-complete" :duration="300">
+          <button
+            type="button"
+            v-if="$root.do_navigation.view === 'List'"
+            @click="$root.show_create_project_modal = !$root.show_create_project_modal"
+            :key="`new_project`"
+          >
+            <svg
+              class="picto"
+              version="1.1"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              x="0px"
+              y="0px"
+              width="11.4px"
+              height="11.4px"
+              viewBox="0 0 10 10"
+              style="enable-background:new 0 0 11.4 11.4;"
+              xml:space="preserve"
+            >
+              <path
+                class="st0"
+                d="M5.3,8.9H3.7L3.2,8.4V5.8H0.5L0,5.3V3.7l0.5-0.5h2.7V0.5L3.7,0h1.6l0.5,0.5v2.7l2.7,0l0.5,0.5v1.6L8.4,5.8 l-2.7,0v2.7L5.3,8.9z M4.2,7.9h0.6V5.3l0.5-0.5l2.7,0V4.2l-2.7,0L4.8,3.7V1H4.2v2.7L3.7,4.2H1v0.6h2.7l0.5,0.5V7.9z"
+              />
+            </svg>
+            {{ $t('new_project') }}
+          </button>
+          <span
+            v-if="$root.do_navigation.view === 'Project'"
+            :key="`projectname`"
+            @click="$root.navigation_back()"
+          >{{ $root.currentProject.name }}</span>
+          <!-- <button
           type="button"
           v-if="$root.do_navigation.view === 'Project'"
           @click="$root.navigation_back()"
@@ -110,11 +111,16 @@
         >
           ×&nbsp;
           remove
-        </button>-->
-      </transition-group>
-    </template>
+          </button>-->
+        </transition-group>
+      </template>
 
-    <PaneList class="m_topbar--paneList" v-if="$root.do_navigation.view === 'Project'" />
+      <PaneList class="m_topbar--paneList" v-if="$root.do_navigation.view === 'Project'" />
+    </div>
+    <div
+      class="m_topbar--status"
+      v-if="!$root.state.connected"
+    >{{ $t('notifications.connection_lost') }} {{ $t('notifications.contents_wont_be_editable') }}</div>
   </div>
 </template>
 <script>
@@ -175,7 +181,7 @@ export default {
 .m_topbar {
   position: relative;
   width: 100%;
-  height: 55px;
+  min-height: 55px;
   border-bottom: 1px solid black;
 
   padding: var(--spacing) calc(var(--spacing) / 2);
@@ -211,5 +217,9 @@ export default {
 .m_topbar--paneList {
   flex: 1 1 auto;
   justify-self: flex-end;
+}
+
+.m_topbar--status {
+  background: red;
 }
 </style>
