@@ -835,6 +835,7 @@ html[lang="fr"] .ql-tooltip::before {
   // height: 100%;
   // margin-left: 3em;
   // padding: 0 0.1em;
+  color: rgb(27, 39, 41);
 
   --active-color: black;
   --c-popup-bg: var(--c-noir);
