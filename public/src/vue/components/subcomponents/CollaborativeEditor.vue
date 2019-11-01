@@ -40,6 +40,10 @@ class MediaBlot extends BlockEmbed {
 
     node.setAttribute("contenteditable", false);
 
+    let bg = window.document.createElement("div");
+    bg.setAttribute("class", "ql-mediacard--background");
+    node.appendChild(bg);
+
     let tag;
 
     if (!type || !metaFileName) {
@@ -1036,8 +1040,26 @@ html[lang="fr"] .ql-tooltip::before {
         border-radius: 0px;
         // margin-top: var(--spacing);
         // margin-bottom: var(--spacing);
-        padding-top: calc(var(--spacing) / 2);
-        padding-bottom: calc(var(--spacing) / 2);
+        padding: calc(var(--spacing)) 0;
+        // margin-left: calc(-1 * var(--spacing) / 2);
+        // margin-right: calc(-1 * var(--spacing) / 2);
+
+        .ql-mediacard--background {
+          content: "";
+          position: absolute;
+          display: block;
+          top: calc(var(--spacing) / 2);
+          left: calc(-1 * var(--spacing) / 2);
+          right: calc(-1 * var(--spacing) / 2);
+          bottom: calc(var(--spacing) / 1);
+
+          // background-color: rgba(0, 0, 0, 0.2);
+          border: 2px solid var(--active-color);
+          pointer-events: none;
+
+          opacity: 0;
+          z-index: 0;
+        }
 
         img {
           display: block;
@@ -1057,7 +1079,7 @@ html[lang="fr"] .ql-tooltip::before {
           margin: 0 auto;
           padding: 0.4em 0;
           max-width: 33ch;
-
+          line-height: 2;
           input {
             text-align: center;
             background-color: #eee;
@@ -1067,13 +1089,16 @@ html[lang="fr"] .ql-tooltip::before {
         }
 
         &:hover {
-          background-color: #f9f9f9;
+          // background-color: #eee;
           // box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
         }
 
         &.is--focused {
-          outline: 0;
-          box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
+          // outline: 0;
+          // box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
+          .ql-mediacard--background {
+            opacity: 1;
+          }
         }
       }
 
@@ -1098,6 +1123,7 @@ html[lang="fr"] .ql-tooltip::before {
         100% {
           opacity: 0;
           // max-height: 0px;
+          height: 0;
           margin-top: 0;
           margin-bottom: 0;
           padding-top: 0;
@@ -1556,7 +1582,7 @@ html[lang="fr"] .ql-tooltip::before {
 
 ._button_removeMedia {
   position: absolute;
-  top: 0;
+  top: var(--spacing);
   right: 0;
   background: white;
   text-decoration: none;
