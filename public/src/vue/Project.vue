@@ -1,5 +1,10 @@
 <template>
-  <splitpanes class="m_project" watch-slots @resized="resized()">
+  <splitpanes
+    class="m_project"
+    watch-slots
+    @resized="resized()"
+    :key="JSON.stringify($root.settings.project_panes_in_order)"
+  >
     <template v-for="pane in $root.settings.project_panes_in_order">
       <pane v-if="pane.key === 'WriteUp' && pane.enabled" :key="pane.key">
         <WriteUp
