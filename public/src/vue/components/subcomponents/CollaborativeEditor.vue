@@ -790,6 +790,32 @@ export default {
 </script>
 <style src="../../../../node_modules/quill/dist/quill.snow.css"></style>
 <style lang="scss">
+html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
+html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
+  content: "Titre 1";
+}
+html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
+html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
+  content: "Titre 2";
+}
+html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
+html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
+  content: "Titre 3";
+}
+html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="4"]::before,
+html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="4"]::before {
+  content: "Titre 4";
+}
+html[lang="fr"] .ql-tooltip a.ql-remove::before {
+  content: "Supprimer";
+}
+html[lang="fr"] .ql-tooltip a.ql-action::after {
+  content: "Modifier";
+}
+html[lang="fr"] .ql-tooltip::before {
+  content: "Visiter le site :";
+}
+
 .m_collaborativeEditor {
   position: relative;
   font-family: "Work Sans";
@@ -874,23 +900,6 @@ export default {
     /* font-style: italic; */
   }
 
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
-    content: "Titre 1";
-  }
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
-    content: "Titre 2";
-  }
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
-    content: "Titre 3";
-  }
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="4"]::before,
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="4"]::before {
-    content: "Titre 4";
-  }
-
   .ql-container.ql-bubble:not(.ql-disabled) a::before {
     line-height: 1.2;
   }
@@ -903,9 +912,22 @@ export default {
     border: 0px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 
+    .ql-preview {
+      color: var(--c-popup-c);
+    }
+
     input[type="text"] {
       color: black;
       border: 0px;
+    }
+    .ql-action {
+      font-weight: normal;
+      color: var(--c-popup-c);
+    }
+
+    a {
+      color: white;
+      text-decoration: underline;
     }
   }
 
@@ -1207,21 +1229,21 @@ export default {
       border: 1px solid;
       margin: -1px 0;
     }
-    a,
-    b,
-    i,
-    strong,
-    em,
-    small,
-    code {
-      line-height: 0;
-    }
-    sub,
-    sup {
-      line-height: 0;
-      position: relative;
-      vertical-align: baseline;
-    }
+    // a,
+    // b,
+    // i,
+    // strong,
+    // em,
+    // small,
+    // code {
+    //   line-height: 0;
+    // }
+    // sub,
+    // sup {
+    //   line-height: 0;
+    //   position: relative;
+    //   vertical-align: baseline;
+    // }
     sup {
       top: -0.5em;
     }
@@ -1271,7 +1293,7 @@ export default {
       font-weight: 600;
     }
 
-    a {
+    p > a {
       text-decoration: underline;
       text-decoration-style: solid;
       color: var(--active-color);
