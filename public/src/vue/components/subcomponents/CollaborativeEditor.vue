@@ -872,9 +872,7 @@ html[lang="fr"] .ql-tooltip::before {
 
   &.is--receptiveToDrop {
     .ql-editor {
-      &::after {
-        opacity: 1;
-      }
+      background-color: #eee;
     }
     &.is--dragover {
       .ql-editor {
@@ -963,57 +961,9 @@ html[lang="fr"] .ql-tooltip::before {
 
     // caret-color: var(--active-color);
     line-height: inherit;
-    padding: var(--spacing) calc(var(--spacing) * 2) 33vh;
+    padding: var(--spacing) calc(var(--spacing) * 2) 250px;
 
-    &::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background-color: rgba(255, 255, 255, 0.1);
-      pointer-events: none;
-      z-index: 1;
-      opacity: 0;
-
-      transition: opacity 0.4s cubic-bezier(0.19, 1, 0.22, 1);
-    }
-
-    // &::after {
-    //   content: "";
-    //   position: absolute;
-    //   left: 0;
-    //   right: 0;
-    //   top: 0;
-    //   bottom: 0;
-    //   pointer-events: none;
-
-    //   background-color: #ccc;
-
-    //   // Colors
-    //   $bg-color: #fff;
-    //   $dot-color: var(--color-MediaLibrary);
-
-    //   // Dimensions
-    //   $dot-size: 2px;
-    //   $dot-space: 22px;
-
-    //   background: linear-gradient(
-    //         90deg,
-    //         $bg-color ($dot-space - $dot-size),
-    //         transparent 1%
-    //       )
-    //       center,
-    //     linear-gradient($bg-color ($dot-space - $dot-size), transparent 1%)
-    //       center,
-    //     $dot-color;
-    //   background-size: $dot-space $dot-space;
-
-    //   opacity: 0;
-
-    //   transition: opacity 0.4s linear;
-    // }
+    transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
 
     > * {
       position: relative;

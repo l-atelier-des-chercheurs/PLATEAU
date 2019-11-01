@@ -148,7 +148,7 @@ export default {
     flex: 0 0 auto;
   }
   .m_collaborativeEditor {
-    flex: 1 1 0;
+    flex: 1 1 auto;
     // otherwise flex height not working… not sure why
     height: 50%;
     width: 100%;
