@@ -100,11 +100,17 @@ export default {
     current_writeup_media() {
       if (this.$root.settings.current_writeup_media_metaFileName === false)
         return false;
-      return this.writeup_medias.filter(
+
+      const open_writeup_media = this.writeup_medias.filter(
         m =>
           m.metaFileName ===
           this.$root.settings.current_writeup_media_metaFileName
       )[0];
+
+      if (!open_writeup_media) {
+        this.closeWriteupMedia();
+      }
+      return open_writeup_media;
     },
     mode() {
       if (this.$root.settings.current_writeup_media_metaFileName) {
