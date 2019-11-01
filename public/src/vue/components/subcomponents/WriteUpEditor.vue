@@ -84,7 +84,8 @@ export default {
   beforeDestroy() {},
 
   watch: {
-    content: function() {}
+    content: function() {},
+    media: function() {}
   },
   computed: {
     hasAnyChangesBeenMadeToContent() {
@@ -141,6 +142,21 @@ export default {
   height: 100%;
   margin: 0 auto;
   --size-column-width: 600px;
+
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: flex-start;
+  align-content: flex-start;
+
+  > * {
+    flex: 0 0 auto;
+  }
+  .m_collaborativeEditor {
+    flex: 1 1 0;
+    // otherwise flex height not working… not sure why
+    height: 50%;
+    width: 100%;
+  }
 }
 
 .m_writeupeditor--topbar {
@@ -148,6 +164,7 @@ export default {
   /* padding: 0 var(--spacing); */
   /* padding: calc(var(--size-skipline) / 2) calc(var(--size-skipline)); */
   padding: 0 calc(var(--spacing) * 2) 0;
+  width: 100%;
 
   > * {
     border-bottom: 1px solid black;

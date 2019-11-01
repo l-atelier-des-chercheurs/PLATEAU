@@ -103,7 +103,7 @@ export default {
   --height-panebutton: 32px;
 
   &[disabled] {
-    cursor: pointer;
+    cursor: pointer !important;
   }
 
   > div {
@@ -148,7 +148,7 @@ export default {
   width: var(--height-panebutton);
   height: var(--height-panebutton);
 
-  margin: -8px 2px -8px -15px;
+  margin: -8px 2px -8px calc(-1 * var(--spacing));
 
   padding: 10px;
   border: 1px solid transparent;

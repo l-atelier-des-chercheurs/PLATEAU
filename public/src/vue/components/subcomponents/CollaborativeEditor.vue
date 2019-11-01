@@ -824,7 +824,7 @@ html[lang="fr"] .ql-tooltip::before {
 .m_collaborativeEditor {
   position: relative;
   font-family: "Work Sans";
-  height: 100%;
+  // height: 100%;
   // margin-left: 3em;
   // padding: 0 0.1em;
 
