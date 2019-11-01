@@ -53,7 +53,10 @@ module.exports = (function() {
       notifications: {
         connected_to_plateau: 'Connection à plateau active',
         using_saved_password:
-          'Connection à plateau en utilisant le mot de passe enregistré'
+          'Connection à plateau en utilisant le mot de passe enregistré',
+
+        connection_active: 'La connexion au serveur est active.',
+        connection_lost: 'La connexion au serveur a été perdue.'
       }
     },
     en: {
@@ -108,7 +111,9 @@ module.exports = (function() {
       notifications: {
         connected_to_plateau: 'Connection to plateau is active',
         using_saved_password:
-          'Connecting to plateau using the password that was saved'
+          'Connecting to plateau using the password that was saved',
+        connection_active: 'The connection to the server is active.',
+        connection_lost: 'The connection to the server was lost.'
       }
     }
   };
