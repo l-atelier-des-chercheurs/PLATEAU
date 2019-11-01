@@ -1252,13 +1252,17 @@ html[lang="fr"] .ql-tooltip::before {
     ol,
     ul {
       padding-left: 1.5em;
-
       > li {
-        list-style-type: none;
+        padding-left: 0em;
       }
     }
-    ul > li::before {
-      content: "\2022";
+    ul > li {
+      list-style-type: disc;
+
+      &::before {
+        content: none;
+        // content: "\2022";
+      }
     }
 
     li::before {
