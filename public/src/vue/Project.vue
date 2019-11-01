@@ -65,8 +65,12 @@ export default {
     };
   },
   created() {},
-  mounted() {},
-  beforeDestroy() {},
+  mounted() {
+    this.$eventHub.$on("project.refresh_panes_order", this.refreshPanes);
+  },
+  beforeDestroy() {
+    this.$eventHub.$off("project.refresh_panes_order", this.refreshPanes);
+  },
   watch: {
     "$root.settings.project_panes_in_order": {
       handler() {
@@ -107,6 +111,10 @@ export default {
   methods: {
     resized() {
       console.log(`Project / methods: resized`);
+    },
+    refreshPanes() {
+      console.log(`Project / methods: refreshPanes`);
+      this.$forceUpdate();
     }
   }
 };
