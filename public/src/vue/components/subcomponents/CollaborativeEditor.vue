@@ -99,6 +99,10 @@ class MediaBlot extends BlockEmbed {
     let captionInput;
 
     node.__onSelect = () => {
+      const quill = Quill.find(node.parentElement.parentElement);
+      const _block = Quill.find(node);
+
+      quill.setSelection(quill.getIndex(_block), 0, Quill.sources.USER);
       node.classList.add("is--focused");
 
       removeButton = window.document.createElement("button");
@@ -107,11 +111,9 @@ class MediaBlot extends BlockEmbed {
       removeButton.classList.add("_button_removeMedia");
       removeButton.addEventListener("click", () => {
         node.__onDeselect();
-        const quill = Quill.find(node.parentElement.parentElement);
         quill.enable(true);
         node.style.animation = "scale-out 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
         node.addEventListener("animationend", () => {
-          const _block = Quill.find(node);
           super.remove();
           // node.remove();
           // supprimer du bloc proprement
@@ -133,6 +135,9 @@ class MediaBlot extends BlockEmbed {
         caption.appendChild(captionInput);
         node.appendChild(caption);
       }
+
+      captionInput.focus();
+      debugger;
     };
     node.__onDeselect = () => {
       let value = captionInput.value;
@@ -186,7 +191,6 @@ class MediaBlot extends BlockEmbed {
 class CardEditableModule extends Module {
   constructor(quill, options) {
     super(quill, options);
-
     let is_selected = false;
 
     let listener = e => {
@@ -194,6 +198,7 @@ class CardEditableModule extends Module {
         return document.body.removeEventListener("click", listener);
       }
       let elm = e.target.closest(".ql-mediacard");
+
       let deselectCard = () => {
         console.log("deselectCard");
         is_selected = false;
@@ -209,8 +214,8 @@ class CardEditableModule extends Module {
       };
       if (elm && elm.__blot && elm.__onSelect && !is_selected) {
         quill.disable();
-
         is_selected = true;
+        console.log("selectCard");
 
         elm.__onSelect(quill);
         let handleKeyPress = e => {
@@ -663,7 +668,7 @@ export default {
         if (!!thumb) {
           // this.editor.insertText(index, "\n", Quill.sources.USER);
           this.editor.insertEmbed(
-            index + 1,
+            index,
             "media",
             {
               type: media.type,
