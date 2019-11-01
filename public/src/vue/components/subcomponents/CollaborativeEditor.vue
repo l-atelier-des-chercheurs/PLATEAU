@@ -612,7 +612,7 @@ export default {
             content: this.editor.getText() ? this.editor.root.innerHTML : ""
           }
         });
-      }, 500);
+      }, 1000);
     },
     broadcastMediasPresentInWriteup() {
       console.log(`CollaborativeEditor • broadcastMediasPresentInWriteup`);
@@ -655,43 +655,41 @@ export default {
       this.editor.focus();
       this.editor.setSelection(index, Quill.sources.SILENT);
 
-      this.$nextTick(() => {
-        if (media.type === "image") {
-          const thumb = media.thumbs.find(m => m.size === 1600);
-          if (!!thumb) {
-            // this.editor.insertText(index + 1, "\n", Quill.sources.USER);
-            this.editor.insertEmbed(
-              index,
-              "media",
-              {
-                type: media.type,
-                src: thumb.path,
-                metaFileName: media.metaFileName
-              },
-              Quill.sources.USER
-            );
-            this.editor.setSelection(index + 1, Quill.sources.SILENT);
-          }
-        } else if (media.type === "video") {
+      if (media.type === "image") {
+        const thumb = media.thumbs.find(m => m.size === 1600);
+        if (!!thumb) {
           // this.editor.insertText(index, "\n", Quill.sources.USER);
           this.editor.insertEmbed(
-            index,
+            index + 1,
             "media",
             {
               type: media.type,
-              src: mediaURL,
+              src: thumb.path,
               metaFileName: media.metaFileName
             },
             Quill.sources.USER
           );
           this.editor.setSelection(index + 1, Quill.sources.SILENT);
-        } else {
-          this.$alertify
-            .closeLogOnClick(true)
-            .delay(4000)
-            .error(this.$t("notifications.media_type_not_handled"));
         }
-      });
+      } else if (media.type === "video") {
+        // this.editor.insertText(index, "\n", Quill.sources.USER);
+        this.editor.insertEmbed(
+          index,
+          "media",
+          {
+            type: media.type,
+            src: mediaURL,
+            metaFileName: media.metaFileName
+          },
+          Quill.sources.USER
+        );
+        this.editor.setSelection(index + 1, Quill.sources.SILENT);
+      } else {
+        this.$alertify
+          .closeLogOnClick(true)
+          .delay(4000)
+          .error(this.$t("notifications.media_type_not_handled"));
+      }
     },
     ondragover($event) {
       console.log(
@@ -799,6 +797,11 @@ export default {
   // padding: 0 0.1em;
 
   --active-color: black;
+  --c-popup-bg: var(--c-noir);
+  --c-popup-c: white;
+
+  --c-toolbar-warning-bg: var(--c-rouge);
+  --c-toolbar-warning-c: white;
 
   &.is--focussed {
     background-color: blue;
@@ -806,8 +809,8 @@ export default {
 
   &.is--disabled {
     .ql-toolbar {
-      background-color: var(--c-rouge);
-      color: white;
+      background-color: var(--c-toolbar-warning-bg);
+      color: ar(--c-toolbar-warning-c);
 
       &::before {
         display: block;
@@ -895,7 +898,15 @@ export default {
   .ql-tooltip {
     z-index: 1;
     border-radius: 4px;
-    background-color: #000;
+    background-color: var(--c-popup-bg);
+    color: var(--c-popup-c);
+    border: 0px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+    input[type="text"] {
+      color: black;
+      border: 0px;
+    }
   }
 
   .ql-container {
@@ -918,37 +929,52 @@ export default {
     &::after {
       content: "";
       position: absolute;
-      left: 0;
-      right: 0;
       top: 0;
       bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: rgba(255, 255, 255, 0.1);
       pointer-events: none;
-
-      background-color: #ccc;
-
-      // Colors
-      $bg-color: #fff;
-      $dot-color: var(--color-MediaLibrary);
-
-      // Dimensions
-      $dot-size: 2px;
-      $dot-space: 22px;
-
-      background: linear-gradient(
-            90deg,
-            $bg-color ($dot-space - $dot-size),
-            transparent 1%
-          )
-          center,
-        linear-gradient($bg-color ($dot-space - $dot-size), transparent 1%)
-          center,
-        $dot-color;
-      background-size: $dot-space $dot-space;
-
+      z-index: 1;
       opacity: 0;
 
-      transition: opacity 0.4s linear;
+      transition: opacity 0.4s cubic-bezier(0.19, 1, 0.22, 1);
     }
+
+    // &::after {
+    //   content: "";
+    //   position: absolute;
+    //   left: 0;
+    //   right: 0;
+    //   top: 0;
+    //   bottom: 0;
+    //   pointer-events: none;
+
+    //   background-color: #ccc;
+
+    //   // Colors
+    //   $bg-color: #fff;
+    //   $dot-color: var(--color-MediaLibrary);
+
+    //   // Dimensions
+    //   $dot-size: 2px;
+    //   $dot-space: 22px;
+
+    //   background: linear-gradient(
+    //         90deg,
+    //         $bg-color ($dot-space - $dot-size),
+    //         transparent 1%
+    //       )
+    //       center,
+    //     linear-gradient($bg-color ($dot-space - $dot-size), transparent 1%)
+    //       center,
+    //     $dot-color;
+    //   background-size: $dot-space $dot-space;
+
+    //   opacity: 0;
+
+    //   transition: opacity 0.4s linear;
+    // }
 
     > * {
       position: relative;
@@ -1016,7 +1042,8 @@ export default {
         }
 
         &:hover {
-          box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
+          background-color: #f9f9f9;
+          // box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
         }
 
         &.is--focused {
@@ -1028,24 +1055,24 @@ export default {
       @keyframes scale-in {
         0% {
           opacity: 0;
-          max-height: 0px;
+          // max-height: 0px;
           transform: scale(1, 0.6);
         }
         100% {
           opacity: 1;
-          max-height: 50vh;
+          // max-height: 50vh;
           transform: scale(1, 1);
         }
       }
       @keyframes scale-out {
         0% {
           opacity: 1;
-          max-height: 50vh;
+          // max-height: 50vh;
           transform: scale(1, 1);
         }
         100% {
           opacity: 0;
-          max-height: 0px;
+          // max-height: 0px;
           margin-top: 0;
           margin-bottom: 0;
           padding-top: 0;
@@ -1068,11 +1095,6 @@ export default {
     }
     > img {
       display: block;
-    }
-
-    &::after {
-      // content: ".";
-      color: #ccc;
     }
   }
 
@@ -1340,10 +1362,10 @@ export default {
 }
 
 .ql-toolbar.ql-snow {
-  background-color: #222;
+  background-color: var(--c-popup-bg);
+  color: var(--c-popup-c);
   /* border-left: 0; */
   border: none;
-  color: white;
   // border-radius: 0 0 4px 4px;
   border-radius: 4px;
   // top: 121px;
