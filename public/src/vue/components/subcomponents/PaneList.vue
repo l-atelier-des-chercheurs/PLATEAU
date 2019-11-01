@@ -4,6 +4,7 @@
     axis="x"
     v-model="$root.settings.project_panes_in_order"
     :useDragHandle="true"
+    @sort-end="sortEnded"
   >
     <SlickItem
       v-for="(item, index) in $root.settings.project_panes_in_order"
@@ -55,7 +56,13 @@ export default {
   beforeDestroy() {},
   watch: {},
   computed: {},
-  methods: {}
+  methods: {
+    sortEnded({ event, newIndex, oldIndex, collection }) {
+      if (newIndex !== oldIndex) {
+        this.$eventHub.$emit("project.refresh_panes_order");
+      }
+    }
+  }
 };
 </script>
 <style lang="scss">
@@ -96,7 +103,7 @@ export default {
   --height-panebutton: 32px;
 
   &[disabled] {
-    cursor: pointer;
+    cursor: pointer !important;
   }
 
   > div {
@@ -141,7 +148,7 @@ export default {
   width: var(--height-panebutton);
   height: var(--height-panebutton);
 
-  margin: -8px 0px -8px -12px;
+  margin: -8px 2px -8px calc(-1 * var(--spacing));
 
   padding: 10px;
   border: 1px solid transparent;

@@ -1,5 +1,10 @@
 <template>
-  <splitpanes class="m_project" watch-slots @resized="resized()">
+  <splitpanes
+    class="m_project"
+    watch-slots
+    @resized="resized()"
+    :key="JSON.stringify($root.settings.project_panes_in_order)"
+  >
     <template v-for="pane in $root.settings.project_panes_in_order">
       <pane v-if="pane.key === 'WriteUp' && pane.enabled" :key="pane.key">
         <WriteUp
@@ -65,8 +70,12 @@ export default {
     };
   },
   created() {},
-  mounted() {},
-  beforeDestroy() {},
+  mounted() {
+    this.$eventHub.$on("project.refresh_panes_order", this.refreshPanes);
+  },
+  beforeDestroy() {
+    this.$eventHub.$off("project.refresh_panes_order", this.refreshPanes);
+  },
   watch: {
     "$root.settings.project_panes_in_order": {
       handler() {
@@ -107,6 +116,10 @@ export default {
   methods: {
     resized() {
       console.log(`Project / methods: resized`);
+    },
+    refreshPanes() {
+      console.log(`Project / methods: refreshPanes`);
+      this.$forceUpdate();
     }
   }
 };

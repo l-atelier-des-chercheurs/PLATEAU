@@ -4,14 +4,15 @@
     :class="{ 
       'is--focused' : is_focused,
       'is--receptiveToDrop' : !!$root.settings.media_being_dragged,
-      'is--dragover' : is_being_dragover  
+      'is--dragover' : is_being_dragover  ,
+      'is--disabled' : editor_not_enabled
     }"
     autofocus="autofocus"
     @dragover="ondragover($event)"
     @drop="ondrop($event)"
   >
-    <!-- connection_state : {{ connection_state }} -->
-    <!-- <br /> -->
+    <!-- connection_state : {{ connection_state }}
+    <br />-->
     <div ref="editor" class="mediaTextContent" />
     <!-- <div class="_customCaret" :style="_customCaret_style" /> -->
   </div>
@@ -36,6 +37,12 @@ class MediaBlot extends BlockEmbed {
   static create({ type, src, caption, metaFileName }) {
     let node = super.create();
     console.log(`CollaborativeEditor • MediaBlot : create for type = ${type}`);
+
+    node.setAttribute("contenteditable", false);
+
+    let bg = window.document.createElement("div");
+    bg.setAttribute("class", "ql-mediacard--background");
+    node.appendChild(bg);
 
     let tag;
 
@@ -92,6 +99,10 @@ class MediaBlot extends BlockEmbed {
     let captionInput;
 
     node.__onSelect = () => {
+      const quill = Quill.find(node.parentElement.parentElement);
+      const _block = Quill.find(node);
+
+      // quill.setSelection(quill.getIndex(_block), 0, Quill.sources.USER);
       node.classList.add("is--focused");
 
       removeButton = window.document.createElement("button");
@@ -100,11 +111,12 @@ class MediaBlot extends BlockEmbed {
       removeButton.classList.add("_button_removeMedia");
       removeButton.addEventListener("click", () => {
         node.__onDeselect();
-        const quill = Quill.find(node.parentElement.parentElement);
         quill.enable(true);
         node.style.animation = "scale-out 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
         node.addEventListener("animationend", () => {
-          node.remove();
+          super.remove();
+          // node.remove();
+          // supprimer du bloc proprement
         });
       });
       node.appendChild(removeButton);
@@ -123,6 +135,8 @@ class MediaBlot extends BlockEmbed {
         caption.appendChild(captionInput);
         node.appendChild(caption);
       }
+
+      captionInput.focus();
     };
     node.__onDeselect = () => {
       let value = captionInput.value;
@@ -132,16 +146,17 @@ class MediaBlot extends BlockEmbed {
         captionInput.remove();
         caption.innerText = value;
       }
-
       node.classList.remove("is--focused");
-
       removeButton.remove();
     };
   }
 
-  deleteAt() {
-    // prevent removing on backspace after block
-  }
+  // deleteAt() {
+  //   console.log("deleteAt for custom mediablock: prevented");
+
+  //   return false;
+  //   // prevent removing on backspace after block
+  // }
 
   static value(node) {
     if (node.dataset.type === "image") {
@@ -173,7 +188,6 @@ class MediaBlot extends BlockEmbed {
 class CardEditableModule extends Module {
   constructor(quill, options) {
     super(quill, options);
-
     let is_selected = false;
 
     let listener = e => {
@@ -181,6 +195,7 @@ class CardEditableModule extends Module {
         return document.body.removeEventListener("click", listener);
       }
       let elm = e.target.closest(".ql-mediacard");
+
       let deselectCard = () => {
         console.log("deselectCard");
         is_selected = false;
@@ -196,8 +211,8 @@ class CardEditableModule extends Module {
       };
       if (elm && elm.__blot && elm.__onSelect && !is_selected) {
         quill.disable();
-
         is_selected = true;
+        console.log("selectCard");
 
         elm.__onSelect(quill);
         let handleKeyPress = e => {
@@ -208,7 +223,8 @@ class CardEditableModule extends Module {
           }
         };
         let handleClick = e => {
-          if (e.which === 1 && !e.path.includes(elm)) {
+          const path = e.path || (e.composedPath && e.composedPath());
+          if (e.which === 1 && !path.includes(elm)) {
             window.removeEventListener("click", handleClick);
             quill.enable(true);
             deselectCard();
@@ -287,6 +303,10 @@ export default {
       type: String,
       default: "…"
     },
+    enable_collaboration: {
+      type: Boolean,
+      default: false
+    },
     media: Object,
     slugFolderName: String,
     spellcheck: {
@@ -298,6 +318,7 @@ export default {
   data() {
     return {
       editor: null,
+      doc: undefined,
       editor_id: (Math.random().toString(36) + "00000000000000000").slice(
         2,
         3 + 5
@@ -320,14 +341,11 @@ export default {
           ["bold", "italic", "link", "blockquote"],
           [{ list: "ordered" }, { list: "bullet" }],
           ["clean"]
-        ],
-        handlers: {
-          image: ""
-        }
+        ]
       },
 
       socket: null,
-      connection_state: undefined,
+      connection_state: !this.enable_collaboration ? "disabled" : "connecting…",
       requested_resource_url: undefined
     };
   },
@@ -358,6 +376,7 @@ export default {
         }
       },
       bounds: this.$refs.editor,
+
       theme: "snow",
       formats: [
         "bold",
@@ -375,7 +394,6 @@ export default {
 
     this.$refs.editor.dataset.quill = this.editor;
 
-    this.editor.root.innerHTML = this.value;
     this.cancelDragOver = debounce(this.cancelDragOver, 300);
 
     this.setSpellCheck();
@@ -387,21 +405,24 @@ export default {
     const cursorsOne = this.editor.getModule("cursors");
     cursorsOne.createCursor(1, "User 1", "#0a997f");
 
-    this.editor.focus();
-
     this.$nextTick(() => {
-      if (this.$root.state.mode !== "live") {
-        return;
+      if (this.$root.state.mode === "live" && this.enable_collaboration) {
+        this.initWebsocketMode();
+        this.editor.focus();
+      } else {
+        this.editor.root.innerHTML = this.value;
       }
-
-      this.initWebsocketMode();
 
       this.editor.on("text-change", (delta, oldDelta, source) => {
         this.$emit(
           "input",
           this.editor.getText() ? this.editor.root.innerHTML : ""
         );
-        this.updateFocusedLines();
+
+        this.$nextTick(() => {
+          this.updateFocusedLines();
+        });
+
         // cursorsOne.moveCursor(1, range);
       });
 
@@ -442,6 +463,13 @@ export default {
     },
     value: function() {
       this.broadcastMediasPresentInWriteup();
+    },
+    editor_not_enabled: function() {
+      if (this.editor_not_enabled) {
+        this.editor.disable();
+      } else {
+        this.editor.enable();
+      }
     }
   },
   computed: {
@@ -449,10 +477,14 @@ export default {
       return {
         transform: `translate3d(${this.caret_position.left}px, ${this.caret_position.top}px, 0px)`
       };
+    },
+    editor_not_enabled() {
+      return this.enable_collaboration && this.connection_state !== "connected";
     }
   },
   methods: {
     initWebsocketMode() {
+      console.log(`CollaborativeEditor / initWebsocketMode`);
       const params = new URLSearchParams({
         type: "projects",
         slugFolderName: this.slugFolderName,
@@ -468,7 +500,7 @@ export default {
         requested_querystring;
 
       console.log(
-        `MOUNTED • CollaborativeEditor: will connect to ws server with ${this.requested_resource_url}`
+        `CollaborativeEditor / initWebsocketMode : will connect to ws server with ${this.requested_resource_url}`
       );
 
       this.socket = new ReconnectingWebSocket(this.requested_resource_url);
@@ -488,7 +520,7 @@ export default {
               this.editor.getContents()
             )}`
           );
-
+          this.editor.root.innerHTML = this.value;
           doc.create(this.editor.getContents(), "rich-text");
         } else {
           console.log(
@@ -524,6 +556,12 @@ export default {
           console.log(`ON • CollaborativeEditor: operation applied to quill`);
           this.editor.updateContents(op);
         });
+      });
+
+      doc.on("error", err => {
+        // soucis : les situations ou le serveur a été fermé et en le rouvrant il ne possède plus d’instance du doc dans sharedb…
+
+        this.$forceUpdate();
       });
     },
     updateCaretPosition() {
@@ -579,7 +617,7 @@ export default {
             content: this.editor.getText() ? this.editor.root.innerHTML : ""
           }
         });
-      }, 500);
+      }, 1000);
     },
     broadcastMediasPresentInWriteup() {
       console.log(`CollaborativeEditor • broadcastMediasPresentInWriteup`);
@@ -619,10 +657,13 @@ export default {
           ? `./${this.slugFolderName}/${media.media_filename}`
           : `/${this.slugFolderName}/${media.media_filename}`;
 
+      this.editor.focus();
+      this.editor.setSelection(index, Quill.sources.SILENT);
+
       if (media.type === "image") {
         const thumb = media.thumbs.find(m => m.size === 1600);
         if (!!thumb) {
-          // this.editor.insertText(index + 1, "\n", Quill.sources.USER);
+          // this.editor.insertText(index, "\n", Quill.sources.USER);
           this.editor.insertEmbed(
             index,
             "media",
@@ -734,9 +775,17 @@ export default {
       }
     },
     removeDragoverFromBlots() {
-      this.editor
-        .getLines()
-        .map(b => b.domNode.classList.remove("is--dragover"));
+      this.editor.getLines().map(b => {
+        while (b.parent !== b.scroll) {
+          b = b.parent;
+          if (b === b.scroll) {
+            break;
+          }
+        }
+        if (b !== b.scroll && b.domNode) {
+          b.domNode.classList.remove("is--dragover");
+        }
+      });
     },
     getBlockFromElement(_target) {
       while (!_target.parentElement.classList.contains("ql-editor")) {
@@ -754,23 +803,77 @@ export default {
 </script>
 <style src="../../../../node_modules/quill/dist/quill.snow.css"></style>
 <style lang="scss">
+html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
+html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
+  content: "Titre 1";
+}
+html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
+html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
+  content: "Titre 2";
+}
+html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
+html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
+  content: "Titre 3";
+}
+html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="4"]::before,
+html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="4"]::before {
+  content: "Titre 4";
+}
+html[lang="fr"] .ql-tooltip a.ql-remove::before {
+  content: "Supprimer";
+}
+html[lang="fr"] .ql-tooltip a.ql-action::after {
+  content: "Modifier";
+}
+html[lang="fr"] .ql-tooltip::before {
+  content: "Visiter le site :";
+}
+
 .m_collaborativeEditor {
   position: relative;
   font-family: "Work Sans";
+  // height: 100%;
   // margin-left: 3em;
   // padding: 0 0.1em;
+  color: rgb(27, 39, 41);
 
   --active-color: black;
+  --c-popup-bg: var(--c-noir);
+  --c-popup-c: white;
+
+  --c-toolbar-warning-bg: var(--c-rouge);
+  --c-toolbar-warning-c: white;
 
   &.is--focussed {
     background-color: blue;
   }
 
+  &.is--disabled {
+    cursor: not-allowed;
+    .ql-toolbar {
+      background-color: var(--c-toolbar-warning-bg);
+      color: ar(--c-toolbar-warning-c);
+
+      &::before {
+        display: block;
+      }
+
+      html[lang="en"] &::before {
+        content: "Connection lost, attempting to reconnect…";
+      }
+      html[lang="fr"] &::before {
+        content: "Connexion au serveur perdue, reconnexion en cours…";
+      }
+      > * {
+        display: none !important;
+      }
+    }
+    // border-left: 2px solid rgba(255, 0, 0, 0.5);
+  }
+
   &.is--receptiveToDrop {
     .ql-editor {
-      &::after {
-        opacity: 1;
-      }
+      background-color: #eee;
     }
     &.is--dragover {
       .ql-editor {
@@ -811,23 +914,6 @@ export default {
     /* font-style: italic; */
   }
 
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
-    content: "Titre 1";
-  }
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
-    content: "Titre 2";
-  }
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
-    content: "Titre 3";
-  }
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="4"]::before,
-  html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="4"]::before {
-    content: "Titre 4";
-  }
-
   .ql-container.ql-bubble:not(.ql-disabled) a::before {
     line-height: 1.2;
   }
@@ -835,7 +921,28 @@ export default {
   .ql-tooltip {
     z-index: 1;
     border-radius: 4px;
-    background-color: #000;
+    background-color: var(--c-popup-bg);
+    color: var(--c-popup-c);
+    border: 0px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+    .ql-preview {
+      color: var(--c-popup-c);
+    }
+
+    input[type="text"] {
+      color: black;
+      border: 0px;
+    }
+    .ql-action {
+      font-weight: normal;
+      color: var(--c-popup-c);
+    }
+
+    a {
+      color: white;
+      text-decoration: underline;
+    }
   }
 
   .ql-container {
@@ -850,45 +957,14 @@ export default {
     position: relative;
     padding: 0;
     overflow: visible;
-    min-height: 80vh;
+    height: 100%;
+    overflow-y: auto;
+
     // caret-color: var(--active-color);
     line-height: inherit;
-    padding: var(--spacing) calc(var(--spacing) * 2) 33vh;
+    padding: var(--spacing) calc(var(--spacing) * 2) 250px;
 
-    &::after {
-      content: "";
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      pointer-events: none;
-
-      background-color: #ccc;
-
-      // Colors
-      $bg-color: #fff;
-      $dot-color: var(--color-MediaLibrary);
-
-      // Dimensions
-      $dot-size: 2px;
-      $dot-space: 22px;
-
-      background: linear-gradient(
-            90deg,
-            $bg-color ($dot-space - $dot-size),
-            transparent 1%
-          )
-          center,
-        linear-gradient($bg-color ($dot-space - $dot-size), transparent 1%)
-          center,
-        $dot-color;
-      background-size: $dot-space $dot-space;
-
-      opacity: 0;
-
-      transition: opacity 0.4s linear;
-    }
+    transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
 
     > * {
       position: relative;
@@ -904,13 +980,14 @@ export default {
       background-repeat: no-repeat;
       background-size: 250% 1px;
       transition: transform 0.5s linear;
-      background-image: linear-gradient(
-        90deg,
-        transparent,
-        transparent 50%,
-        transparent 0,
-        transparent
-      );
+
+      // background-image: linear-gradient(
+      //   90deg,
+      //   transparent,
+      //   transparent 50%,
+      //   transparent 0,
+      //   transparent
+      // );
       // background-image: linear-gradient(
       //   90deg,
       //   #ddd,
@@ -920,12 +997,30 @@ export default {
       // );
 
       &.ql-mediacard {
-        transform-origin: right center;
+        transform-origin: center top;
         border-radius: 0px;
         // margin-top: var(--spacing);
         // margin-bottom: var(--spacing);
-        padding-top: calc(var(--spacing) / 2);
-        padding-bottom: calc(var(--spacing) / 2);
+        padding: calc(var(--spacing)) 0;
+        // margin-left: calc(-1 * var(--spacing) / 2);
+        // margin-right: calc(-1 * var(--spacing) / 2);
+
+        .ql-mediacard--background {
+          content: "";
+          position: absolute;
+          display: block;
+          top: calc(var(--spacing) / 2);
+          left: calc(-1 * var(--spacing) / 2);
+          right: calc(-1 * var(--spacing) / 2);
+          bottom: calc(var(--spacing) / 1);
+
+          // background-color: rgba(0, 0, 0, 0.2);
+          border: 2px solid var(--active-color);
+          pointer-events: none;
+
+          opacity: 0;
+          z-index: 0;
+        }
 
         img {
           display: block;
@@ -945,7 +1040,7 @@ export default {
           margin: 0 auto;
           padding: 0.4em 0;
           max-width: 33ch;
-
+          line-height: 2;
           input {
             text-align: center;
             background-color: #eee;
@@ -955,47 +1050,46 @@ export default {
         }
 
         &:hover {
-          box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
-          margin-top: calc(var(--spacing) / 2);
-          margin-bottom: calc(var(--spacing) / 2);
-          padding: 0;
+          // background-color: #eee;
+          // box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
         }
 
         &.is--focused {
-          outline: 0;
-          box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
-          margin-top: calc(var(--spacing) / 2);
-          margin-bottom: calc(var(--spacing) / 2);
-          padding: 0;
+          // outline: 0;
+          // box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
+          .ql-mediacard--background {
+            opacity: 1;
+          }
         }
       }
 
       @keyframes scale-in {
         0% {
           opacity: 0;
-          max-height: 0px;
-          transform: scale(0.9, 1);
+          // max-height: 0px;
+          transform: scale(1, 0.6);
         }
         100% {
           opacity: 1;
-          max-height: 50vh;
+          // max-height: 50vh;
           transform: scale(1, 1);
         }
       }
       @keyframes scale-out {
         0% {
           opacity: 1;
-          max-height: 50vh;
+          // max-height: 50vh;
           transform: scale(1, 1);
         }
         100% {
           opacity: 0;
-          max-height: 0px;
+          // max-height: 0px;
+          height: 0;
           margin-top: 0;
           margin-bottom: 0;
           padding-top: 0;
           padding-bottom: 0;
-          transform: scale(0.9, 1);
+          transform: scale(1, 0.6);
         }
       }
 
@@ -1013,11 +1107,6 @@ export default {
     }
     > img {
       display: block;
-    }
-
-    &::after {
-      // content: ".";
-      color: #ccc;
     }
   }
 
@@ -1130,21 +1219,21 @@ export default {
       border: 1px solid;
       margin: -1px 0;
     }
-    a,
-    b,
-    i,
-    strong,
-    em,
-    small,
-    code {
-      line-height: 0;
-    }
-    sub,
-    sup {
-      line-height: 0;
-      position: relative;
-      vertical-align: baseline;
-    }
+    // a,
+    // b,
+    // i,
+    // strong,
+    // em,
+    // small,
+    // code {
+    //   line-height: 0;
+    // }
+    // sub,
+    // sup {
+    //   line-height: 0;
+    //   position: relative;
+    //   vertical-align: baseline;
+    // }
     sup {
       top: -0.5em;
     }
@@ -1194,7 +1283,7 @@ export default {
       font-weight: 600;
     }
 
-    a {
+    p > a {
       text-decoration: underline;
       text-decoration-style: solid;
       color: var(--active-color);
@@ -1285,16 +1374,18 @@ export default {
 }
 
 .ql-toolbar.ql-snow {
-  background-color: #222;
+  position: absolute;
+  top: 30%;
+  left: 10px;
+
+  background-color: var(--c-popup-bg);
+  color: var(--c-popup-c);
   /* border-left: 0; */
   border: none;
-  color: white;
-  border-radius: 0 0 4px 4px;
+  // border-radius: 0 0 4px 4px;
+  border-radius: 4px;
   // top: 121px;
-  bottom: 10px;
-  position: fixed;
   z-index: 10;
-  left: 10px;
 
   .ql-fill,
   .ql-stroke.ql-fill {
@@ -1446,22 +1537,19 @@ export default {
     }
   }
 }
-.ql-clipboard {
-  position: fixed;
-  display: none;
-
-  left: 50%;
-  top: 50%;
-}
+// .ql-clipboard {
+//   position: fixed;
+// }
 
 ._button_removeMedia {
   position: absolute;
-  top: 0;
+  top: var(--spacing);
   right: 0;
   background: white;
   text-decoration: none;
   line-height: 0;
-  width: 1em;
-  height: 1em;
+  width: 1.5em;
+  height: 1.5em;
+  border-bottom-left-radius: 2px;
 }
 </style>

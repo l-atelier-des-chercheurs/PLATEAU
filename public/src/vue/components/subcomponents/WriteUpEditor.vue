@@ -1,7 +1,12 @@
 <template>
   <div class="m_writeupeditor">
+    <button
+      class="_button_backtolist"
+      type="button"
+      @click="$emit('close')"
+    >← {{ $t('back_to_list') }}</button>
     <div class="m_writeupeditor--topbar padding-small">
-      <div>
+      <div class>
         <template v-if="!show_rename_field">
           <span class="m_writeupeditor--topbar--title padding-verysmall">{{ media.name }}</span>
         </template>
@@ -79,7 +84,8 @@ export default {
   beforeDestroy() {},
 
   watch: {
-    content: function() {}
+    content: function() {},
+    media: function() {}
   },
   computed: {
     hasAnyChangesBeenMadeToContent() {
@@ -128,20 +134,33 @@ export default {
 };
 </script>
 <style lang="scss">
-.quillWrapper .ql-toolbar {
-  /* padding-left: 1em; */
-}
-
 .m_writeupeditor {
+  height: 100%;
   margin: 0 auto;
   --size-column-width: 600px;
+
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: flex-start;
+  align-content: flex-start;
+
+  > * {
+    flex: 0 0 auto;
+  }
+  .m_collaborativeEditor {
+    flex: 1 1 auto;
+    // otherwise flex height not working… not sure why
+    height: 50%;
+    width: 100%;
+  }
 }
 
 .m_writeupeditor--topbar {
   margin: 0 auto;
   /* padding: 0 var(--spacing); */
   /* padding: calc(var(--size-skipline) / 2) calc(var(--size-skipline)); */
-  padding: var(--spacing) calc(var(--spacing) * 2) 0;
+  padding: 0 calc(var(--spacing) * 2) 0;
+  width: 100%;
 
   > * {
     border-bottom: 1px solid black;
@@ -163,5 +182,10 @@ export default {
   align-self: right;
   flex-grow: 0;
   /* text-align: right; */
+}
+
+._button_backtolist {
+  margin-left: 0;
+  text-decoration: none;
 }
 </style>
