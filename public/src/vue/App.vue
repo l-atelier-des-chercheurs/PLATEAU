@@ -168,10 +168,6 @@ input[type="text"] {
   &:focus {
     outline: 0;
   }
-
-  &[contenteditable="false"] {
-    cursor: not-allowed;
-  }
 }
 
 .font-small {

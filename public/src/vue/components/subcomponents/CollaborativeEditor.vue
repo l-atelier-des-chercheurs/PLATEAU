@@ -370,7 +370,6 @@ export default {
         }
       },
       bounds: this.$refs.editor,
-      scrollingContainer: "#quill_scrolling_container",
 
       theme: "snow",
       formats: [
@@ -819,6 +818,7 @@ html[lang="fr"] .ql-tooltip::before {
 .m_collaborativeEditor {
   position: relative;
   font-family: "Work Sans";
+  height: 100%;
   // margin-left: 3em;
   // padding: 0 0.1em;
 
@@ -834,6 +834,7 @@ html[lang="fr"] .ql-tooltip::before {
   }
 
   &.is--disabled {
+    cursor: not-allowed;
     .ql-toolbar {
       background-color: var(--c-toolbar-warning-bg);
       color: ar(--c-toolbar-warning-c);
@@ -943,7 +944,9 @@ html[lang="fr"] .ql-tooltip::before {
     position: relative;
     padding: 0;
     overflow: visible;
-    min-height: 80vh;
+    height: 100%;
+    overflow-y: auto;
+
     // caret-color: var(--active-color);
     line-height: inherit;
     padding: var(--spacing) calc(var(--spacing) * 2) 33vh;
@@ -1013,13 +1016,13 @@ html[lang="fr"] .ql-tooltip::before {
       background-size: 250% 1px;
       transition: transform 0.5s linear;
 
-      background-image: linear-gradient(
-        90deg,
-        transparent,
-        transparent 50%,
-        transparent 0,
-        transparent
-      );
+      // background-image: linear-gradient(
+      //   90deg,
+      //   transparent,
+      //   transparent 50%,
+      //   transparent 0,
+      //   transparent
+      // );
       // background-image: linear-gradient(
       //   90deg,
       //   #ddd,
@@ -1384,6 +1387,10 @@ html[lang="fr"] .ql-tooltip::before {
 }
 
 .ql-toolbar.ql-snow {
+  position: absolute;
+  top: 0;
+  left: 10px;
+
   background-color: var(--c-popup-bg);
   color: var(--c-popup-c);
   /* border-left: 0; */
@@ -1391,10 +1398,7 @@ html[lang="fr"] .ql-tooltip::before {
   // border-radius: 0 0 4px 4px;
   border-radius: 4px;
   // top: 121px;
-  bottom: 10px;
-  position: fixed;
   z-index: 10;
-  left: 10px;
 
   .ql-fill,
   .ql-stroke.ql-fill {

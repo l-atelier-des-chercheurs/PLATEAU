@@ -1,7 +1,12 @@
 <template>
   <div class="m_writeupeditor">
+    <button
+      class="_button_backtolist"
+      type="button"
+      @click="$emit('close')"
+    >← {{ $t('back_to_list') }}</button>
     <div class="m_writeupeditor--topbar padding-small">
-      <div>
+      <div class>
         <template v-if="!show_rename_field">
           <span class="m_writeupeditor--topbar--title padding-verysmall">{{ media.name }}</span>
         </template>
@@ -133,6 +138,7 @@ export default {
 }
 
 .m_writeupeditor {
+  height: 100%;
   margin: 0 auto;
   --size-column-width: 600px;
 }
@@ -141,7 +147,7 @@ export default {
   margin: 0 auto;
   /* padding: 0 var(--spacing); */
   /* padding: calc(var(--size-skipline) / 2) calc(var(--size-skipline)); */
-  padding: var(--spacing) calc(var(--spacing) * 2) 0;
+  padding: 0 calc(var(--spacing) * 2) 0;
 
   > * {
     border-bottom: 1px solid black;
@@ -163,5 +169,10 @@ export default {
   align-self: right;
   flex-grow: 0;
   /* text-align: right; */
+}
+
+._button_backtolist {
+  margin-left: 0;
+  text-decoration: none;
 }
 </style>

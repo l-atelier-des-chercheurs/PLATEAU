@@ -1,10 +1,10 @@
 <template>
-  <div class="m_writeup" id="quill_scrolling_container">
-    <div class>
-      <table class v-if="mode === 'writeup_list'">
+  <div class="m_writeup">
+    <div class="m_writeup--topList" v-if="mode === 'writeup_list'">
+      <table class>
         <thead>
           <tr>
-            <th style>{{ $t('documents') }}</th>
+            <th style>{{ $t('notes') }}</th>
             <th>{{ $t('date_modified') }}</th>
             <th colspan="2">{{ $t('actions') }}</th>
           </tr>
@@ -56,13 +56,6 @@
           </tr>
         </transition-group>
       </table>
-      <div v-else-if="mode === 'single_writeup'" class="text-centered">
-        <button
-          class="button_backtolist"
-          type="button"
-          @click="closeWriteupMedia"
-        >← {{ $t('back_to_list') }}</button>
-      </div>
     </div>
 
     <WriteUpEditor
@@ -71,6 +64,7 @@
       :slugFolderName="slugFolderName"
       :media="current_writeup_media"
       :readonly="read_only"
+      @close="closeWriteupMedia"
       @remove="removeWriteupMedia($root.settings.current_writeup_media_metaFileName)"
     />
   </div>
@@ -224,11 +218,19 @@ export default {
   // margin: 0 auto;
   background-color: var(--color-WriteUp);
   height: 100%;
-  overflow-y: auto;
+
+  // height: 100%;
+  // overflow-y: auto;
+
+  > .m_writeup--topList {
+    height: 100%;
+    overflow: auto;
+  }
 
   table {
     width: 100%;
     margin: 0;
+    overflow-y: auto;
   }
   input[type="text"] {
     width: 100%;
@@ -324,10 +326,6 @@ table tr:hover td {
     to(#f0f0f0)
   );
   background: -moz-linear-gradient(top, #f2f2f2, #f0f0f0);
-}
-
-.button_backtolist {
-  margin: 0 var(--spacing);
 }
 
 ._create_button {
