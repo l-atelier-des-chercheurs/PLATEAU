@@ -120,7 +120,7 @@
     <div
       class="m_topbar--status"
       v-if="!$root.state.connected"
-    >{{ $t('notifications.connection_lost') }} {{ $t('notifications.contents_wont_be_editable') }}</div>
+    >{{ $t('notifications.connection_lost') }}</div>
   </div>
 </template>
 <script>
@@ -220,6 +220,7 @@ export default {
 }
 
 .m_topbar--status {
-  background: red;
+  background: var(--c-rouge);
+  border-bottom: 1px solid black;
 }
 </style>
