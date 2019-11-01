@@ -102,7 +102,7 @@ class MediaBlot extends BlockEmbed {
       const quill = Quill.find(node.parentElement.parentElement);
       const _block = Quill.find(node);
 
-      quill.setSelection(quill.getIndex(_block), 0, Quill.sources.USER);
+      // quill.setSelection(quill.getIndex(_block), 0, Quill.sources.USER);
       node.classList.add("is--focused");
 
       removeButton = window.document.createElement("button");
@@ -111,7 +111,7 @@ class MediaBlot extends BlockEmbed {
       removeButton.classList.add("_button_removeMedia");
       removeButton.addEventListener("click", () => {
         node.__onDeselect();
-        // quill.enable(true);
+        quill.enable(true);
         node.style.animation = "scale-out 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
         node.addEventListener("animationend", () => {
           super.remove();
@@ -137,7 +137,6 @@ class MediaBlot extends BlockEmbed {
       }
 
       captionInput.focus();
-      debugger;
     };
     node.__onDeselect = () => {
       let value = captionInput.value;
@@ -147,9 +146,7 @@ class MediaBlot extends BlockEmbed {
         captionInput.remove();
         caption.innerText = value;
       }
-
       node.classList.remove("is--focused");
-
       removeButton.remove();
     };
   }
@@ -213,7 +210,7 @@ class CardEditableModule extends Module {
         }
       };
       if (elm && elm.__blot && elm.__onSelect && !is_selected) {
-        // quill.disable();
+        quill.disable();
         is_selected = true;
         console.log("selectCard");
 
@@ -221,7 +218,7 @@ class CardEditableModule extends Module {
         let handleKeyPress = e => {
           if (e.keyCode === 27 || e.keyCode === 13) {
             window.removeEventListener("keypress", handleKeyPress);
-            // quill.enable(true);
+            quill.enable(true);
             deselectCard();
           }
         };
@@ -229,13 +226,13 @@ class CardEditableModule extends Module {
           const path = e.path || (e.composedPath && e.composedPath());
           if (e.which === 1 && !path.includes(elm)) {
             window.removeEventListener("click", handleClick);
-            // quill.enable(true);
+            quill.enable(true);
             deselectCard();
           }
         };
         let handleDrag = e => {
           window.removeEventListener("dragover", handleDrag);
-          // quill.enable(true);
+          quill.enable(true);
           deselectCard();
         };
         window.addEventListener("keypress", handleKeyPress);
