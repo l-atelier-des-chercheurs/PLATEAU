@@ -247,7 +247,7 @@ module.exports = (function() {
     { type, id, slugFolderName, additionalMeta, rawData = '' }
   ) {
     dev.logfunction(
-      `EVENT - onCreateMedia : slugFolderName = ${slugFolderName} and type = ${type} and rawData.length = ${rawData.length}`
+      `EVENT - onCreateMedia : slugFolderName = ${slugFolderName} and type = ${type}`
     );
     file
       .createMedia({
