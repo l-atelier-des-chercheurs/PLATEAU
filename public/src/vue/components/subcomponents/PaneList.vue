@@ -4,6 +4,7 @@
     axis="x"
     v-model="$root.settings.project_panes_in_order"
     :useDragHandle="true"
+    @sort-end="sortEnded"
   >
     <SlickItem
       v-for="(item, index) in $root.settings.project_panes_in_order"
@@ -55,7 +56,13 @@ export default {
   beforeDestroy() {},
   watch: {},
   computed: {},
-  methods: {}
+  methods: {
+    sortEnded({ event, newIndex, oldIndex, collection }) {
+      if (newIndex !== oldIndex) {
+        this.$eventHub.$emit("project.refresh_panes_order");
+      }
+    }
+  }
 };
 </script>
 <style lang="scss">
