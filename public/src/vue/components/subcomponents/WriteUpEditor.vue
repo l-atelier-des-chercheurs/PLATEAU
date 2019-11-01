@@ -134,10 +134,6 @@ export default {
 };
 </script>
 <style lang="scss">
-.quillWrapper .ql-toolbar {
-  /* padding-left: 1em; */
-}
-
 .m_writeupeditor {
   height: 100%;
   margin: 0 auto;

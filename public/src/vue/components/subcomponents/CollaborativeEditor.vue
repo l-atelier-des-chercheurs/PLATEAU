@@ -775,9 +775,17 @@ export default {
       }
     },
     removeDragoverFromBlots() {
-      this.editor
-        .getLines()
-        .map(b => b.domNode.classList.remove("is--dragover"));
+      this.editor.getLines().map(b => {
+        while (b.parent !== b.scroll) {
+          b = b.parent;
+          if (b === b.scroll) {
+            break;
+          }
+        }
+        if (b !== b.scroll && b.domNode) {
+          b.domNode.classList.remove("is--dragover");
+        }
+      });
     },
     getBlockFromElement(_target) {
       while (!_target.parentElement.classList.contains("ql-editor")) {
@@ -1416,7 +1424,7 @@ html[lang="fr"] .ql-tooltip::before {
 
 .ql-toolbar.ql-snow {
   position: absolute;
-  top: 0;
+  top: 30%;
   left: 10px;
 
   background-color: var(--c-popup-bg);
