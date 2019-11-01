@@ -1251,7 +1251,7 @@ html[lang="fr"] .ql-tooltip::before {
 
     ol,
     ul {
-      padding-left: 1.5em;
+      padding: calc(var(--spacing) / 2) 1.5em;
       > li {
         padding-left: 0em;
       }
