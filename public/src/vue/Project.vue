@@ -36,6 +36,7 @@
           :slugProjectName="slugProjectName"
           :project="project"
           :read_only="!$root.state.connected"
+          :validation_before_upload="false"
         />
       </pane>
     </template>

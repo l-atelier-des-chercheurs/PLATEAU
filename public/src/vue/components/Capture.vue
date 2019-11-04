@@ -98,15 +98,15 @@
                   </template>
                 </div>
 
-                <hr />
-
-                <button
-                  type="button"
-                  @click="updateSettings"
-                  class="button button-bg_rounded button-outline c-rouge"
-                >
-                  <span class>{{ $t('update') }}</span>
-                </button>
+                <div class="m_panel--previewCard--live--options--updateButton">
+                  <button
+                    type="button"
+                    @click="updateSettings"
+                    class="button button-bg_rounded button-outline c-rouge"
+                  >
+                    <span class>{{ $t('update') }}</span>
+                  </button>
+                </div>
               </div>
             </transition>
 
@@ -275,7 +275,7 @@
             <button
               type="button"
               @click="show_capture_settings = !show_capture_settings"
-              class="button c-rouge font-small bg-transparent"
+              class="m_panel--buttons--row--settingsButton"
               :disabled="is_recording || is_making_stopmotion"
             >
               <svg
@@ -432,7 +432,11 @@ export default {
       default: ""
     },
     slugProjectName: String,
-    read_only: Boolean
+    read_only: Boolean,
+    validation_before_upload: {
+      type: Boolean,
+      default: true
+    }
   },
   components: {
     MediaContent,
@@ -675,6 +679,12 @@ export default {
       console.log(
         `WATCH • Capture: media_to_validate = ${this.media_to_validate}`
       );
+
+      if (!this.validation_before_upload) {
+        this.sendMedia({});
+        return;
+      }
+
       if (this.media_to_validate) {
         this.$refs.videoElement.pause();
       } else {
@@ -1726,7 +1736,7 @@ var equalizer = (function() {
     .m_panel--previewCard--live {
       // border: 5px solid @c-gris_clair;
       display: flex;
-      flex-flow: row nowrap;
+      flex-flow: column nowrap;
 
       &.is--recording {
         background-color: #000;
@@ -1807,19 +1817,54 @@ var equalizer = (function() {
       }
 
       .m_panel--previewCard--live--options {
-        flex: 0 0 250px;
-        max-width: 250px;
-        background-color: white;
-        // background-color: #000;
+        order: 2;
+        flex: 0 1 auto;
+        // max-width: 250px;
+        // background-color: #999;
+        background-color: #f9f9f9;
         color: #000;
         // color: white;
-        padding: ~"calc(var(--spacing) / 2)";
+        padding: ~"calc(var(--spacing))";
         // .margin-vert-small;
-        overflow-y: auto;
+        overflow-y: scroll;
         height: 100%;
 
+        padding-bottom: 50px;
+
+        // columns: 2 200px;
+
+        > * {
+          break-inside: avoid;
+
+          select {
+            width: 100%;
+          }
+        }
+
+        .m_panel--previewCard--live--options--updateButton {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          height: 50px;
+          // background-color: white;
+
+          display: flex;
+          flex-flow: row wrap;
+          justify-content: center;
+          align-items: center;
+
+          button {
+            display: block;
+            color: white;
+            border-radius: 2px;
+            text-decoration: none;
+            padding: 0 var(--spacing);
+            background-color: var(--c-rouge);
+          }
+        }
+
         // border-bottom: 2px solid @c-gris;
-        border-right: 2px solid var(--c-rouge);
 
         // .custom_scrollbar(8px, 5px, 6px, transparent, var(--c-rouge));
       }
@@ -2016,6 +2061,7 @@ var equalizer = (function() {
       justify-content: space-between;
       align-items: center;
       padding: ~"calc(var(--spacing) / 2)";
+
       > * {
         flex: 0 1 180px;
       }
@@ -2031,6 +2077,22 @@ var equalizer = (function() {
 
       input[type="range"] {
         margin: 0;
+      }
+
+      .m_panel--buttons--row--settingsButton {
+        color: #999;
+        display: flex;
+        flex-flow: row wrap;
+        align-items: center;
+
+        text-decoration: none;
+        line-height: 1;
+
+        svg {
+          height: 30px;
+          width: 30px;
+          padding: 5px;
+        }
       }
 
       .m_panel--buttons--row--captureButton {
