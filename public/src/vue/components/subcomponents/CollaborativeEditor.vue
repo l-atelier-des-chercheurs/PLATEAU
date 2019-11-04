@@ -1368,28 +1368,46 @@ html[lang="fr"] .ql-tooltip::before {
 }
 
 .ql-toolbar.ql-snow .ql-formats {
-  display: block;
-  margin-right: 0 !important;
+  // display: block;
+  // margin-right: 0 !important;
 }
 .ql-snow.ql-toolbar button,
 .ql-snow .ql-toolbar button {
-  display: block;
-  float: none;
+  // display: block;
+  // float: none;
 }
 
 .ql-toolbar.ql-snow {
-  position: absolute;
-  top: 30%;
-  left: 10px;
+  position: relative;
+  // top: 30%;
+  // left: 10px;
 
-  background-color: var(--c-popup-bg);
+  width: 100%;
+  max-width: var(--size-column-width);
+  display: flex;
+  flex-flow: row wrap;
+  width: auto;
+  margin: 0 auto;
   color: var(--c-popup-c);
   /* border-left: 0; */
   border: none;
   // border-radius: 0 0 4px 4px;
-  border-radius: 4px;
+  // border-radius: 4px;
   // top: 121px;
   z-index: 10;
+  background-color: var(--c-popup-bg);
+  border-radius: 4px;
+
+  // &::before {
+  //   content: "";
+  //   display: block;
+  //   position: absolute;
+  //   top: 0;
+  //   bottom: 0;
+  //   left: 0;
+  //   right: 0;
+  //   z-index: -1;
+  // }
 
   .ql-fill,
   .ql-stroke.ql-fill {

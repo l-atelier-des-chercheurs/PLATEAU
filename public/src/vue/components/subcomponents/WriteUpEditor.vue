@@ -163,7 +163,7 @@ export default {
   width: 100%;
 
   > * {
-    border-bottom: 1px solid black;
+    // border-bottom: 1px solid black;
     max-width: var(--size-column-width);
     margin: 0 auto;
     display: flex;
