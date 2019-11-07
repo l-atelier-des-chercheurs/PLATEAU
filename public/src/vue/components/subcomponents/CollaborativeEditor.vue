@@ -29,6 +29,7 @@ let Block = Quill.import("blots/block");
 let BlockEmbed = Quill.import("blots/block/embed");
 const Module = Quill.import("core/module");
 
+// inspired from https://gist.github.com/tranduongms1/584d43ec7d8ddeab458f087adbeef950
 class MediaBlot extends BlockEmbed {
   static blotName = "media";
   static tagName = "figure";
@@ -124,6 +125,7 @@ class MediaBlot extends BlockEmbed {
       caption = node.querySelector("figcaption");
       captionInput = window.document.createElement("input");
       captionInput.setAttribute("type", "text");
+      captionInput.setAttribute("autofocus", true);
       captionInput.placeholder = "Légende…";
 
       if (caption) {
@@ -136,7 +138,9 @@ class MediaBlot extends BlockEmbed {
         node.appendChild(caption);
       }
 
-      captionInput.focus();
+      setTimeout(() => {
+        captionInput.focus();
+      }, 50);
     };
     node.__onDeselect = () => {
       let value = captionInput.value;
@@ -210,11 +214,13 @@ class CardEditableModule extends Module {
         }
       };
       if (elm && elm.__blot && elm.__onSelect && !is_selected) {
+        // not ideal yet, can trigger repaint
         quill.disable();
         is_selected = true;
         console.log("selectCard");
 
         elm.__onSelect(quill);
+
         let handleKeyPress = e => {
           if (e.keyCode === 27 || e.keyCode === 13) {
             window.removeEventListener("keypress", handleKeyPress);
@@ -657,8 +663,10 @@ export default {
           ? `./${this.slugFolderName}/${media.media_filename}`
           : `/${this.slugFolderName}/${media.media_filename}`;
 
-      this.editor.focus();
-      this.editor.setSelection(index, Quill.sources.SILENT);
+      // setting editor focus and selection can cause the scroll to "jump"
+      // not exactly a good idea…
+      // this.editor.setSelection(index, Quill.sources.SILENT);
+      // this.editor.focus();
 
       if (media.type === "image") {
         const thumb = media.thumbs.find(m => m.size === 1600);
@@ -674,7 +682,7 @@ export default {
             },
             Quill.sources.USER
           );
-          this.editor.setSelection(index + 1, Quill.sources.SILENT);
+          // this.editor.setSelection(index + 1, Quill.sources.SILENT);
         }
       } else if (media.type === "video") {
         // this.editor.insertText(index, "\n", Quill.sources.USER);
@@ -688,7 +696,7 @@ export default {
           },
           Quill.sources.USER
         );
-        this.editor.setSelection(index + 1, Quill.sources.SILENT);
+        // this.editor.setSelection(index + 1, Quill.sources.SILENT);
       } else {
         this.$alertify
           .closeLogOnClick(true)
@@ -873,7 +881,7 @@ html[lang="fr"] .ql-tooltip::before {
 
   &.is--receptiveToDrop {
     .ql-editor {
-      background-color: #eee;
+      background-color: #f9f9f9;
     }
     &.is--dragover {
       .ql-editor {
@@ -966,6 +974,13 @@ html[lang="fr"] .ql-tooltip::before {
 
     transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
 
+    &[contenteditable="false"] {
+      > *:not(.is--focused) {
+        opacity: 0.5;
+        cursor: default;
+      }
+    }
+
     > * {
       position: relative;
       z-index: 1;
@@ -1043,9 +1058,13 @@ html[lang="fr"] .ql-tooltip::before {
           line-height: 2;
           input {
             text-align: center;
-            background-color: #eee;
+            background-color: #d9d9d9;
             border: 0;
             border-radius: 4px;
+
+            &:focus {
+              background-color: #eee;
+            }
           }
         }
 
@@ -1526,9 +1545,14 @@ html[lang="fr"] .ql-tooltip::before {
       max-width: 100px;
       padding-right: calc(var(--spacing) / 2);
       color: transparent;
-      color: hsl(210, 11%, 58%);
+      color: hsl(210, 11%, 78%);
 
       transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+
+      content: counter(listCounter);
+      // font-size: 0.8rem;
+      // color: var(--active-color);
+      // color: hsl(210, 11%, 58%);
     }
 
     &.is--focused,

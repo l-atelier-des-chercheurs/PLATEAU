@@ -136,7 +136,7 @@ export default {
 .m_writeupeditor {
   height: 100%;
   margin: 0 auto;
-  --size-column-width: 600px;
+  --size-column-width: 800px;
 
   display: flex;
   flex-flow: column nowrap;
