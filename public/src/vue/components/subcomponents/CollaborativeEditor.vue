@@ -332,6 +332,7 @@ export default {
 
       is_focused: false,
       is_being_dragover: false,
+      is_being_dragover_on_blot: false,
 
       debounce_textUpdate: undefined,
       caret_position: {
@@ -586,9 +587,7 @@ export default {
       //   }
       // }
 
-      this.editor
-        .getLines()
-        .map(b => b.domNode.classList.remove("is--focused"));
+      this.removeFocusFromBlots();
 
       const range = this.editor.getSelection();
 
@@ -668,6 +667,8 @@ export default {
       // this.editor.setSelection(index, Quill.sources.SILENT);
       // this.editor.focus();
 
+      this.editor.blur();
+
       if (media.type === "image") {
         const thumb = media.thumbs.find(m => m.size === 1600);
         if (!!thumb) {
@@ -709,7 +710,9 @@ export default {
         `METHODS • CollaborativeEditor / dragover on ${$event.currentTarget.className}`
       );
       this.is_being_dragover = true;
+
       this.removeDragoverFromBlots();
+      this.removeFocusFromBlots();
 
       const _blot = this.getBlockFromElement($event.target);
       if (_blot) _blot.domNode.classList.add("is--dragover");
@@ -794,6 +797,11 @@ export default {
           b.domNode.classList.remove("is--dragover");
         }
       });
+    },
+    removeFocusFromBlots() {
+      this.editor
+        .getLines()
+        .map(b => b.domNode.classList.remove("is--focused"));
     },
     getBlockFromElement(_target) {
       while (!_target.parentElement.classList.contains("ql-editor")) {
