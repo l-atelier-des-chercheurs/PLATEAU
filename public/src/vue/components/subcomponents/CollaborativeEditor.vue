@@ -426,9 +426,9 @@ export default {
           this.editor.getText() ? this.editor.root.innerHTML : ""
         );
 
-        this.$nextTick(() => {
-          this.updateFocusedLines();
-        });
+        // this.$nextTick(() => {
+        //   this.updateFocusedLines();
+        // });
 
         // cursorsOne.moveCursor(1, range);
       });
@@ -444,7 +444,7 @@ export default {
           this.updateCaretPosition();
         }
 
-        this.updateFocusedLines();
+        // this.updateFocusedLines();
       });
     });
 
@@ -577,27 +577,27 @@ export default {
       const caretPos = this.editor.getBounds(selection);
       this.caret_position = { top: caretPos.top, left: caretPos.left };
     },
-    updateFocusedLines() {
-      console.log(`CollaborativeEditor • METHODS: updateFocusedLines`);
+    // updateFocusedLines() {
+    //   console.log(`CollaborativeEditor • METHODS: updateFocusedLines`);
 
-      // if (oldRange && oldRange.index) {
-      //   const line = this.editor.getLine(oldRange.index);
-      //   if (line) {
-      //     line[0].domNode.classList.remove("is--focused");
-      //   }
-      // }
+    //   // if (oldRange && oldRange.index) {
+    //   //   const line = this.editor.getLine(oldRange.index);
+    //   //   if (line) {
+    //   //     line[0].domNode.classList.remove("is--focused");
+    //   //   }
+    //   // }
 
-      this.removeFocusFromBlots();
+    //   this.removeFocusFromBlots();
 
-      const range = this.editor.getSelection();
+    //   const range = this.editor.getSelection();
 
-      if (range && range.index) {
-        const line = this.editor.getLine(range.index);
-        if (line) {
-          line[0].domNode.classList.add("is--focused");
-        }
-      }
-    },
+    //   if (range && range.index) {
+    //     const line = this.editor.getLine(range.index);
+    //     if (line) {
+    //       line[0].domNode.classList.add("is--focused");
+    //     }
+    //   }
+    // },
     wsState(state, reason) {
       console.log(
         `METHODS • CollaborativeEditor: wsState with state = ${state} and reason = ${reason}`
@@ -712,7 +712,7 @@ export default {
       this.is_being_dragover = true;
 
       this.removeDragoverFromBlots();
-      this.removeFocusFromBlots();
+      // this.removeFocusFromBlots();
 
       const _blot = this.getBlockFromElement($event.target);
       if (_blot) _blot.domNode.classList.add("is--dragover");
