@@ -144,7 +144,11 @@ let vm = new Vue({
 
       project_panes_in_order: [
         {
-          key: 'WriteUp',
+          key: 'Planning',
+          enabled: true
+        },
+        {
+          key: 'Capture',
           enabled: true
         },
         {
@@ -156,7 +160,7 @@ let vm = new Vue({
           enabled: true
         },
         {
-          key: 'Capture',
+          key: 'WriteUp',
           enabled: true
         }
       ],
@@ -466,6 +470,28 @@ let vm = new Vue({
         };
       });
     },
+    format_date_to_human(d) {
+      if (this.$root.lang.current === "fr") {
+        return this.$moment(d).calendar(null, {
+          lastDay: "[hier]",
+          sameDay: "[aujourd’hui]",
+          nextDay: "[demain]",
+          lastWeek: "dddd [dernier]",
+          nextWeek: "dddd [prochain]",
+          sameElse: "dddd D MMMM"
+        });
+      } else if (this.$root.lang.current === "en") {
+        return this.$moment(d).calendar(null, {
+          lastDay: "[yesterday]",
+          sameDay: "[today]",
+          nextDay: "[tomorrow]",
+          lastWeek: "[last] dddd",
+          nextWeek: "[next] dddd",
+          sameElse: "dddd, MMMM D"
+        });
+      }
+    },
+
     createFolder: function(fdata) {
       if (window.state.dev_mode === 'debug') {
         console.log(
@@ -588,7 +614,18 @@ let vm = new Vue({
         `panes.${this.$root.do_navigation.current_slugProjectName}`
       );
       if (panes_config_for_project) {
-        this.$root.settings.project_panes_in_order = panes_config_for_project;
+        // warning! if app was changed and new panes added, then
+        // these won’t be in the localstorage…
+        // hence we need to compare both arrays and merge thoughtfully
+
+        // find in panes_config_for_project those that are missing
+        const missing_panes = this.$root.settings.project_panes_in_order.filter(
+          p => !panes_config_for_project.map(_p => _p.key).includes(p.key)
+        );
+
+        this.$root.settings.project_panes_in_order = panes_config_for_project.concat(
+          missing_panes
+        );
       }
 
       this.$socketio.listMedias({

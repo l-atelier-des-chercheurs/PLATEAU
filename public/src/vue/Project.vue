@@ -39,6 +39,14 @@
           :validation_before_upload="false"
         />
       </pane>
+
+      <pane v-if="pane.key === 'Planning' && pane.enabled" :key="pane.key">
+        <Planning
+          :slugFolderName="slugProjectName"
+          :planning_medias="planning_medias"
+          :read_only="read_only"
+        />
+      </pane>
     </template>
   </splitpanes>
 </template>
@@ -47,6 +55,7 @@ import MediaLibrary from "./components/MediaLibrary.vue";
 import WriteUp from "./components/WriteUp.vue";
 import Capture from "./components/Capture.vue";
 import Composition from "./components/Composition.vue";
+import Planning from "./components/Planning.vue";
 import { Splitpanes, Pane } from "splitpanes";
 
 export default {
@@ -59,6 +68,7 @@ export default {
     WriteUp,
     Capture,
     Composition,
+    Planning,
     Splitpanes,
     Pane
   },
@@ -98,6 +108,11 @@ export default {
         m => m.hasOwnProperty("type") && m.type === "composition"
       );
     },
+    planning_medias() {
+      return Object.values(this.project.medias).filter(
+        m => m.hasOwnProperty("type") && m.type === "planning"
+      );
+    },
     library_medias() {
       if (
         !this.project.hasOwnProperty("medias") ||
@@ -109,8 +124,7 @@ export default {
       return Object.values(this.project.medias).filter(
         m =>
           m.hasOwnProperty("type") &&
-          m.type !== "writeup" &&
-          m.type !== "composition"
+          !["writeup", "composition", "planning"].includes(m.type)
       );
     }
   },

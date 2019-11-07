@@ -43,7 +43,6 @@
 
     <CollaborativeEditor
       v-model="content"
-      :media_metaFileName="media.metaFileName"
       :slugFolderName="slugFolderName"
       :enable_collaboration="true"
       :media="media"
