@@ -1084,6 +1084,7 @@ module.exports = (function() {
                 (meta.type === 'text' ||
                   meta.type === 'marker' ||
                   meta.type === 'writeup' ||
+                  meta.type === 'planning' ||
                   meta.type === 'composition') &&
                 data.hasOwnProperty('content')
               ) {
@@ -1345,6 +1346,7 @@ module.exports = (function() {
           additionalMeta.type === 'text' ||
           additionalMeta.type === 'marker' ||
           additionalMeta.type === 'writeup' ||
+          additionalMeta.type === 'planning' ||
           additionalMeta.type === 'composition'
         ) {
           tasks.push(
@@ -1487,6 +1489,7 @@ module.exports = (function() {
               (mediaData.type === 'text' ||
                 mediaData.type === 'marker' ||
                 mediaData.type === 'writeup' ||
+                mediaData.type === 'planning' ||
                 mediaData.type === 'composition') &&
               mediaData.hasOwnProperty('media_filename')
             ) {

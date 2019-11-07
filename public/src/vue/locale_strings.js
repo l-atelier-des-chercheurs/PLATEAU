@@ -37,10 +37,11 @@ module.exports = (function() {
       with_sound: 'avec le son',
       generate: 'Générer',
 
-      WriteUp: 'Document',
+      WriteUp: 'Notes',
       Capture: 'Capture',
       MediaLibrary: 'Bibliothèque',
-      Composition: 'Composition',
+      Composition: 'Compositions',
+      Planning: 'Planning',
 
       bytes: 'octets',
       kb: 'ko',
@@ -96,7 +97,7 @@ module.exports = (function() {
       with_sound: 'with sound',
       generate: 'Generate',
 
-      WriteUp: 'Document',
+      WriteUp: 'Notes',
       Capture: 'Capture',
       MediaLibrary: 'Library',
       Composition: 'Composition',

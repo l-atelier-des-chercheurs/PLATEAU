@@ -43,7 +43,6 @@
 
     <CollaborativeEditor
       v-model="content"
-      :media_metaFileName="media.metaFileName"
       :slugFolderName="slugFolderName"
       :enable_collaboration="true"
       :media="media"
@@ -137,7 +136,7 @@ export default {
 .m_writeupeditor {
   height: 100%;
   margin: 0 auto;
-  --size-column-width: 600px;
+  --size-column-width: 800px;
 
   display: flex;
   flex-flow: column nowrap;
@@ -163,7 +162,7 @@ export default {
   width: 100%;
 
   > * {
-    border-bottom: 1px solid black;
+    // border-bottom: 1px solid black;
     max-width: var(--size-column-width);
     margin: 0 auto;
     display: flex;

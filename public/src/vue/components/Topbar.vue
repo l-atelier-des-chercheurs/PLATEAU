@@ -222,5 +222,9 @@ export default {
 .m_topbar--status {
   background: var(--c-rouge);
   border-bottom: 1px solid black;
+  padding: 0 var(--spacing);
+  font-size: 80%;
+  text-align: center;
+  text-transform: lowercase;
 }
 </style>

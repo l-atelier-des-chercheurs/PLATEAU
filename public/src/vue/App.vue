@@ -53,6 +53,7 @@ export default {
   --c-rouge: #e45a6b;
   --c-bleu: #2c75c5;
   --c-noir: #333;
+  --c-gris: #eff2f3;
 
   --active-color: var(--c-orange);
   // --active-color: #aaa;
@@ -60,6 +61,7 @@ export default {
   --color-MediaLibrary: var(--c-orange);
   --color-Composition: var(--c-bleu);
   --color-Capture: var(--c-rouge);
+  --color-Planning: var(--c-gris);
 }
 
 ::-moz-selection {
