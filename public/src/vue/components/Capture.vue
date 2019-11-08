@@ -608,11 +608,11 @@ export default {
     });
   },
   mounted() {
-    document.addEventListener("keyup", this.captureKeyListener);
+    // document.addEventListener("keyup", this.captureKeyListener);
     this.$root.settings.capture_mode_cant_be_changed = false;
   },
   beforeDestroy() {
-    document.removeEventListener("keyup", this.captureKeyListener);
+    // document.removeEventListener("keyup", this.captureKeyListener);
     this.stopAllFeeds();
     // this.$refs.videoElement.srcObject = null;
   },
