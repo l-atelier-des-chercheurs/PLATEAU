@@ -48,10 +48,10 @@
                 :class="{ 'c-rouge' : sortedMedias.length !== numberOfMedias }"
               >
                 {{ sortedMedias.length }}
-                {{ $t('medias_of') }}
-                {{ numberOfMedias }}
+                {{ $t('medias') }}
+                <!-- {{ numberOfMedias }} -->
               </span>
-              <template v-if="$root.allKeywords.length >= 0">
+              <!-- <template v-if="$root.allKeywords.length >= 0">
                 &nbsp;—
                 <button
                   type="button"
@@ -72,7 +72,7 @@
                   @setAuthorFilter="a => $root.setMediaAuthorFilter(a)"
                   @setFavFilter="a => $root.setFavAuthorFilter(a)"
                 />
-              </template>
+              </template>-->
             </div>
           </div>
 
@@ -544,12 +544,12 @@ export default {
 }
 
 .m_actionbar {
-  // padding: 0 var(--spacing);
-  display: flex;
+  padding: 0 var(--spacing);
+  // display: flex;
 
   > * {
     padding: calc(var(--spacing) / 4) calc(var(--spacing) / 2);
-    border: 1px solid black;
+    border-bottom: 1px solid black;
     border-top: 0;
     border-left: 0 solid #000;
   }
@@ -595,9 +595,9 @@ export default {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: rgba(193, 154, 0, 0.4);
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
+    // background-color: rgba(193, 154, 0, 0.4);
+    // background-color: rgba(255, 255, 255, 0.2);
+    // border-radius: 2px;
 
     > * {
       position: absolute;
