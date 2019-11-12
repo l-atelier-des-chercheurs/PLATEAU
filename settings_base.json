@@ -114,6 +114,19 @@
           },
           "caption": {
             "type": "string"
+          },
+          "planning_info_start": {
+            "type": "date"
+          },
+          "planning_info_end": {
+            "type": "date"
+          },
+          "planning_order": {
+            "type": "number",
+            "clip": {
+              "min": 0,
+              "max": 999
+            }
           }
         }
       }

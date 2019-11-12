@@ -180,9 +180,9 @@ export default {
       this.$eventHub.$emit("writeup.addMedia", this.media);
     },
     startMediaDrag(media, $event) {
-      console.log(`METHODS • MediaLibrary / startMediaDrag`);
+      console.log(`METHODS • MediaCard / startMediaDrag`);
 
-      $event.dataTransfer.setData("text/plain", JSON.stringify(this.media));
+      $event.dataTransfer.setData("text/plain", JSON.stringify(media));
       $event.dataTransfer.effectAllowed = "move";
 
       this.is_dragged = true;
@@ -190,7 +190,7 @@ export default {
       this.$root.settings.media_being_dragged = media.metaFileName;
     },
     endMediaDrag() {
-      console.log(`METHODS • MediaLibrary / endMediaDrag`);
+      console.log(`METHODS • MediaCard / endMediaDrag`);
       setTimeout(() => {
         this.is_dragged = false;
         this.$root.settings.media_being_dragged = false;

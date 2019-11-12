@@ -110,21 +110,28 @@
       <pane
         v-if="show_media_detail_for"
         :key="show_media_detail_for"
-        class="m_library--mediaFocus"
+        class
         min-size="20"
         max-size="70"
         size="50"
         style="position: relative;"
       >
-        <MediaContent
-          :context="'full'"
-          :slugFolderName="slugProjectName"
-          :media="project.medias[show_media_detail_for]"
-          :preview_size="preview_size"
-        />
-        <div class="m_library--mediaFocus--buttons">
-          <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t('remove') }}</button>
-          <button type="button" @click="closeMediaFocus()">{{ $t('close') }}</button>
+        <div
+          class="m_library--mediaFocus"
+          @dragstart="startMediaDrag(mediaShownInFocus, $event)"
+          @dragend="endMediaDrag()"
+          :draggable="!!$root.settings.current_writeup_media_metaFileName || $root.settings.current_composition_media_metaFileName"
+        >
+          <MediaContent
+            :context="'full'"
+            :slugFolderName="slugProjectName"
+            :media="mediaShownInFocus"
+            :preview_size="preview_size"
+          />
+          <div class="m_library--mediaFocus--buttons">
+            <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t('remove') }}</button>
+            <button type="button" @click="closeMediaFocus()">{{ $t('close') }}</button>
+          </div>
         </div>
       </pane>
 
@@ -202,7 +209,7 @@ export default {
       show_media_detail_for: false,
 
       last_media_added: [],
-      media_dragged: false,
+      media_focus_is_dragged: false,
 
       input_file_fields: [
         {
@@ -255,6 +262,9 @@ export default {
   watch: {},
 
   computed: {
+    mediaShownInFocus() {
+      return this.project.medias[this.show_media_detail_for];
+    },
     numberOfMedias() {
       return this.library_medias.length;
     },
@@ -522,6 +532,23 @@ export default {
           this.selected_files = Array.from($event.dataTransfer.files);
         }
       }
+    },
+    startMediaDrag(media, $event) {
+      console.log(`METHODS • MediaLibrary / startMediaDrag`);
+
+      $event.dataTransfer.setData("text/plain", JSON.stringify(media));
+      $event.dataTransfer.effectAllowed = "move";
+
+      // this.media_focus_is_dragged = true;
+
+      this.$root.settings.media_being_dragged = media.metaFileName;
+    },
+    endMediaDrag() {
+      console.log(`METHODS • MediaLibrary / endMediaDrag`);
+      setTimeout(() => {
+        // this.media_focus_is_dragged = false;
+        this.$root.settings.media_being_dragged = false;
+      }, 500);
     }
   }
 };
