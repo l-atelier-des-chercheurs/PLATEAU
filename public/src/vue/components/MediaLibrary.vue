@@ -16,7 +16,10 @@
                 <span>{{ $t('capture') }}</span>
               </button>-->
               <label
-                v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
+                v-if="
+                  project.password === 'has_pass' ||
+                    project.password !== 'has_pass'
+                "
                 :key="`add_${field.key}`"
                 class
                 v-for="field in input_file_fields"
@@ -43,12 +46,12 @@
             </div>
 
             <div class="m_actionbar--text">
-              {{ $t('showing') }}&nbsp;
+              {{ $t("showing") }}&nbsp;
               <span
-                :class="{ 'c-rouge' : sortedMedias.length !== numberOfMedias }"
+                :class="{ 'c-rouge': sortedMedias.length !== numberOfMedias }"
               >
                 {{ sortedMedias.length }}
-                {{ $t('medias') }}
+                {{ $t("medias") }}
                 <!-- {{ numberOfMedias }} -->
               </span>
               <!-- <template v-if="$root.allKeywords.length >= 0">
@@ -76,7 +79,11 @@
             </div>
           </div>
 
-          <transition-group tag="div" class="m_library--chronology" name="list-complete">
+          <transition-group
+            tag="div"
+            class="m_library--chronology"
+            name="list-complete"
+          >
             <!-- <MediaCard
               v-for="media in sortedMedias"
               :key="media.slugMediaName"
@@ -120,7 +127,10 @@
           class="m_library--mediaFocus"
           @dragstart="startMediaDrag(mediaShownInFocus, $event)"
           @dragend="endMediaDrag()"
-          :draggable="!!$root.settings.current_writeup_media_metaFileName || $root.settings.current_composition_media_metaFileName"
+          :draggable="
+            !!$root.settings.current_writeup_media_metaFileName ||
+              $root.settings.current_composition_media_metaFileName
+          "
         >
           <MediaContent
             :context="'full'"
@@ -129,8 +139,12 @@
             :preview_size="preview_size"
           />
           <div class="m_library--mediaFocus--buttons">
-            <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t('remove') }}</button>
-            <button type="button" @click="closeMediaFocus()">{{ $t('close') }}</button>
+            <button type="button" @click="removeMedia(show_media_detail_for)">
+              {{ $t("remove") }}
+            </button>
+            <button type="button" @click="closeMediaFocus()">
+              {{ $t("close") }}
+            </button>
           </div>
         </div>
       </pane>
@@ -156,13 +170,17 @@
 
     <transition name="fade_fast" :duration="150">
       <div
-        v-if="!read_only && show_drop_container && !$root.settings.media_being_dragged"
+        v-if="
+          !read_only &&
+            show_drop_container &&
+            !$root.settings.media_being_dragged
+        "
         @drop="ondrop($event)"
         class="_drop_indicator"
       >
         <div>
           <img src="/images/i_importer.svg" draggable="false" />
-          <label>{{ $t('drop_here_to_import') }}</label>
+          <label>{{ $t("drop_here_to_import") }}</label>
         </div>
       </div>
     </transition>

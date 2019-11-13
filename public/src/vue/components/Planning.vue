@@ -1,7 +1,9 @@
 <template>
   <div class="m_planning">
-    <!-- not sure about having a reorderable list  -->
-    <!-- <SlickList
+    <splitpanes horizontal watch-slots>
+      <pane min-size="10" max-size="100" size="100">
+        <!-- not sure about having a reorderable list  -->
+        <!-- <SlickList
       axis="y"
       :useDragHandle="false"
       v-model="ordered_planning_items"
@@ -12,49 +14,63 @@
       </SlickItem>
     </SlickList>-->
 
-    <div class="m_planning--container">
-      <transition-group tag="div" name="list-complete">
-        <PlanningItem
-          v-for="media in sorted_planning_medias"
-          :key="media.metaFileName"
-          :media="media"
-          :slugFolderName="slugFolderName"
-        />
-      </transition-group>
+        <div class="m_planning--container">
+          <transition-group tag="div" name="list-complete">
+            <PlanningItem
+              v-for="media in sorted_planning_medias"
+              :key="media.metaFileName"
+              :media="media"
+              :slugFolderName="slugFolderName"
+            />
+          </transition-group>
 
-      <div :key="'create'">
-        <div v-if="!show_planning_section">
-          <td colspan="4">
-            <button
-              type="button"
-              class="_create_button"
-              @click="show_planning_section = !show_planning_section"
-            >
-              {{ $t("create") }}
-            </button>
-          </td>
-        </div>
+          <div :key="'create'">
+            <div v-if="!show_planning_section">
+              <td colspan="4">
+                <button
+                  type="button"
+                  class="_create_button"
+                  @click="show_planning_section = !show_planning_section"
+                >
+                  {{ $t("create") }}
+                </button>
+              </td>
+            </div>
 
-        <div v-else>
-          <td colspan="2">
-            <input type="text" class ref="nameInput" />
-          </td>
-          <td colspan="2">
-            <button
-              type="button"
-              class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-              @click="createPlanningMedia"
-            >
-              {{ $t("create") }}
-            </button>
-          </td>
+            <div v-else>
+              <td colspan="2">
+                <input type="text" class ref="nameInput" />
+              </td>
+              <td colspan="2">
+                <button
+                  type="button"
+                  class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
+                  @click="createPlanningMedia"
+                >
+                  {{ $t("create") }}
+                </button>
+              </td>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </pane>
+      <pane
+        v-if="show_media_notes_for"
+        :key="show_media_notes_for"
+        class
+        min-size="20"
+        max-size="70"
+        size="50"
+        style="position: relative;"
+      >
+      </pane>
+    </splitpanes>
   </div>
 </template>
 <script>
 import PlanningItem from "./subcomponents/PlanningItem.vue";
+import { Splitpanes, Pane } from "splitpanes";
+
 import { SlickList, SlickItem, HandleDirective } from "vue-slicksort";
 
 export default {
@@ -65,7 +81,9 @@ export default {
   components: {
     PlanningItem,
     SlickItem,
-    SlickList
+    SlickList,
+    Splitpanes,
+    Pane
   },
   directives: { handle: HandleDirective },
   data() {
@@ -142,21 +160,17 @@ export default {
 <style lang="scss">
 .m_planning {
   position: relative;
-  // margin: var(--spacing);
-  // margin: 0 auto;
-  background-color: var(--color-Planning);
   height: 100%;
-
-  display: flex;
-  flex-flow: column nowrap;
-  overflow-y: auto;
+  background-color: var(--color-Planning);
 
   // height: 100%;
   // overflow-y: auto;
 }
 .m_planning--container {
-  width: 100%;
-  max-width: 66ch;
+  height: 100%;
+  display: flex;
+  flex-flow: column nowrap;
+  overflow-y: auto;
 
   margin: 0 auto;
 }

@@ -107,23 +107,41 @@
       </button>
     </div>
 
-    <button
-      type="button"
-      @click="show_notes = !show_notes"
-      :class="{ 'is--active': show_notes }"
-    >
-      <template v-if="show_notes">×</template>
-      Notes
-    </button>
+    <div class="m_planningItem--notes">
+      <div class="m_planningItem--notes--topbar">
+        <h4>notes</h4>
+        <button
+          type="button"
+          @click="edit_notes = !edit_notes"
+          :class="{ 'is--active': edit_notes }"
+        >
+          <template v-if="edit_notes">×</template>
+          edit
+        </button>
+      </div>
 
-    <div class="m_planningItem--notes" v-if="show_notes">
-      <CollaborativeEditor
-        v-if="show_notes"
-        v-model="media.content"
-        :slugFolderName="slugFolderName"
-        :enable_collaboration="true"
-        :media="media"
-      />
+      <div class="m_planningItem--notes--staticNote" v-if="!edit_notes">
+        <div
+          v-html="notes_excerpt"
+          class="m_planningItem--notes--staticNote--content"
+          :class="{ 'is--excerpt': !show_full_notes }"
+        />
+        <button type="button" @click="show_full_notes = !show_full_notes">
+          <template v-if="!show_full_notes">read the rest</template>
+          <template v-else>hide</template>
+        </button>
+      </div>
+
+      <div class="m_planningItem--notes--editNotes" v-if="edit_notes">
+        <h3>Notes de {{ media.name }}</h3>
+        <button type="button" @click="edit_notes = false">Retour</button>
+        <CollaborativeEditor
+          v-model="media.content"
+          :slugFolderName="slugFolderName"
+          :enable_collaboration="true"
+          :media="media"
+        />
+      </div>
     </div>
 
     <!-- edit_mode : {{ edit_mode }}
@@ -147,7 +165,8 @@ export default {
   data() {
     return {
       edit_mode: false,
-      show_notes: false,
+      edit_notes: false,
+      show_full_notes: false,
 
       edited_media_infos: {
         name: this.media.name,
@@ -170,7 +189,11 @@ export default {
       this.edited_media_infos.planning_info_duration = this.media.planning_info_duration;
     }
   },
-  computed: {},
+  computed: {
+    notes_excerpt() {
+      return this.media.content;
+    }
+  },
   methods: {
     sendEdits() {
       let data = {};
@@ -278,8 +301,44 @@ export default {
 }
 
 .m_planningItem--notes {
-  border: 1px solid var(--c-noir);
+  // border: 1px solid var(--c-noir);
   border-radius: 1px;
   max-width: 66ch;
+  // margin: 5px;
+}
+
+.m_planningItem--notes--topbar {
+  display: flex;
+  align-items: center;
+  margin-top: 1em;
+  justify-content: space-between;
+  h4 {
+    margin: 0;
+  }
+}
+
+.m_planningItem--notes--staticNote--content {
+  overflow: hidden;
+  &.is--excerpt {
+    max-height: 10em;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.m_planningItem--notes--editNotes {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  background-color: white;
+  overflow: hidden;
+
+  .ql-container {
+  }
 }
 </style>
