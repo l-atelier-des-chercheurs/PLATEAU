@@ -1,11 +1,11 @@
 <template>
   <div
     class="m_collaborativeEditor quillWrapper"
-    :class="{ 
-      'is--focused' : is_focused,
-      'is--receptiveToDrop' : !!$root.settings.media_being_dragged,
-      'is--dragover' : is_being_dragover  ,
-      'is--disabled' : editor_not_enabled
+    :class="{
+      'is--focused': is_focused,
+      'is--receptiveToDrop': !!$root.settings.media_being_dragged,
+      'is--dragover': is_being_dragover,
+      'is--disabled': editor_not_enabled
     }"
     autofocus="autofocus"
     @dragover="ondragover($event)"
@@ -936,7 +936,7 @@ html[lang="fr"] .ql-tooltip::before {
 
   .ql-tooltip {
     z-index: 1;
-    border-radius: 4px;
+    border-radius: 1px;
     background-color: var(--c-popup-bg);
     color: var(--c-popup-c);
     border: 0px;
@@ -1423,7 +1423,7 @@ html[lang="fr"] .ql-tooltip::before {
   // top: 121px;
   z-index: 10;
   background-color: var(--c-popup-bg);
-  border-radius: 4px;
+  border-radius: 1px;
 
   // &::before {
   //   content: "";

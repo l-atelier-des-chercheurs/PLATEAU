@@ -16,7 +16,10 @@
                 <span>{{ $t('capture') }}</span>
               </button>-->
               <label
-                v-if="((project.password === 'has_pass') || project.password !== 'has_pass')"
+                v-if="
+                  project.password === 'has_pass' ||
+                    project.password !== 'has_pass'
+                "
                 :key="`add_${field.key}`"
                 class
                 v-for="field in input_file_fields"
@@ -43,15 +46,15 @@
             </div>
 
             <div class="m_actionbar--text">
-              {{ $t('showing') }}&nbsp;
+              {{ $t("showing") }}&nbsp;
               <span
-                :class="{ 'c-rouge' : sortedMedias.length !== numberOfMedias }"
+                :class="{ 'c-rouge': sortedMedias.length !== numberOfMedias }"
               >
                 {{ sortedMedias.length }}
-                {{ $t('medias_of') }}
-                {{ numberOfMedias }}
+                {{ $t("medias") }}
+                <!-- {{ numberOfMedias }} -->
               </span>
-              <template v-if="$root.allKeywords.length >= 0">
+              <!-- <template v-if="$root.allKeywords.length >= 0">
                 &nbsp;—
                 <button
                   type="button"
@@ -72,11 +75,15 @@
                   @setAuthorFilter="a => $root.setMediaAuthorFilter(a)"
                   @setFavFilter="a => $root.setFavAuthorFilter(a)"
                 />
-              </template>
+              </template>-->
             </div>
           </div>
 
-          <transition-group tag="div" class="m_library--chronology" name="list-complete">
+          <transition-group
+            tag="div"
+            class="m_library--chronology"
+            name="list-complete"
+          >
             <!-- <MediaCard
               v-for="media in sortedMedias"
               :key="media.slugMediaName"
@@ -110,21 +117,35 @@
       <pane
         v-if="show_media_detail_for"
         :key="show_media_detail_for"
-        class="m_library--mediaFocus"
+        class
         min-size="20"
         max-size="70"
         size="50"
         style="position: relative;"
       >
-        <MediaContent
-          :context="'full'"
-          :slugFolderName="slugProjectName"
-          :media="project.medias[show_media_detail_for]"
-          :preview_size="preview_size"
-        />
-        <div class="m_library--mediaFocus--buttons">
-          <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t('remove') }}</button>
-          <button type="button" @click="closeMediaFocus()">{{ $t('close') }}</button>
+        <div
+          class="m_library--mediaFocus"
+          @dragstart="startMediaDrag(mediaShownInFocus, $event)"
+          @dragend="endMediaDrag()"
+          :draggable="
+            !!$root.settings.current_writeup_media_metaFileName ||
+              $root.settings.current_composition_media_metaFileName
+          "
+        >
+          <MediaContent
+            :context="'full'"
+            :slugFolderName="slugProjectName"
+            :media="mediaShownInFocus"
+            :preview_size="preview_size"
+          />
+          <div class="m_library--mediaFocus--buttons">
+            <button type="button" @click="removeMedia(show_media_detail_for)">
+              {{ $t("remove") }}
+            </button>
+            <button type="button" @click="closeMediaFocus()">
+              {{ $t("close") }}
+            </button>
+          </div>
         </div>
       </pane>
 
@@ -149,13 +170,17 @@
 
     <transition name="fade_fast" :duration="150">
       <div
-        v-if="!read_only && show_drop_container && !$root.settings.media_being_dragged"
+        v-if="
+          !read_only &&
+            show_drop_container &&
+            !$root.settings.media_being_dragged
+        "
         @drop="ondrop($event)"
         class="_drop_indicator"
       >
         <div>
           <img src="/images/i_importer.svg" draggable="false" />
-          <label>{{ $t('drop_here_to_import') }}</label>
+          <label>{{ $t("drop_here_to_import") }}</label>
         </div>
       </div>
     </transition>
@@ -202,7 +227,7 @@ export default {
       show_media_detail_for: false,
 
       last_media_added: [],
-      media_dragged: false,
+      media_focus_is_dragged: false,
 
       input_file_fields: [
         {
@@ -255,6 +280,9 @@ export default {
   watch: {},
 
   computed: {
+    mediaShownInFocus() {
+      return this.project.medias[this.show_media_detail_for];
+    },
     numberOfMedias() {
       return this.library_medias.length;
     },
@@ -522,6 +550,23 @@ export default {
           this.selected_files = Array.from($event.dataTransfer.files);
         }
       }
+    },
+    startMediaDrag(media, $event) {
+      console.log(`METHODS • MediaLibrary / startMediaDrag`);
+
+      $event.dataTransfer.setData("text/plain", JSON.stringify(media));
+      $event.dataTransfer.effectAllowed = "move";
+
+      // this.media_focus_is_dragged = true;
+
+      this.$root.settings.media_being_dragged = media.metaFileName;
+    },
+    endMediaDrag() {
+      console.log(`METHODS • MediaLibrary / endMediaDrag`);
+      setTimeout(() => {
+        // this.media_focus_is_dragged = false;
+        this.$root.settings.media_being_dragged = false;
+      }, 500);
     }
   }
 };
@@ -544,12 +589,12 @@ export default {
 }
 
 .m_actionbar {
-  // padding: 0 var(--spacing);
-  display: flex;
+  padding: 0 var(--spacing);
+  // display: flex;
 
   > * {
     padding: calc(var(--spacing) / 4) calc(var(--spacing) / 2);
-    border: 1px solid black;
+    border-bottom: 1px solid black;
     border-top: 0;
     border-left: 0 solid #000;
   }
@@ -595,9 +640,9 @@ export default {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: rgba(193, 154, 0, 0.4);
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 2px;
+    // background-color: rgba(193, 154, 0, 0.4);
+    // background-color: rgba(255, 255, 255, 0.2);
+    // border-radius: 2px;
 
     > * {
       position: absolute;

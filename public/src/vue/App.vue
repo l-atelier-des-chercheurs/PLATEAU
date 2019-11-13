@@ -141,6 +141,10 @@ button,
   &:focus {
     outline: 0;
   }
+
+  &.is--active {
+    background-color: --color-noir;
+  }
 }
 
 input:required {

@@ -30,6 +30,7 @@
     "instascan": "^1.0.0",
     "jquery": "^3.4.0",
     "moment": "^2.22.2",
+    "moment-duration-format": "^2.3.2",
     "node-lessify": "^0.1.5",
     "node-sass": "^4.10.0",
     "portal-vue": "^1.4.0",
