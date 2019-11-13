@@ -5,53 +5,53 @@
 // The following line loads the standalone build of Vue instead of the runtime-only build,
 // so you don't have to do: import Vue from 'vue/dist/vue'
 // This is done with the browser options. For the config, see package.json
-import Vue from 'vue';
+import Vue from "vue";
 
-import localstore from 'store';
-import _ from 'underscore';
-Object.defineProperty(Vue.prototype, '$_', { value: _ });
+import localstore from "store";
+import _ from "underscore";
+Object.defineProperty(Vue.prototype, "$_", { value: _ });
 
-import alertify from 'alertify.js';
+import alertify from "alertify.js";
 Vue.prototype.$alertify = alertify;
 
-import auth from '../adc-core/auth-client.js';
+import auth from "../adc-core/auth-client.js";
 auth.init();
 Vue.prototype.$auth = auth;
 
-import locale_strings from './locale_strings.js';
+import locale_strings from "./locale_strings.js";
 
 // Vue.config.silent = false;
 // Vue.config.devtools = true;
 
 Vue.prototype.$eventHub = new Vue(); // Global event bus
 
-import PortalVue from 'portal-vue';
+import PortalVue from "portal-vue";
 Vue.use(PortalVue);
 
-import VueI18n from 'vue-i18n';
+import VueI18n from "vue-i18n";
 Vue.use(VueI18n);
 
-import VuePlyr from 'vue-plyr';
+import VuePlyr from "vue-plyr";
 Vue.use(VuePlyr);
 
-import VueTippy from '../../node_modules/vue-tippy/dist/vue-tippy.min.js';
+import VueTippy from "../../node_modules/vue-tippy/dist/vue-tippy.min.js";
 Vue.use(VueTippy, {});
 
-import VueGoodTablePlugin from 'vue-good-table';
+import VueGoodTablePlugin from "vue-good-table";
 Vue.use(VueGoodTablePlugin);
 
-import VCalendar from 'v-calendar';
+import VCalendar from "v-calendar";
 Vue.use(VCalendar);
 
 let lang_settings = {
   available: {
-    en: 'English',
-    fr: 'Français'
+    en: "English",
+    fr: "Français"
   },
-  default: 'en',
-  current: '',
+  default: "en",
+  current: "",
   init: function() {
-    let localstore_lang = localstore.get('language');
+    let localstore_lang = localstore.get("language");
 
     // // force lang to french
     // this.current = 'fr';
@@ -65,7 +65,7 @@ let lang_settings = {
       }
     }
 
-    if (this.current === '') {
+    if (this.current === "") {
       // set current lang from window.navigator.language
       // window.navigator.language can be 'fr', 'en', or 'fr-FR'
 
@@ -77,22 +77,22 @@ let lang_settings = {
       }
     }
 
-    if (this.current === '') {
+    if (this.current === "") {
       this.current = this.default;
     }
   }
 };
 lang_settings.init();
 
-import moment from 'moment';
-import 'moment/locale/fr';
-import 'moment/locale/en-gb';
+import moment from "moment";
+import "moment/locale/fr";
+import "moment/locale/en-gb";
 
 moment.locale(lang_settings.current);
 Vue.prototype.$moment = moment;
 
 const html = document.documentElement; // returns the html tag
-html.setAttribute('lang', lang_settings.current);
+html.setAttribute("lang", lang_settings.current);
 
 // Create VueI18n instance with options
 let i18n = new VueI18n({
@@ -104,15 +104,15 @@ let i18n = new VueI18n({
   SOCKETIO
 ***********/
 
-import custom_socketio from '../adc-core/custom-socketio.js';
+import custom_socketio from "../adc-core/custom-socketio.js";
 Vue.prototype.$socketio = custom_socketio.init(i18n, auth, alertify);
 
-import App from './App.vue';
+import App from "./App.vue";
 
 let vm = new Vue({
   // eslint-disable-line no-new
   i18n,
-  el: '#app',
+  el: "#app",
   components: { App },
   template: `
     <App
@@ -125,11 +125,11 @@ let vm = new Vue({
     justCreatedFolderID: false,
     justCreatedMediaID: false,
 
-    currentTime: '',
+    currentTime: "",
     preview_mode: false,
 
     do_navigation: {
-      view: 'List',
+      view: "List",
       current_slugProjectName: false
     },
     show_session_password_prompt: false,
@@ -144,46 +144,46 @@ let vm = new Vue({
 
       project_panes_in_order: [
         {
-          key: 'Planning',
+          key: "Planning",
           enabled: true
         },
         {
-          key: 'Capture',
+          key: "Capture",
           enabled: true
         },
         {
-          key: 'MediaLibrary',
+          key: "MediaLibrary",
           enabled: true
         },
         {
-          key: 'Composition',
+          key: "Composition",
           enabled: true
         },
         {
-          key: 'WriteUp',
+          key: "WriteUp",
           enabled: true
         }
       ],
 
       capture_options: {
-        selected_mode: '',
+        selected_mode: "",
         selected_devicesId: {
-          audioinput: '',
-          videoinput: '',
-          audiooutput: ''
+          audioinput: "",
+          videoinput: "",
+          audiooutput: ""
         },
         ideal_camera_resolution: {
-          name: '',
-          width: '',
-          height: ''
+          name: "",
+          width: "",
+          height: ""
         },
 
         distant_flux: {
           active: false,
           username: `dodoc-${(
-            Math.random().toString(36) + '00000000000000000'
+            Math.random().toString(36) + "00000000000000000"
           ).slice(2, 3 + 2)}`,
-          callee_username: ''
+          callee_username: ""
         }
       },
 
@@ -210,19 +210,19 @@ let vm = new Vue({
     }
   },
   created() {
-    if (window.state.dev_mode === 'debug') {
-      console.log('ROOT EVENT: created');
+    if (window.state.dev_mode === "debug") {
+      console.log("ROOT EVENT: created");
     }
 
     if (this.settings.enable_system_bar) {
-      document.body.classList.add('has_systembar');
+      document.body.classList.add("has_systembar");
     }
 
-    if (window.state.dev_mode === 'debug') {
-      console.log('ROOT EVENT: created / checking for password');
+    if (window.state.dev_mode === "debug") {
+      console.log("ROOT EVENT: created / checking for password");
     }
 
-    window.addEventListener('resize', () => {
+    window.addEventListener("resize", () => {
       this.settings.windowWidth = window.innerWidth;
       this.settings.windowHeight = window.innerHeight;
     });
@@ -231,32 +231,32 @@ let vm = new Vue({
     setInterval(() => (this.currentTime = this.$moment().millisecond(0)), 1000);
 
     if (this.store.noticeOfError) {
-      if (this.store.noticeOfError === 'failed_to_find_folder') {
+      if (this.store.noticeOfError === "failed_to_find_folder") {
         this.$alertify
           .closeLogOnClick(true)
           .delay(4000)
           .error(
             this.$t('notifications["failed_to_get_folder:"]') +
-              ' ' +
+              " " +
               this.state.request.slugFolderName
           );
       }
     } else {
-      if (window.state.dev_mode === 'debug') {
+      if (window.state.dev_mode === "debug") {
         console.log(
-          'ROOT EVENT: created / no errors, checking for content to load'
+          "ROOT EVENT: created / no errors, checking for content to load"
         );
       }
 
       // if a slugProjectName or a metaFileName is requested, load the content of that folder rightaway
       // we are probably in a webbrowser that accesses a subfolder or a media
       if (this.state.request.slugFolderName) {
-        if (this.state.mode === 'live') {
-          this.$eventHub.$once('socketio.projects.folders_listed', () => {
+        if (this.state.mode === "live") {
+          this.$eventHub.$once("socketio.projects.folders_listed", () => {
             this.openProject(this.state.request.slugFolderName);
           });
         } else {
-          this.do_navigation.view = 'Project';
+          this.do_navigation.view = "Project";
           this.do_navigation.current_slugProjectName = this.state.request.slugFolderName;
         }
       }
@@ -264,17 +264,17 @@ let vm = new Vue({
 
     /* à la connexion/reconnexion, détecter si un projet ou une publi sont ouverts 
     et si c’est le cas, rafraichir leur contenu (meta, medias) */
-    this.$eventHub.$on('socketio.reconnect', () => {
-      this.$socketio.listFolders({ type: 'authors' });
-      this.$socketio.listFolders({ type: 'projects' });
+    this.$eventHub.$on("socketio.reconnect", () => {
+      this.$socketio.listFolders({ type: "authors" });
+      this.$socketio.listFolders({ type: "projects" });
 
       if (this.do_navigation.current_slugProjectName) {
         this.$socketio.listFolder({
-          type: 'projects',
+          type: "projects",
           slugFolderName: this.do_navigation.current_slugProjectName
         });
         this.$socketio.listMedias({
-          type: 'projects',
+          type: "projects",
           slugFolderName: this.do_navigation.current_slugProjectName
         });
       }
@@ -287,17 +287,17 @@ let vm = new Vue({
       this.do_navigation.current_slugProjectName = event.state.slugProjectName;
     };
 
-    if (this.state.mode === 'live') {
-      console.log('ROOT EVENT: created / now connecting with socketio');
+    if (this.state.mode === "live") {
+      console.log("ROOT EVENT: created / now connecting with socketio");
 
       if (!this.$root.state.is_electron) {
-        this.$eventHub.$on('socketio.connect', () => {
+        this.$eventHub.$on("socketio.connect", () => {
           this.$alertify
             .closeLogOnClick(true)
             .delay(4000)
             .success(this.$t('notifications["connected_to_plateau"]'));
         });
-        this.$eventHub.$on('socketio.reconnect', () => {
+        this.$eventHub.$on("socketio.reconnect", () => {
           this.$alertify
             .closeLogOnClick(true)
             .delay(4000)
@@ -305,7 +305,7 @@ let vm = new Vue({
         });
       }
 
-      if (this.$root.state.session_password === 'has_pass') {
+      if (this.$root.state.session_password === "has_pass") {
         var session_storage_pwd = this.$auth.getSessionPasswordFromLocalStorage();
         if (session_storage_pwd) {
           this.$socketio.connect(session_storage_pwd);
@@ -313,16 +313,16 @@ let vm = new Vue({
           this.$alertify
             .closeLogOnClick(true)
             .delay(4000)
-            .log(this.$t('notifications.using_saved_password'));
+            .log(this.$t("notifications.using_saved_password"));
 
-          this.$eventHub.$once('socketio.socketerror', () => {
+          this.$eventHub.$once("socketio.socketerror", () => {
             this.show_session_password_prompt = true;
           });
         } else {
           this.show_session_password_prompt = true;
         }
 
-        this.$eventHub.$on('socketio.socketerror', () => {
+        this.$eventHub.$on("socketio.socketerror", () => {
           // if error, attempt to reconnect
           this.$alertify
             .closeLogOnClick(true)
@@ -334,16 +334,16 @@ let vm = new Vue({
         this.$socketio.connect();
       }
 
-      this.$eventHub.$once('socketio.authentificated', () => {
-        this.$socketio.listFolders({ type: 'authors' });
-        this.$socketio.listFolders({ type: 'projects' });
+      this.$eventHub.$once("socketio.authentificated", () => {
+        this.$socketio.listFolders({ type: "authors" });
+        this.$socketio.listFolders({ type: "projects" });
       });
     }
   },
   beforeDestroy() {},
   watch: {
-    'store.authors': function() {
-      if (window.state.dev_mode === 'debug') {
+    "store.authors": function() {
+      if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: var has changed: store.authors`);
       }
       // check if, when store.authors refresh, the current_author is still there
@@ -357,7 +357,7 @@ let vm = new Vue({
         this.unsetAuthor();
       }
     },
-    'settings.project_panes_in_order': {
+    "settings.project_panes_in_order": {
       handler() {
         console.log(
           `ROOT EVENT: var has changed: settings.project_panes_in_order`
@@ -377,7 +377,7 @@ let vm = new Vue({
   computed: {
     currentProject: function() {
       if (
-        !this.store.hasOwnProperty('projects') ||
+        !this.store.hasOwnProperty("projects") ||
         Object.keys(this.store.projects).length === 0
       ) {
         this.closeProject();
@@ -396,7 +396,7 @@ let vm = new Vue({
       }
     },
     projects_that_are_accessible() {
-      const type = 'projects';
+      const type = "projects";
       return Object.values(this.store[type]).filter(p =>
         this.canAccessFolder({ type, slugFolderName: p.slugFolderName })
       );
@@ -413,7 +413,7 @@ let vm = new Vue({
       return allAuthors;
     },
     currentTime_human() {
-      return this.$moment(this.currentTime).format('LL   LTS');
+      return this.$moment(this.currentTime).format("LL   LTS");
     },
     allKeywords() {
       let allKeywords = [];
@@ -426,11 +426,11 @@ let vm = new Vue({
           });
 
           if (
-            project.hasOwnProperty('medias') &&
+            project.hasOwnProperty("medias") &&
             Object.keys(project.medias).length > 0
           ) {
             Object.values(project.medias).map(m => {
-              if (m.hasOwnProperty('keywords') && m.keywords.length > 0) {
+              if (m.hasOwnProperty("keywords") && m.keywords.length > 0) {
                 allKeywords = allKeywords.concat(m.keywords.map(k => k.title));
               }
             });
@@ -444,7 +444,7 @@ let vm = new Vue({
       return allKeywords.map(kw => {
         return {
           text: kw,
-          classes: 'tagcolorid_' + (parseInt(kw, 36) % 2)
+          classes: "tagcolorid_" + (parseInt(kw, 36) % 2)
         };
       });
     }
@@ -453,8 +453,8 @@ let vm = new Vue({
     getAllAuthorsFrom(base) {
       let uniqueAuthors = [];
       Object.values(base).map(meta => {
-        if (!meta['authors']) return;
-        if (typeof meta.authors === 'string') {
+        if (!meta["authors"]) return;
+        if (typeof meta.authors === "string") {
           meta.authors = [{ name: meta.authors }];
         }
         meta.authors.map(k => {
@@ -478,7 +478,7 @@ let vm = new Vue({
           nextDay: "[demain]",
           lastWeek: "dddd [dernier]",
           nextWeek: "dddd [prochain]",
-          sameElse: "dddd D MMMM"
+          sameElse: "dddd D MMMM Y"
         });
       } else if (this.$root.lang.current === "en") {
         return this.$moment(d).calendar(null, {
@@ -487,13 +487,13 @@ let vm = new Vue({
           nextDay: "[tomorrow]",
           lastWeek: "[last] dddd",
           nextWeek: "[next] dddd",
-          sameElse: "dddd, MMMM D"
+          sameElse: "dddd, MMMM D Y"
         });
       }
     },
 
     createFolder: function(fdata) {
-      if (window.state.dev_mode === 'debug') {
+      if (window.state.dev_mode === "debug") {
         console.log(
           `ROOT EVENT: createfolder: ${JSON.stringify(fdata, null, 4)}`
         );
@@ -510,7 +510,7 @@ let vm = new Vue({
       this.$socketio.createFolder(fdata);
     },
     editFolder: function(fdata) {
-      if (window.state.dev_mode === 'debug') {
+      if (window.state.dev_mode === "debug") {
         console.log(
           `ROOT EVENT: editFolder: ${JSON.stringify(fdata, null, 4)}`
         );
@@ -518,7 +518,7 @@ let vm = new Vue({
       this.$socketio.editFolder(fdata);
     },
     removeFolder: function({ type, slugFolderName }) {
-      if (window.state.dev_mode === 'debug') {
+      if (window.state.dev_mode === "debug") {
         console.log(
           `ROOT EVENT: removeFolder: slugFolderName = ${slugFolderName} of type = ${type}`
         );
@@ -526,7 +526,7 @@ let vm = new Vue({
       this.$socketio.removeFolder({ type, slugFolderName });
     },
     createMedia: function(mdata) {
-      if (window.state.dev_mode === 'debug') {
+      if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: createMedia`);
       }
       this.justCreatedMediaID = mdata.id =
@@ -537,8 +537,8 @@ let vm = new Vue({
           .toString(36)
           .substring(2, 15);
 
-      if (this.settings.current_author.hasOwnProperty('name')) {
-        if (!mdata.hasOwnProperty('additionalMeta')) {
+      if (this.settings.current_author.hasOwnProperty("name")) {
+        if (!mdata.hasOwnProperty("additionalMeta")) {
           mdata.additionalMeta = {};
         }
         mdata.additionalMeta.authors = [
@@ -551,7 +551,7 @@ let vm = new Vue({
       });
     },
     removeMedia: function(mdata) {
-      if (window.state.dev_mode === 'debug') {
+      if (window.state.dev_mode === "debug") {
         console.log(
           `ROOT EVENT: removeMedia: ${JSON.stringify(mdata, null, 4)}`
         );
@@ -559,7 +559,7 @@ let vm = new Vue({
       this.$socketio.removeMedia(mdata);
     },
     editMedia: function(mdata) {
-      if (window.state.dev_mode === 'debug') {
+      if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: editMedia: ${JSON.stringify(mdata, null, 4)}`);
       }
       this.$socketio.editMedia(mdata);
@@ -568,7 +568,7 @@ let vm = new Vue({
       if (!this.store[type].hasOwnProperty(slugFolderName)) return false;
 
       // if folder doesn’t have a password set
-      if (this.store[type][slugFolderName].password !== 'has_pass') {
+      if (this.store[type][slugFolderName].password !== "has_pass") {
         return true;
       }
 
@@ -576,9 +576,9 @@ let vm = new Vue({
         i => {
           if (
             !!i &&
-            i.hasOwnProperty('type') &&
+            i.hasOwnProperty("type") &&
             i.type === type &&
-            i.hasOwnProperty('allowed_slugFolderNames') &&
+            i.hasOwnProperty("allowed_slugFolderNames") &&
             i.allowed_slugFolderNames.indexOf(slugFolderName) >= 0
           )
             return true;
@@ -592,22 +592,22 @@ let vm = new Vue({
       return false;
     },
     openProject: function(slugProjectName) {
-      if (window.state.dev_mode === 'debug') {
+      if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: openProject: ${slugProjectName}`);
       }
       if (
         !this.store.projects.hasOwnProperty(slugProjectName) ||
         !this.canAccessFolder({
-          type: 'projects',
+          type: "projects",
           slugFolderName: slugProjectName
         })
       ) {
-        console.log('Missing folder key on the page, aborting.');
+        console.log("Missing folder key on the page, aborting.");
         this.closeProject();
         return false;
       }
 
-      this.do_navigation.view = 'Project';
+      this.do_navigation.view = "Project";
       this.do_navigation.current_slugProjectName = slugProjectName;
 
       const panes_config_for_project = localstore.get(
@@ -629,25 +629,25 @@ let vm = new Vue({
       }
 
       this.$socketio.listMedias({
-        type: 'projects',
+        type: "projects",
         slugFolderName: slugProjectName
       });
 
       history.pushState(
         { slugProjectName },
         this.store.projects[slugProjectName].name,
-        '/' + slugProjectName
+        "/" + slugProjectName
       );
     },
     closeProject: function() {
-      if (window.state.dev_mode === 'debug') {
-        console.log('ROOT EVENT: closeProject');
+      if (window.state.dev_mode === "debug") {
+        console.log("ROOT EVENT: closeProject");
       }
 
-      this.do_navigation.view = 'List';
-      this.do_navigation.current_slugProjectName = '';
+      this.do_navigation.view = "List";
+      this.do_navigation.current_slugProjectName = "";
 
-      history.pushState({ slugProjectName: '' }, '', '/');
+      history.pushState({ slugProjectName: "" }, "", "/");
     },
     isMediaShown(media) {
       if (this.settings.media_filter.fav === true) {
@@ -669,15 +669,15 @@ let vm = new Vue({
       ) {
         // only add to sorted array if project has this keyword
         if (
-          media.hasOwnProperty('keywords') &&
-          typeof media.keywords === 'object' &&
+          media.hasOwnProperty("keywords") &&
+          typeof media.keywords === "object" &&
           media.keywords.filter(
             k => k.title === this.settings.media_filter.keyword
           ).length > 0
         ) {
           if (
-            media.hasOwnProperty('authors') &&
-            typeof media.authors === 'object' &&
+            media.hasOwnProperty("authors") &&
+            typeof media.authors === "object" &&
             media.authors.filter(
               k => k.name === this.settings.media_filter.author
             ).length > 0
@@ -691,8 +691,8 @@ let vm = new Vue({
       if (this.settings.media_filter.keyword !== false) {
         // only add to sorted array if project has this keyword
         if (
-          media.hasOwnProperty('keywords') &&
-          typeof media.keywords === 'object' &&
+          media.hasOwnProperty("keywords") &&
+          typeof media.keywords === "object" &&
           media.keywords.filter(
             k => k.title === this.settings.media_filter.keyword
           ).length > 0
@@ -705,8 +705,8 @@ let vm = new Vue({
       if (this.settings.media_filter.author !== false) {
         // only add to sorted array if project has this keyword
         if (
-          media.hasOwnProperty('authors') &&
-          typeof media.authors === 'object' &&
+          media.hasOwnProperty("authors") &&
+          typeof media.authors === "object" &&
           media.authors.filter(
             k => k.name === this.settings.media_filter.author
           ).length > 0
@@ -718,27 +718,27 @@ let vm = new Vue({
       // END MEDIA FILTER LOGIC
     },
     updateLocalLang: function(newLangCode) {
-      if (window.state.dev_mode === 'debug') {
-        console.log('ROOT EVENT: updateLocalLang');
+      if (window.state.dev_mode === "debug") {
+        console.log("ROOT EVENT: updateLocalLang");
       }
       i18n.locale = newLangCode;
       moment.locale(newLangCode);
       this.lang.current = newLangCode;
 
       const html = document.documentElement; // returns the html tag
-      html.setAttribute('lang', newLangCode);
+      html.setAttribute("lang", newLangCode);
 
-      localstore.set('language', newLangCode);
+      localstore.set("language", newLangCode);
     },
     setAuthor: function(author) {
       this.settings.current_author = author;
-      this.$socketio.socket.emit('updateClientInfo', { author });
+      this.$socketio.socket.emit("updateClientInfo", { author });
     },
     unsetAuthor: function() {
       this.settings.current_author = false;
     },
     openMedia({ slugProjectName, metaFileName }) {
-      if (window.state.dev_mode === 'debug') {
+      if (window.state.dev_mode === "debug") {
         console.log(
           `ROOT EVENT: openMedia with slugProjectName = ${slugProjectName} and metaFileName = ${metaFileName}`
         );
@@ -750,7 +750,7 @@ let vm = new Vue({
       this.media_modal.current_metaFileName = metaFileName;
     },
     closeMedia: function() {
-      if (window.state.dev_mode === 'debug') {
+      if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: closeMedia`);
       }
 
@@ -758,7 +758,7 @@ let vm = new Vue({
     },
 
     downloadPubliPDF({ slugPubliName }) {
-      if (window.state.dev_mode === 'debug') {
+      if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: downloadPubliPDF: ${slugPubliName}`);
       }
       this.$socketio.downloadPubliPDF({
@@ -766,7 +766,7 @@ let vm = new Vue({
       });
     },
     listSpecificMedias(mdata) {
-      if (window.state.dev_mode === 'debug') {
+      if (window.state.dev_mode === "debug") {
         console.log(
           `ROOT EVENT: listSpecificMedias with medias_list = ${JSON.stringify(
             mdata,
@@ -778,25 +778,25 @@ let vm = new Vue({
       this.$socketio.listSpecificMedias(mdata);
     },
     switchLang() {
-      if (window.state.dev_mode === 'debug') {
+      if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: switchLang`);
       }
-      if (this.lang.current === 'fr') {
-        this.updateLocalLang('en');
+      if (this.lang.current === "fr") {
+        this.updateLocalLang("en");
       } else {
-        this.updateLocalLang('fr');
+        this.updateLocalLang("fr");
       }
     },
     formatDateToHuman(date) {
-      return this.$moment(date, 'YYYY-MM-DD HH:mm:ss').format('LL');
+      return this.$moment(date, "YYYY-MM-DD HH:mm:ss").format("LL");
     },
     updateNetworkInfos() {
       this.$socketio.updateNetworkInfos();
     },
     navigation_back() {
-      if (this.do_navigation.view === 'Capture') {
-        this.do_navigation.view = 'Project';
-      } else if (this.do_navigation.view === 'Project') {
+      if (this.do_navigation.view === "Capture") {
+        this.do_navigation.view = "Project";
+      } else if (this.do_navigation.view === "Project") {
         this.closeProject();
       }
     }

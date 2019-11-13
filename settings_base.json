@@ -121,6 +121,9 @@
           "planning_info_end": {
             "type": "date"
           },
+          "planning_info_duration": {
+            "type": "string"
+          },
           "planning_order": {
             "type": "number",
             "clip": {

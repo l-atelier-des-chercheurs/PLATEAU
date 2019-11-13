@@ -1,5 +1,9 @@
 <template>
-  <form class="m_planningItem" :class="{ 'is--editable' :  edit_mode }" @submit.prevent="sendEdits">
+  <form
+    class="m_planningItem"
+    :class="{ 'is--editable': edit_mode }"
+    @submit.prevent="sendEdits"
+  >
     <div class="m_planningItem--topbar">
       <div class="m_planningItem--editButtons">
         <button type="button" @click="edit_mode = !edit_mode" title="edit">
@@ -47,21 +51,42 @@
       </div>
       <div class="m_planningItem--name">
         <span v-if="!edit_mode" v-html="media.name" />
-        <input v-else type="text" v-model="edited_media_infos.name" ref="item_name" />
+        <input v-else type="text" required v-model="edited_media_infos.name" />
       </div>
     </div>
-    <div class="m_planningItem--date" :title="$moment(media.planning_info_start).format('l LTS')">
+    <div
+      class="m_planningItem--date"
+      v-if="
+        edit_mode || media.planning_info_start || media.planning_info_duration
+      "
+      :title="$moment(media.planning_info_start).format('l LTS')"
+    >
       <div class="m_planningItem--date--start">
-        07/02/2018 — 12:25
-        <!-- <DateTime v-model="_planning_info_start" :twowaybinding="true" :read_only="false" /> -->
+        <span v-if="!edit_mode && media.planning_info_start">{{
+          $root.format_date_to_human(media.planning_info_start) +
+            " " +
+            $moment(media.planning_info_start).format("HH:mm:ss")
+        }}</span>
+        <DateTime
+          v-else-if="edit_mode"
+          v-model="edited_media_infos.planning_info_start"
+          :twowaybinding="true"
+          :read_only="false"
+        />
         <!-- <span v-if="!media.planning_info_start">début</span>
-        <span>{{ $root.format_date_to_human(media.planning_info_start) + ' ' + $moment(media.planning_info_start).format('HH:mm') }}</span>-->
+        -->
       </div>
-      <div class="m_planningItem--date--end">
-        07/02/2018 — 12:25
-        <div
-          v-if="media.planning_info_end"
-        >{{ $root.format_date_to_human(media.planning_info_end) + ' ' + $moment(media.planning_info_end).format('HH:mm') }}</div>
+      <div class="m_planningItem--date--duration">
+        <span v-if="!edit_mode && media.planning_info_duration">{{
+          $moment(media.planning_info_duration, "hh:mm a").format(
+            "H [heures] [et] m [minutes]"
+          )
+        }}</span>
+        <input
+          v-else-if="edit_mode"
+          type="time"
+          v-model="edited_media_infos.planning_info_duration"
+        />
       </div>
     </div>
     <div class="m_planningItem--submitButtons">
@@ -70,20 +95,45 @@
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
         @click="edit_mode = !edit_mode"
-      >{{ $t('cancel') }}</button>
+      >
+        {{ $t("cancel") }}
+      </button>
       <button
         type="submit"
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
-      >{{ $t('submit') }}</button>
+      >
+        {{ $t("submit") }}
+      </button>
     </div>
-    edit_mode : {{ edit_mode }}
+
+    <button
+      type="button"
+      @click="show_notes = !show_notes"
+      :class="{ 'is--active': show_notes }"
+    >
+      <template v-if="show_notes">×</template>
+      Notes
+    </button>
+
+    <div class="m_planningItem--notes" v-if="show_notes">
+      <CollaborativeEditor
+        v-if="show_notes"
+        v-model="media.content"
+        :slugFolderName="slugFolderName"
+        :enable_collaboration="true"
+        :media="media"
+      />
+    </div>
+
+    <!-- edit_mode : {{ edit_mode }}
     edited_media_infos : {{ edited_media_infos.name }}
-    media.name : {{ media.name }}
+    media.name : {{ media.name }}-->
   </form>
 </template>
 <script>
 import DateTime from "./DateTime.vue";
+import CollaborativeEditor from "./CollaborativeEditor.vue";
 
 export default {
   props: {
@@ -91,17 +141,19 @@ export default {
     slugFolderName: String
   },
   components: {
-    DateTime
+    DateTime,
+    CollaborativeEditor
   },
   data() {
     return {
       edit_mode: false,
+      show_notes: false,
 
       edited_media_infos: {
-        name: this.media.name
-      },
-
-      planning_info_start: this.media.planning_info_start
+        name: this.media.name,
+        planning_info_start: this.media.planning_info_start,
+        planning_info_duration: this.media.planning_info_duration
+      }
     };
   },
   created() {},
@@ -110,6 +162,12 @@ export default {
   watch: {
     "media.name": function() {
       this.edited_media_infos.name = this.media.name;
+    },
+    "media.planning_info_start": function() {
+      this.edited_media_infos.planning_info_start = this.media.planning_info_start;
+    },
+    "media.planning_info_duration": function() {
+      this.edited_media_infos.planning_info_duration = this.media.planning_info_duration;
     }
   },
   computed: {},
@@ -124,8 +182,6 @@ export default {
           data[k] = this.edited_media_infos[k];
         }
       });
-
-      debugger;
 
       this.$root.editMedia({
         type: "projects",
@@ -162,14 +218,15 @@ export default {
 </script>
 <style lang="scss">
 .m_planningItem {
-  padding: calc(var(--spacing) / 2) var(--spacing);
+  padding: calc(var(--spacing) / 1) var(--spacing);
   background-color: #fff;
-  margin: -1px;
-  // padding: 15px;
+
   border: 1px solid black;
 
+  margin: -1px;
+
   > * {
-    margin: calc(var(--spacing) / 4) 0;
+    // margin: calc(var(--spacing) / 8) 0;
   }
 }
 
@@ -219,5 +276,10 @@ export default {
   flex-flow: row wrap;
   justify-content: center;
 }
-</style>
 
+.m_planningItem--notes {
+  border: 1px solid var(--c-noir);
+  border-radius: 1px;
+  max-width: 66ch;
+}
+</style>

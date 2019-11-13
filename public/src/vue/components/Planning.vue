@@ -12,37 +12,43 @@
       </SlickItem>
     </SlickList>-->
 
-    <transition-group tag="div" name="list-complete">
-      <PlanningItem
-        v-for="media in sorted_planning_medias"
-        :key="media.metaFileName"
-        :media="media"
-        :slugFolderName="slugFolderName"
-      />
-    </transition-group>
+    <div class="m_planning--container">
+      <transition-group tag="div" name="list-complete">
+        <PlanningItem
+          v-for="media in sorted_planning_medias"
+          :key="media.metaFileName"
+          :media="media"
+          :slugFolderName="slugFolderName"
+        />
+      </transition-group>
 
-    <div :key="'create'">
-      <div v-if="!show_planning_section">
-        <td colspan="4">
-          <button
-            type="button"
-            class="_create_button"
-            @click="show_planning_section = !show_planning_section"
-          >{{ $t('create') }}</button>
-        </td>
-      </div>
+      <div :key="'create'">
+        <div v-if="!show_planning_section">
+          <td colspan="4">
+            <button
+              type="button"
+              class="_create_button"
+              @click="show_planning_section = !show_planning_section"
+            >
+              {{ $t("create") }}
+            </button>
+          </td>
+        </div>
 
-      <div v-else>
-        <td colspan="2">
-          <input type="text" class ref="nameInput" />
-        </td>
-        <td colspan="2">
-          <button
-            type="button"
-            class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-            @click="createPlanningMedia"
-          >{{ $t('create') }}</button>
-        </td>
+        <div v-else>
+          <td colspan="2">
+            <input type="text" class ref="nameInput" />
+          </td>
+          <td colspan="2">
+            <button
+              type="button"
+              class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
+              @click="createPlanningMedia"
+            >
+              {{ $t("create") }}
+            </button>
+          </td>
+        </div>
       </div>
     </div>
   </div>
@@ -76,7 +82,9 @@ export default {
   computed: {
     sorted_planning_medias() {
       return this.planning_medias.sort((a, b) =>
-        a.date_modified.localeCompare(b.date_modified)
+        a.hasOwnProperty("planning_info_start") && a.planning_info_start
+          ? a.planning_info_start.localeCompare(b.planning_info_start)
+          : false
       );
     },
     ordered_planning_items: {
@@ -126,7 +134,6 @@ export default {
     },
     sortEnded({ event, newIndex, oldIndex, collection }) {
       if (newIndex !== oldIndex) {
-        debugger;
       }
     }
   }
@@ -140,7 +147,17 @@ export default {
   background-color: var(--color-Planning);
   height: 100%;
 
+  display: flex;
+  flex-flow: column nowrap;
+  overflow-y: auto;
+
   // height: 100%;
   // overflow-y: auto;
+}
+.m_planning--container {
+  width: 100%;
+  max-width: 66ch;
+
+  margin: 0 auto;
 }
 </style>
