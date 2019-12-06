@@ -158,11 +158,11 @@ let vm = new Vue({
         {
           key: "Composition",
           enabled: true
+        },
+        {
+          key: "WriteUp",
+          enabled: true
         }
-        // {
-        //   key: "WriteUp",
-        //   enabled: true
-        // }
       ],
 
       capture_options: {
