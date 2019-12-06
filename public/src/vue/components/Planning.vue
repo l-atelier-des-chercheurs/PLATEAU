@@ -12,19 +12,29 @@
       <SlickItem v-for="(item, index) in ordered_planning_items" :index="index" :key="item.key">
         <PlanningItem :key="item.metaFileName" :media="item" :slugFolderName="slugFolderName" />
       </SlickItem>
-    </SlickList>-->
-
-        <div class="m_planning--container">
+        </SlickList>-->
+        <div
+          class="m_planning--container"
+          @click.self="open_planning_item = false"
+        >
           <transition-group tag="div" name="list-complete">
             <PlanningItem
               v-for="media in sorted_planning_medias"
               :key="media.metaFileName"
+              :class="{
+                'is--active': open_planning_item === media.metaFileName
+              }"
               :media="media"
               :slugFolderName="slugFolderName"
+              @toggleOpen="toggleOpenItem"
             />
           </transition-group>
 
-          <div :key="'create'">
+          <form
+            @submit.prevent="createPlanningMedia"
+            :key="'create'"
+            class="m_planning--container--create"
+          >
             <div v-if="!show_planning_section">
               <td colspan="4">
                 <button
@@ -43,13 +53,38 @@
               </td>
               <td colspan="2">
                 <button
-                  type="button"
+                  type="submit"
                   class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-                  @click="createPlanningMedia"
                 >
                   {{ $t("create") }}
                 </button>
               </td>
+            </div>
+          </form>
+
+          <div class="m_planningPanes">
+            <div
+              v-for="media in sorted_planning_medias"
+              :key="media.metaFileName + '_pane'"
+              class="m_planningPanes--pane"
+              :class="{
+                'is--open': open_planning_item === media.metaFileName
+              }"
+            >
+              <transition name="slideright" :duration="800">
+                <div
+                  class="m_planningPanes--pane--content"
+                  v-if="open_planning_item === media.metaFileName"
+                >
+                  <PlanningItem
+                    :key="media.metaFileName"
+                    :media="media"
+                    :slugFolderName="slugFolderName"
+                    :mode="'expanded'"
+                    @startTimerFor="startTimerFor"
+                  />
+                </div>
+              </transition>
             </div>
           </div>
         </div>
@@ -62,8 +97,7 @@
         max-size="70"
         size="50"
         style="position: relative;"
-      >
-      </pane>
+      ></pane>
     </splitpanes>
   </div>
 </template>
@@ -88,7 +122,8 @@ export default {
   directives: { handle: HandleDirective },
   data() {
     return {
-      show_planning_section: false
+      show_planning_section: false,
+      open_planning_item: false
     };
   },
 
@@ -119,6 +154,17 @@ export default {
   methods: {
     textChange(delta, oldDelta, source) {
       // if source === 'user'
+    },
+    toggleOpenItem(item_meta) {
+      if (this.open_planning_item === item_meta) {
+        this.open_planning_item = false;
+        return;
+      }
+      this.open_planning_item = item_meta;
+      return;
+    },
+    startTimerFor(d) {
+      const duration = this.$moment.duration(d, "hh:mm a");
     },
     createPlanningMedia() {
       if (window.state.dev_mode === "debug") {
@@ -168,10 +214,55 @@ export default {
 }
 .m_planning--container {
   height: 100%;
-  display: flex;
-  flex-flow: column nowrap;
+  // display: flex;
+  // flex-flow: column nowrap;
   overflow-y: auto;
 
   margin: 0 auto;
+
+  &:hover .m_planningPanes--pane--content:not(:hover) {
+    transform: translateX(46%);
+    // margin-left: 66%;
+  }
+}
+
+.m_planning--container--create {
+  padding: calc(var(--spacing) / 1);
+  background-color: #fff;
+  border: 1px solid black;
+  margin: -1px;
+}
+
+.m_planningPanes--pane {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  // z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+
+  // background-color: rgba(255, 255, 255, 0.4);
+  // box-shadow: 0 0 12px #888;
+  // box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+  &.is--open {
+    z-index: 6;
+  }
+}
+.m_planningPanes--pane--content {
+  background-color: white;
+  height: 100%;
+  pointer-events: auto;
+  // width: 100%;
+  // overflow: auto;
+  margin-left: 10%;
+  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+
+  > * {
+    height: 100%;
+  }
 }
 </style>

@@ -3,10 +3,14 @@
     class="m_project"
     watch-slots
     @resized="resized()"
-    :key="JSON.stringify($root.settings.project_panes_in_order)"
+    :key="JSON.stringify($root.settings.project_panes_in_order.map(p => p.key))"
   >
     <template v-for="pane in $root.settings.project_panes_in_order">
-      <pane v-if="pane.key === 'WriteUp' && pane.enabled" :key="pane.key">
+      <pane
+        v-if="pane.key === 'WriteUp' && pane.enabled"
+        :key="pane.key"
+        min-size="5"
+      >
         <WriteUp
           :slugFolderName="slugProjectName"
           :writeup_medias="writeup_medias"
@@ -14,7 +18,11 @@
         />
       </pane>
 
-      <pane v-else-if="pane.key === 'MediaLibrary' && pane.enabled" :key="pane.key">
+      <pane
+        v-else-if="pane.key === 'MediaLibrary' && pane.enabled"
+        :key="pane.key"
+        min-size="5"
+      >
         <MediaLibrary
           :slugProjectName="slugProjectName"
           :project="project"
@@ -23,7 +31,11 @@
         />
       </pane>
 
-      <pane v-else-if="pane.key === 'Composition' && pane.enabled" :key="pane.key">
+      <pane
+        v-else-if="pane.key === 'Composition' && pane.enabled"
+        :key="pane.key"
+        min-size="5"
+      >
         <Composition
           :slugFolderName="slugProjectName"
           :composition_medias="composition_medias"
@@ -31,7 +43,11 @@
         />
       </pane>
 
-      <pane v-else-if="pane.key === 'Capture' && pane.enabled" :key="pane.key">
+      <pane
+        v-else-if="pane.key === 'Capture' && pane.enabled"
+        :key="pane.key"
+        min-size="5"
+      >
         <Capture
           :slugProjectName="slugProjectName"
           :project="project"
@@ -40,7 +56,11 @@
         />
       </pane>
 
-      <pane v-if="pane.key === 'Planning' && pane.enabled" :key="pane.key">
+      <pane
+        v-if="pane.key === 'Planning' && pane.enabled"
+        :key="pane.key"
+        min-size="5"
+      >
         <Planning
           :slugFolderName="slugProjectName"
           :planning_medias="planning_medias"

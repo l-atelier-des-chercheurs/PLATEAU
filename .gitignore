@@ -1,5 +1,6 @@
 /dist/
 settings.json
+/public/dist/
 
 ####### NODE ########
 .tmp

@@ -158,11 +158,11 @@ let vm = new Vue({
         {
           key: "Composition",
           enabled: true
-        },
-        {
-          key: "WriteUp",
-          enabled: true
         }
+        // {
+        //   key: "WriteUp",
+        //   enabled: true
+        // }
       ],
 
       capture_options: {
@@ -190,6 +190,7 @@ let vm = new Vue({
       medias_present_in_writeup: [],
 
       current_writeup_media_metaFileName: false,
+      current_planning_media_metaFileName: false,
       current_composition_media_metaFileName: false,
       media_being_dragged: false,
 
@@ -490,6 +491,17 @@ let vm = new Vue({
           sameElse: "dddd, MMMM D Y"
         });
       }
+    },
+    format_duration_to_human(d) {
+      const _m = this.$moment(d, "hh:mm a");
+
+      if (!_m.isValid()) {
+        return false;
+      }
+      if (_m.hours() === 0) {
+        return _m.format("m [minutes]");
+      }
+      return _m.format("H [heures] [et] m [minutes]");
     },
 
     createFolder: function(fdata) {
