@@ -1,5 +1,9 @@
 <template>
-  <form class="m_planningItem" :class="{ 'is--editable': edit_mode }" @submit.prevent="sendEdits">
+  <form
+    class="m_planningItem"
+    :class="{ 'is--editable': edit_mode }"
+    @submit.prevent="sendEdits"
+  >
     <div class="m_planningItem--topbar">
       <div class="m_planningItem--editButtons" v-if="mode === 'expanded'">
         <button type="button" @click="edit_mode = !edit_mode" title="edit">
@@ -52,17 +56,15 @@
     </div>
     <div
       class="m_planningItem--date"
-      v-if="
-        edit_mode || media.planning_info_start || media.planning_info_duration
-      "
+      v-if="edit_mode || media.planning_info_start || media_duration"
       :title="$moment(media.planning_info_start).format('l LTS')"
     >
       <div class="m_planningItem--date--start">
         <span v-if="!edit_mode && media.planning_info_start">
           {{
-          $root.format_date_to_human(media.planning_info_start) +
-          " " +
-          $moment(media.planning_info_start).format("HH:mm:ss")
+            $root.format_date_to_human(media.planning_info_start) +
+              " " +
+              $moment(media.planning_info_start).format("HH:mm:ss")
           }}
         </span>
         <DateTime
@@ -74,14 +76,19 @@
         <!-- <span v-if="!media.planning_info_start">début</span>
         -->
       </div>
-      <span
-        v-if="(!edit_mode && $root.format_duration_to_human(media.planning_info_duration)) || edit_mode"
-      >→</span>
+      <span v-if="(!edit_mode && media_duration) || edit_mode">→</span>
       <div class="m_planningItem--date--duration">
-        <span v-if="!edit_mode && $root.format_duration_to_human(media.planning_info_duration)">
-          {{
-          $root.format_duration_to_human(media.planning_info_duration)
-          }}
+        <span v-if="!edit_mode && media_duration">
+          {{ media_duration }}
+
+          <button
+            type="button"
+            style="color: var(--c-rouge)"
+            v-if="mode === 'expanded'"
+            @click="$emit('startTimerFor', media.planning_info_duration)"
+          >
+            start timer
+          </button>
         </span>
         <input
           v-else-if="edit_mode"
@@ -90,18 +97,23 @@
         />
       </div>
     </div>
+
     <div class="m_planningItem--submitButtons">
       <button
         type="button"
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
         @click="edit_mode = !edit_mode"
-      >{{ $t("cancel") }}</button>
+      >
+        {{ $t("cancel") }}
+      </button>
       <button
         type="submit"
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
-      >{{ $t("submit") }}</button>
+      >
+        {{ $t("submit") }}
+      </button>
     </div>
 
     <div class="m_planningItem--notes" v-if="edit_notes">
@@ -117,7 +129,10 @@
         </button>
       </div>-->
 
-      <div class="m_planningItem--notes--staticNote" v-if="false && !edit_notes">
+      <div
+        class="m_planningItem--notes--staticNote"
+        v-if="false && !edit_notes"
+      >
         <div
           v-html="notes_excerpt"
           class="m_planningItem--notes--staticNote--content"
@@ -148,7 +163,9 @@
       type="button"
       v-if="mode === 'collapsed'"
       @click="$emit('toggleOpen', media.metaFileName)"
-    >Ouvrir</button>
+    >
+      Ouvrir
+    </button>
   </form>
 </template>
 <script>
@@ -172,13 +189,7 @@ export default {
     return {
       edit_mode: false,
       edit_notes: this.mode === "expanded",
-      show_full_notes: false,
-
-      edited_media_infos: {
-        name: this.media.name,
-        planning_info_start: this.media.planning_info_start,
-        planning_info_duration: this.media.planning_info_duration
-      }
+      show_full_notes: false
     };
   },
   created() {},
@@ -189,19 +200,24 @@ export default {
     this.$root.settings.current_planning_media_metaFileName = false;
   },
   watch: {
-    "media.name": function() {
-      this.edited_media_infos.name = this.media.name;
-    },
-    "media.planning_info_start": function() {
-      this.edited_media_infos.planning_info_start = this.media.planning_info_start;
-    },
-    "media.planning_info_duration": function() {
-      this.edited_media_infos.planning_info_duration = this.media.planning_info_duration;
+    edit_mode: function() {
+      if (this.edit_mode) {
+        this.edited_media_infos = {
+          name: this.media.name,
+          planning_info_start: this.media.planning_info_start,
+          planning_info_duration: this.media.planning_info_duration
+        };
+      }
     }
   },
   computed: {
     notes_excerpt() {
       return this.media.content;
+    },
+    media_duration() {
+      return this.$root.format_duration_to_human(
+        this.media.planning_info_duration
+      );
     }
   },
   methods: {

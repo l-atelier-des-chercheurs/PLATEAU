@@ -161,7 +161,7 @@ input:required {
 }
 input[type="text"] {
   border: 1px solid #000;
-  line-height: 2;
+  line-height: 1.7;
   padding: 0 ~"calc(var(--spacing) / 2)";
   &:focus {
     outline: 0;
@@ -234,7 +234,7 @@ input[type="text"] {
   transition: opacity 0.4s;
   background-color: rgba(255, 255, 255, 1);
   opacity: 0;
-  z-index: 1;
+  z-index: 10;
 }
 .splitpanes__splitter:hover:before {
   // opacity: 1;
@@ -267,7 +267,7 @@ input[type="text"] {
   transition: all 0.4s;
   background-color: #000;
   opacity: 1;
-  z-index: 1;
+  z-index: 11;
 }
 .splitpanes__splitter:hover:after {
   opacity: 1;
@@ -411,13 +411,13 @@ input[type="text"] {
 }
 .slideright-enter-active,
 .slideright-leave-active {
-  transform: translateX(0);
-  transition: opacity 0.4s linear, transform 0.4s ease-out;
+  transform: translateX(0) !important;
+  transition: opacity 0.4s linear, transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
 }
 .slideright-enter,
 .slideright-leave-to {
   // opacity: 0;
-  transform: translateX(100%);
-  transition: opacity 0.4s linear, transform 0.4s ease-out;
+  transform: translateX(100%) !important;
+  transition: opacity 0.4s linear, transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
 }
 </style>

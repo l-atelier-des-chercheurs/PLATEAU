@@ -13,36 +13,21 @@
         <PlanningItem :key="item.metaFileName" :media="item" :slugFolderName="slugFolderName" />
       </SlickItem>
         </SlickList>-->
-        <div class="m_planning--container" @click.self="open_planning_item = false">
+        <div
+          class="m_planning--container"
+          @click.self="open_planning_item = false"
+        >
           <transition-group tag="div" name="list-complete">
-            <div v-for="media in sorted_planning_medias" :key="media.metaFileName">
-              <PlanningItem
-                :class="{ 'is--active' : open_planning_item === media.metaFileName }"
-                :media="media"
-                :slugFolderName="slugFolderName"
-                @toggleOpen="toggleOpenItem"
-              />
-
-              <div
-                class="m_planningPane"
-                :class="{ 'is--open' : open_planning_item === media.metaFileName }"
-              >
-                <transition name="slideright" :duration="400">
-                  <div
-                    class="m_planningPane--content"
-                    v-if="open_planning_item === media.metaFileName"
-                  >
-                    <PlanningItem
-                      :key="media.metaFileName"
-                      :media="media"
-                      :slugFolderName="slugFolderName"
-                      :mode="'expanded'"
-                      @open="metaFileName => open_planning_item = metaFileName"
-                    />
-                  </div>
-                </transition>
-              </div>
-            </div>
+            <PlanningItem
+              v-for="media in sorted_planning_medias"
+              :key="media.metaFileName"
+              :class="{
+                'is--active': open_planning_item === media.metaFileName
+              }"
+              :media="media"
+              :slugFolderName="slugFolderName"
+              @toggleOpen="toggleOpenItem"
+            />
           </transition-group>
 
           <form
@@ -56,7 +41,9 @@
                   type="button"
                   class="_create_button"
                   @click="show_planning_section = !show_planning_section"
-                >{{ $t("create") }}</button>
+                >
+                  {{ $t("create") }}
+                </button>
               </td>
             </div>
 
@@ -68,10 +55,38 @@
                 <button
                   type="submit"
                   class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-                >{{ $t("create") }}</button>
+                >
+                  {{ $t("create") }}
+                </button>
               </td>
             </div>
           </form>
+
+          <div class="m_planningPanes">
+            <div
+              v-for="media in sorted_planning_medias"
+              :key="media.metaFileName + '_pane'"
+              class="m_planningPanes--pane"
+              :class="{
+                'is--open': open_planning_item === media.metaFileName
+              }"
+            >
+              <transition name="slideright" :duration="800">
+                <div
+                  class="m_planningPanes--pane--content"
+                  v-if="open_planning_item === media.metaFileName"
+                >
+                  <PlanningItem
+                    :key="media.metaFileName"
+                    :media="media"
+                    :slugFolderName="slugFolderName"
+                    :mode="'expanded'"
+                    @startTimerFor="startTimerFor"
+                  />
+                </div>
+              </transition>
+            </div>
+          </div>
         </div>
       </pane>
       <pane
@@ -148,6 +163,9 @@ export default {
       this.open_planning_item = item_meta;
       return;
     },
+    startTimerFor(d) {
+      const duration = this.$moment.duration(d, "hh:mm a");
+    },
     createPlanningMedia() {
       if (window.state.dev_mode === "debug") {
         console.log("METHODS • AddMediaButton: createPlanningMedia");
@@ -202,10 +220,9 @@ export default {
 
   margin: 0 auto;
 
-  &:hover .m_planningPane--content:not(:hover) {
+  &:hover .m_planningPanes--pane--content:not(:hover) {
     transform: translateX(46%);
     // margin-left: 66%;
-    background-color: blue;
   }
 }
 
@@ -216,13 +233,14 @@ export default {
   margin: -1px;
 }
 
-.m_planningPane {
+.m_planningPanes--pane {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: -1;
+  z-index: 5;
+  // z-index: -1;
   overflow: hidden;
   pointer-events: none;
 
@@ -231,10 +249,10 @@ export default {
   // box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 
   &.is--open {
-    z-index: 1;
+    z-index: 6;
   }
 }
-.m_planningPane--content {
+.m_planningPanes--pane--content {
   background-color: white;
   height: 100%;
   pointer-events: auto;
