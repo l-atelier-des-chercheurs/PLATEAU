@@ -1,11 +1,7 @@
 <template>
-  <form
-    class="m_planningItem"
-    :class="{ 'is--editable': edit_mode }"
-    @submit.prevent="sendEdits"
-  >
+  <form class="m_planningItem" :class="{ 'is--editable': edit_mode }" @submit.prevent="sendEdits">
     <div class="m_planningItem--topbar">
-      <div class="m_planningItem--editButtons">
+      <div class="m_planningItem--editButtons" v-if="mode === 'expanded'">
         <button type="button" @click="edit_mode = !edit_mode" title="edit">
           <svg
             version="1.1"
@@ -62,11 +58,13 @@
       :title="$moment(media.planning_info_start).format('l LTS')"
     >
       <div class="m_planningItem--date--start">
-        <span v-if="!edit_mode && media.planning_info_start">{{
+        <span v-if="!edit_mode && media.planning_info_start">
+          {{
           $root.format_date_to_human(media.planning_info_start) +
-            " " +
-            $moment(media.planning_info_start).format("HH:mm:ss")
-        }}</span>
+          " " +
+          $moment(media.planning_info_start).format("HH:mm:ss")
+          }}
+        </span>
         <DateTime
           v-else-if="edit_mode"
           v-model="edited_media_infos.planning_info_start"
@@ -76,12 +74,15 @@
         <!-- <span v-if="!media.planning_info_start">début</span>
         -->
       </div>
+      <span
+        v-if="(!edit_mode && $root.format_duration_to_human(media.planning_info_duration)) || edit_mode"
+      >→</span>
       <div class="m_planningItem--date--duration">
-        <span v-if="!edit_mode && media.planning_info_duration">{{
-          $moment(media.planning_info_duration, "hh:mm a").format(
-            "H [heures] [et] m [minutes]"
-          )
-        }}</span>
+        <span v-if="!edit_mode && $root.format_duration_to_human(media.planning_info_duration)">
+          {{
+          $root.format_duration_to_human(media.planning_info_duration)
+          }}
+        </span>
         <input
           v-else-if="edit_mode"
           type="time"
@@ -95,20 +96,16 @@
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
         @click="edit_mode = !edit_mode"
-      >
-        {{ $t("cancel") }}
-      </button>
+      >{{ $t("cancel") }}</button>
       <button
         type="submit"
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
-      >
-        {{ $t("submit") }}
-      </button>
+      >{{ $t("submit") }}</button>
     </div>
 
-    <div class="m_planningItem--notes">
-      <div class="m_planningItem--notes--topbar">
+    <div class="m_planningItem--notes" v-if="edit_notes">
+      <!-- <div class="m_planningItem--notes--topbar">
         <h4>notes</h4>
         <button
           type="button"
@@ -118,9 +115,9 @@
           <template v-if="edit_notes">×</template>
           edit
         </button>
-      </div>
+      </div>-->
 
-      <div class="m_planningItem--notes--staticNote" v-if="!edit_notes">
+      <div class="m_planningItem--notes--staticNote" v-if="false && !edit_notes">
         <div
           v-html="notes_excerpt"
           class="m_planningItem--notes--staticNote--content"
@@ -133,8 +130,6 @@
       </div>
 
       <div class="m_planningItem--notes--editNotes" v-if="edit_notes">
-        <h3>Notes de {{ media.name }}</h3>
-        <button type="button" @click="edit_notes = false">Retour</button>
         <CollaborativeEditor
           v-model="media.content"
           :slugFolderName="slugFolderName"
@@ -147,6 +142,13 @@
     <!-- edit_mode : {{ edit_mode }}
     edited_media_infos : {{ edited_media_infos.name }}
     media.name : {{ media.name }}-->
+
+    <button
+      class="m_planningItem--openButton"
+      type="button"
+      v-if="mode === 'collapsed'"
+      @click="$emit('toggleOpen', media.metaFileName)"
+    >Ouvrir</button>
   </form>
 </template>
 <script>
@@ -156,7 +158,11 @@ import CollaborativeEditor from "./CollaborativeEditor.vue";
 export default {
   props: {
     media: Object,
-    slugFolderName: String
+    slugFolderName: String,
+    mode: {
+      type: String,
+      default: "collapsed"
+    }
   },
   components: {
     DateTime,
@@ -165,7 +171,7 @@ export default {
   data() {
     return {
       edit_mode: false,
-      edit_notes: false,
+      edit_notes: this.mode === "expanded",
       show_full_notes: false,
 
       edited_media_infos: {
@@ -176,8 +182,12 @@ export default {
     };
   },
   created() {},
-  mounted() {},
-  beforeDestroy() {},
+  mounted() {
+    this.$root.settings.current_planning_media_metaFileName = this.media.metaFileName;
+  },
+  beforeDestroy() {
+    this.$root.settings.current_planning_media_metaFileName = false;
+  },
   watch: {
     "media.name": function() {
       this.edited_media_infos.name = this.media.name;
@@ -241,15 +251,21 @@ export default {
 </script>
 <style lang="scss">
 .m_planningItem {
-  padding: calc(var(--spacing) / 1) var(--spacing);
+  position: relative;
+  padding: calc(var(--spacing) / 1) 0;
   background-color: #fff;
 
   border: 1px solid black;
-
   margin: -1px;
-
+  display: flex;
+  flex-flow: column nowrap;
   > * {
-    // margin: calc(var(--spacing) / 8) 0;
+    flex: 1 0 auto;
+    padding: 0 var(--spacing);
+  }
+
+  &.is--active {
+    color: #999;
   }
 }
 
@@ -257,6 +273,7 @@ export default {
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
+  line-height: 1;
 }
 
 .m_planningItem--editButtons {
@@ -271,27 +288,34 @@ export default {
 }
 
 .m_planningItem--name {
-  font-weight: bold;
+  font-size: 150%;
+  // font-weight: bold;
+  margin: 0;
+  font-weight: 500;
+  font-family: "Work Sans";
 }
 
 .m_planningItem--date {
-  background-color: #eee;
+  // background-color: #eee;
   // color: white;
-  padding: 0.4em;
-  line-height: 1;
+  // padding: 0.4em;
+  // line-height: 1;
   border-radius: 1em;
   font-size: 75%;
 
   display: flex;
   flex-flow: row wrap;
-  justify-content: space-between;
+  align-items: center;
 
   > * {
     flex: 0 1 auto;
+    margin-right: calc(var(--spacing) / 2);
   }
 }
 
 .m_planningItem--date--start {
+}
+.m_planningItem--date--duration {
 }
 
 .m_planningItem--submitButtons {
@@ -303,8 +327,23 @@ export default {
 .m_planningItem--notes {
   // border: 1px solid var(--c-noir);
   border-radius: 1px;
-  max-width: 66ch;
+  flex: 1 1 auto !important;
+  height: 100%;
+  margin-top: calc(var(--spacing) / 1);
+  padding: 0;
   // margin: 5px;
+}
+
+.m_planningItem--openButton {
+  position: absolute;
+  display: block;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+
+  text-indent: 1000px;
 }
 
 .m_planningItem--notes--topbar {
@@ -329,16 +368,20 @@ export default {
 }
 
 .m_planningItem--notes--editNotes {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  // position: absolute;
+  // top: 0;
+  // bottom: 0;
+  // left: 0;
+  // right: 0;
   z-index: 1;
-  background-color: white;
-  overflow: hidden;
+  height: 100%;
+  // overflow: scroll;
 
   .ql-container {
+  }
+
+  .m_collaborativeEditor {
+    height: 100%;
   }
 }
 </style>

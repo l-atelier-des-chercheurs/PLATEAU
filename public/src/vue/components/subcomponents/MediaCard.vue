@@ -5,12 +5,12 @@
       'is--inWriteUp' : is_media_in_publi, 
       'is--fav' : media.fav,
       'is--ownMedia' : media_made_by_current_author,
-      'is--draggable_to_writeup' : $root.settings.current_writeup_media_metaFileName || $root.settings.current_composition_media_metaFileName,
+      'is--draggable_to_writeup' : $root.settings.current_writeup_media_metaFileName || $root.settings.current_planning_media_metaFileName || $root.settings.current_composition_media_metaFileName,
       'is--dragged' : is_dragged
     }"
     @dragstart="startMediaDrag( media, $event)"
     @dragend="endMediaDrag()"
-    :draggable="!!$root.settings.current_writeup_media_metaFileName || $root.settings.current_composition_media_metaFileName"
+    :draggable="$root.settings.current_writeup_media_metaFileName || $root.settings.current_planning_media_metaFileName || $root.settings.current_composition_media_metaFileName"
   >
     <div draggable="false">
       <figure

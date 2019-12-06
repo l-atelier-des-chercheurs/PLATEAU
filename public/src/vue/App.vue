@@ -409,4 +409,15 @@ input[type="text"] {
   transform: translateY(100%);
   transition: opacity 0.4s linear, transform 0.4s ease-out;
 }
+.slideright-enter-active,
+.slideright-leave-active {
+  transform: translateX(0);
+  transition: opacity 0.4s linear, transform 0.4s ease-out;
+}
+.slideright-enter,
+.slideright-leave-to {
+  // opacity: 0;
+  transform: translateX(100%);
+  transition: opacity 0.4s linear, transform 0.4s ease-out;
+}
 </style>
