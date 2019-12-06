@@ -79,7 +79,11 @@
             </div>
           </div>
 
-          <transition-group tag="div" class="m_library--chronology" name="list-complete">
+          <transition-group
+            tag="div"
+            class="m_library--chronology"
+            name="list-complete"
+          >
             <!-- <MediaCard
               v-for="media in sortedMedias"
               :key="media.slugMediaName"
@@ -124,8 +128,9 @@
           @dragstart="startMediaDrag(mediaShownInFocus, $event)"
           @dragend="endMediaDrag()"
           :draggable="
-            !!$root.settings.current_writeup_media_metaFileName ||
-            !!$root.settings.current_planning_media_metaFileName ||
+            true ||
+              !!$root.settings.current_writeup_media_metaFileName ||
+              !!$root.settings.current_planning_media_metaFileName ||
               $root.settings.current_composition_media_metaFileName
           "
         >
@@ -136,8 +141,12 @@
             :preview_size="preview_size"
           />
           <div class="m_library--mediaFocus--buttons">
-            <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t("remove") }}</button>
-            <button type="button" @click="closeMediaFocus()">{{ $t("close") }}</button>
+            <button type="button" @click="removeMedia(show_media_detail_for)">
+              {{ $t("remove") }}
+            </button>
+            <button type="button" @click="closeMediaFocus()">
+              {{ $t("close") }}
+            </button>
           </div>
         </div>
       </pane>

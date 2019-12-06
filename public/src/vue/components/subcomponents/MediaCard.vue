@@ -1,23 +1,32 @@
 <template>
   <div
     class="m_media"
-    :class=" { 
-      'is--inWriteUp' : is_media_in_publi, 
-      'is--fav' : media.fav,
-      'is--ownMedia' : media_made_by_current_author,
-      'is--draggable_to_writeup' : $root.settings.current_writeup_media_metaFileName || $root.settings.current_planning_media_metaFileName || $root.settings.current_composition_media_metaFileName,
-      'is--dragged' : is_dragged
+    :class="{
+      'is--inWriteUp': is_media_in_publi,
+      'is--fav': media.fav,
+      'is--ownMedia': media_made_by_current_author,
+      'is--draggable_to_writeup':
+        true ||
+        $root.settings.current_writeup_media_metaFileName ||
+        $root.settings.current_planning_media_metaFileName ||
+        $root.settings.current_composition_media_metaFileName,
+      'is--dragged': is_dragged
     }"
-    @dragstart="startMediaDrag( media, $event)"
+    @dragstart="startMediaDrag(media, $event)"
     @dragend="endMediaDrag()"
-    :draggable="$root.settings.current_writeup_media_metaFileName || $root.settings.current_planning_media_metaFileName || $root.settings.current_composition_media_metaFileName"
+    :draggable="
+      true ||
+        $root.settings.current_writeup_media_metaFileName ||
+        $root.settings.current_planning_media_metaFileName ||
+        $root.settings.current_composition_media_metaFileName
+    "
   >
     <div draggable="false">
       <figure
         @click.stop="openMediaModal()"
         @mouseover="is_hovered = true"
         @mouseleave="is_hovered = false"
-        :class="{ 'is--hovered' : is_hovered }"
+        :class="{ 'is--hovered': is_hovered }"
       >
         <div>
           <!-- <div class="m_metaField padding-sides-verysmall">
@@ -54,24 +63,26 @@
             :element_width_for_sizes="200"
             :preview_size="preview_size"
           />
-          <figcaption class="m_media--caption" v-if="!!media.caption">{{ media.caption }}</figcaption>
+          <figcaption class="m_media--caption" v-if="!!media.caption">
+            {{ media.caption }}
+          </figcaption>
         </div>
 
         <figcaption v-if="is_hovered && false">
           <div class="m_metaField" v-if="!!media.type">
-            <div>{{ $t('type') }}</div>
+            <div>{{ $t("type") }}</div>
             <div>{{ $t(media.type) }}</div>
           </div>
           <div class="m_metaField" v-if="!!media.authors">
-            <div>{{ $t('author') }}</div>
+            <div>{{ $t("author") }}</div>
             <div>{{ media.authors }}</div>
           </div>
           <div class="m_metaField">
-            <div>{{ $t('created') }}</div>
+            <div>{{ $t("created") }}</div>
             <div>{{ $root.formatDateToHuman(media.date_created) }}</div>
           </div>
           <div class="m_metaField">
-            <div>{{ $t('edited') }}</div>
+            <div>{{ $t("edited") }}</div>
             <div>{{ $root.formatDateToHuman(media.date_modified) }}</div>
           </div>
         </figcaption>
