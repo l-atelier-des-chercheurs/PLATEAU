@@ -43,7 +43,7 @@
 
             <template v-else>
               <td colspan="2">
-                <input type="text" class ref="nameInput" />
+                <input type="text" class ref="nameInput" @keyup.enter="createWriteupMedia" />
               </td>
               <td colspan="2">
                 <button
