@@ -81,13 +81,11 @@
                     :media="media"
                     :slugFolderName="slugFolderName"
                     :mode="'expanded'"
-                    @startTimerFor="startTimerFor"
                   />
                 </div>
               </transition>
             </div>
           </div>
-
         </div>
       </pane>
     </splitpanes>
@@ -154,9 +152,6 @@ export default {
       }
       this.open_planning_item = item_meta;
       return;
-    },
-    startTimerFor(d) {
-      const duration = this.$moment.duration(d, "hh:mm a");
     },
     createPlanningMedia() {
       if (window.state.dev_mode === "debug") {
@@ -256,15 +251,5 @@ export default {
   > * {
     height: 100%;
   }
-}
-
-.m_timers {
-  position: absolute;
-  bottom: 0;
-  right: 10%;
-  width: 100px;
-  height: 50px;
-  background-color: #ff00ff;
-  z-index: 11000;
 }
 </style>

@@ -28,7 +28,7 @@
     "imagetracerjs": "^1.2.5",
     "instascan": "^1.0.0",
     "jquery": "^3.4.0",
-    "moment": "^2.22.2",
+    "moment": "^2.24.0",
     "moment-duration-format": "^2.3.2",
     "node-lessify": "^0.1.5",
     "node-sass": "^4.10.0",

@@ -91,6 +91,9 @@ import "moment/locale/en-gb";
 moment.locale(lang_settings.current);
 Vue.prototype.$moment = moment;
 
+import momentDurationFormatSetup from "moment-duration-format";
+momentDurationFormatSetup(moment);
+
 const html = document.documentElement; // returns the html tag
 html.setAttribute("lang", lang_settings.current);
 
@@ -492,18 +495,21 @@ let vm = new Vue({
         });
       }
     },
-    format_duration_to_human(d) {
-      const _m = this.$moment(d, "hh:mm a");
+    format_duration_to_human({ duration, format }) {
+      let _duration = this.$moment.isDuration(duration)
+        ? duration
+        : this.$moment.duration(duration);
+      if (!_duration.isValid()) return false;
 
-      if (!_m.isValid()) {
-        return false;
+      if (format) {
+        return _duration.format(format);
       }
-      if (_m.hours() === 0) {
-        return _m.format("m [minutes]");
+
+      if (_duration.asHours() < 1) {
+        return _duration.format("m [minutes]");
       }
-      return _m.format("H [heures] [et] m [minutes]");
+      return _duration.format("H [heures] [et] m [minutes]");
     },
-
     createFolder: function(fdata) {
       if (window.state.dev_mode === "debug") {
         console.log(

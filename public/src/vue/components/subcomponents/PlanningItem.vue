@@ -85,7 +85,12 @@
             type="button"
             style="color: var(--c-rouge)"
             v-if="mode === 'expanded'"
-            @click="$emit('startTimerFor', media.planning_info_duration)"
+            @click="
+              $eventHub.$emit(
+                'countdown.start_timer',
+                media.planning_info_duration
+              )
+            "
           >
             start timer
           </button>
@@ -215,9 +220,9 @@ export default {
       return this.media.content;
     },
     media_duration() {
-      return this.$root.format_duration_to_human(
-        this.media.planning_info_duration
-      );
+      return this.$root.format_duration_to_human({
+        duration: this.media.planning_info_duration
+      });
     }
   },
   methods: {
