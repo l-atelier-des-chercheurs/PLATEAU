@@ -13,10 +13,7 @@
         <PlanningItem :key="item.metaFileName" :media="item" :slugFolderName="slugFolderName" />
       </SlickItem>
         </SlickList>-->
-        <div
-          class="m_planning--container"
-          @click.self="open_planning_item = false"
-        >
+        <div class="m_planning--container" @click.self="open_planning_item = false">
           <transition-group tag="div" name="list-complete">
             <PlanningItem
               v-for="media in sorted_planning_medias"
@@ -41,9 +38,7 @@
                   type="button"
                   class="_create_button"
                   @click="show_planning_section = !show_planning_section"
-                >
-                  {{ $t("create") }}
-                </button>
+                >{{ $t("create") }}</button>
               </td>
             </div>
 
@@ -55,9 +50,7 @@
                 <button
                   type="submit"
                   class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-                >
-                  {{ $t("create") }}
-                </button>
+                >{{ $t("create") }}</button>
               </td>
             </div>
           </form>
@@ -87,17 +80,17 @@
               </transition>
             </div>
           </div>
+
+          <div class="m_timers">
+            Timers
+            <timer-component
+              @timer-start:log="timerStarted"
+              @timer-stop:log="timerStopped"
+              @timer-tick:log="timerTicked"
+            />
+          </div>
         </div>
       </pane>
-      <pane
-        v-if="show_media_notes_for"
-        :key="show_media_notes_for"
-        class
-        min-size="20"
-        max-size="70"
-        size="50"
-        style="position: relative;"
-      ></pane>
     </splitpanes>
   </div>
 </template>
@@ -264,5 +257,15 @@ export default {
   > * {
     height: 100%;
   }
+}
+
+.m_timers {
+  position: absolute;
+  bottom: 0;
+  right: 10%;
+  width: 100px;
+  height: 50px;
+  background-color: #ff00ff;
+  z-index: 11000;
 }
 </style>
