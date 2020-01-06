@@ -48,6 +48,7 @@
   </div>
 </template>
 <script>
+import localstore from "store";
 export default {
   props: {
     project: Object,
@@ -79,6 +80,8 @@ export default {
               type: "projects",
               slugFolderName
             });
+
+            localstore.set(`panes.${slugFolderName}`, false);
           },
           () => {}
         );

@@ -145,13 +145,9 @@ let vm = new Vue({
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
 
-      project_panes_in_order: [
+      default_project_panes: [
         {
           key: "Planning",
-          enabled: true
-        },
-        {
-          key: "Capture",
           enabled: true
         },
         {
@@ -160,13 +156,18 @@ let vm = new Vue({
         },
         {
           key: "Composition",
-          enabled: true
+          enabled: false
         },
         {
-          key: "WriteUp",
-          enabled: true
+          key: "Capture",
+          enabled: false
         }
+        // {
+        //   key: "WriteUp",
+        //   enabled: true
+        // }
       ],
+      project_panes_in_order: [],
 
       capture_options: {
         selected_mode: "",
@@ -371,9 +372,19 @@ let vm = new Vue({
         // this.$root.settings.project_panes_in_order.map(pp =>
         //   console.log(`${pp.key} = ${pp.enabled}`)
         // );
+
+        // if (
+        //   this.$root.settings.project_panes_in_order.includes(
+        //     p => p.key === "WriteUp"
+        //   )
+        // )
+        //   this.$root.settings.project_panes_in_order = this.$root.settings.project_panes_in_order.filter(
+        //     p => p.key !== "WriteUp"
+        //   );
+
         localstore.set(
-          `panes.${this.$root.do_navigation.current_slugProjectName}`,
-          this.$root.settings.project_panes_in_order
+          `panes.${this.do_navigation.current_slugProjectName}`,
+          this.settings.project_panes_in_order
         );
       },
       deep: true
@@ -629,7 +640,11 @@ let vm = new Vue({
       this.do_navigation.view = "Project";
       this.do_navigation.current_slugProjectName = slugProjectName;
 
-      const panes_config_for_project = localstore.get(
+      this.settings.project_panes_in_order = JSON.parse(
+        JSON.stringify(this.settings.default_project_panes)
+      );
+
+      let panes_config_for_project = localstore.get(
         `panes.${this.$root.do_navigation.current_slugProjectName}`
       );
       if (panes_config_for_project) {
@@ -638,11 +653,11 @@ let vm = new Vue({
         // hence we need to compare both arrays and merge thoughtfully
 
         // find in panes_config_for_project those that are missing
-        const missing_panes = this.$root.settings.project_panes_in_order.filter(
+        let missing_panes = this.settings.project_panes_in_order.filter(
           p => !panes_config_for_project.map(_p => _p.key).includes(p.key)
         );
 
-        this.$root.settings.project_panes_in_order = panes_config_for_project.concat(
+        this.settings.project_panes_in_order = panes_config_for_project.concat(
           missing_panes
         );
       }
