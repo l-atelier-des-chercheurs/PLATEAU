@@ -199,8 +199,9 @@ let vm = new Vue({
 
       current_author: false,
       project_filter: {
-        keyword: false,
-        author: false
+        keyword: "",
+        author: "",
+        name: ""
       },
       media_filter: {
         keyword: false,

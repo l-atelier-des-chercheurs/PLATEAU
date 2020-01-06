@@ -1,34 +1,35 @@
 <template>
-  <transition-group class="m_list" name="list-complete" :duration="300" tag="div">
+  <transition-group
+    class="m_list"
+    name="list-complete"
+    :duration="300"
+    tag="div"
+  >
     <div :key="`create_project`" v-if="$root.show_create_project_modal">
       <form @submit.prevent="createProject">
-        <label>{{ $t('name') }}</label>
+        <label>{{ $t("name") }}</label>
         <input type="text" name="name" />
         <input type="submit" />
       </form>
     </div>
-    <div class v-for="(project, slug) in projects" :key="slug">
-      <div>
-        <div class>{{ project.name }}</div>
-        <div class="font-verysmall">
-          {{ $t(available_fields.find(f => f.key === selected_field_to_show).key) }}
-          <br />
-          {{ projectDate(project[selected_field_to_show]) + ' ' + $t('at') + ' ' + $moment(project[selected_field_to_show]).format('HH:mm') }}
-        </div>
-      </div>
-      <div class>
-        <button @click="$root.openProject(slug)">{{ $t('open') }}</button>
-        <button @click="removeProject(slug)">{{ $t('remove') }}</button>
-      </div>
-    </div>
+    <ProjectThumb
+      v-for="sortedProject in sortedProjects"
+      :project="projects[sortedProject.slugProjectName]"
+      :selected_field_to_show="selected_field_to_show"
+      :key="sortedProject.slugProjectName"
+    />
   </transition-group>
 </template>
 <script>
+import ProjectThumb from "./components/subcomponents/ProjectThumb.vue";
+
 export default {
   props: {
     projects: Object
   },
-  components: {},
+  components: {
+    ProjectThumb
+  },
   data() {
     return {
       selected_field_to_show: "date_created",
@@ -39,34 +40,16 @@ export default {
         {
           key: "date_modified"
         }
-      ]
-      // columns: [
-      //   {
-      //     label: "Name",
-      //     field: "name"
-      //   },
-      //   {
-      //     label: "Created On",
-      //     field: "created_date",
-      //     type: "date",
-      //     dateInputFormat: "yyyy-MM-dd HH:m:s",
-      //     dateOutputFormat: "PPPPpp"
-      //   },
-      //   {
-      //     label: "Last edited On",
-      //     field: "last_modified",
-      //     type: "date",
-      //     dateInputFormat: "yyyy-MM-dd HH:m:s",
-      //     dateOutputFormat: "PPPPpp"
-      //   }
-      //   // {
-      //   //   label: "Last Modified On",
-      //   //   field: "date_modified",
-      //   //   type: "date",
-      //   //   dateInputFormat: "yyyy-MM-dd",
-      //   //   dateOutputFormat: "MMM Do yy"
-      //   // }
-      // ]
+      ],
+
+      currentSort: {
+        field: "date_created",
+        type: "date",
+        order: "descending"
+      },
+
+      show_filters: false,
+      show_search: false
     };
   },
   created() {},
@@ -74,8 +57,126 @@ export default {
   beforeDestroy() {},
   watch: {},
   computed: {
-    projects_for_table() {
-      return Object.values(this.projects);
+    sortedProjects: function() {
+      var sortable = [];
+
+      if (!this.projects || this.projects.length === 0) {
+        return [];
+      }
+
+      for (let slugProjectName in this.projects) {
+        let orderBy;
+
+        if (this.currentSort.type === "date") {
+          orderBy = +this.$moment(
+            this.projects[slugProjectName][this.currentSort.field],
+            "YYYY-MM-DD HH:mm:ss"
+          );
+        } else if (this.currentSort.type === "alph") {
+          orderBy = this.projects[slugProjectName][this.currentSort.field];
+        }
+
+        if (this.$root.settings.project_filter.name !== "") {
+          if (
+            !this.projects[slugProjectName].name
+              .toLowerCase()
+              .includes(this.$root.settings.project_filter.name.toLowerCase())
+          )
+            continue;
+        }
+
+        if (
+          !this.$root.settings.project_filter.keyword &&
+          !this.$root.settings.project_filter.author
+        ) {
+          sortable.push({ slugProjectName, orderBy });
+          continue;
+        }
+
+        if (
+          !!this.$root.settings.project_filter.keyword &&
+          !!this.$root.settings.project_filter.author
+        ) {
+          // only add to sorted array if project has this keyword
+          if (
+            this.projects[slugProjectName].hasOwnProperty("keywords") &&
+            typeof this.projects[slugProjectName].keywords === "object" &&
+            this.projects[slugProjectName].keywords.filter(
+              k => k.title === this.$root.settings.project_filter.keyword
+            ).length > 0
+          ) {
+            if (
+              this.projects[slugProjectName].hasOwnProperty("authors") &&
+              typeof this.projects[slugProjectName].authors === "object" &&
+              this.projects[slugProjectName].authors.filter(
+                k => k.name === this.$root.settings.project_filter.author
+              ).length > 0
+            ) {
+              sortable.push({ slugProjectName, orderBy });
+            }
+          }
+          continue;
+        }
+        // if a project keyword filter is set
+        if (!!this.$root.settings.project_filter.keyword) {
+          // only add to sorted array if project has this keyword
+          if (
+            this.projects[slugProjectName].hasOwnProperty("keywords") &&
+            typeof this.projects[slugProjectName].keywords === "object" &&
+            this.projects[slugProjectName].keywords.filter(
+              k => k.title === this.$root.settings.project_filter.keyword
+            ).length > 0
+          ) {
+            sortable.push({ slugProjectName, orderBy });
+          }
+          continue;
+        }
+
+        if (!!this.$root.settings.project_filter.author) {
+          // only add to sorted array if project has this keyword
+          if (
+            this.projects[slugProjectName].hasOwnProperty("authors") &&
+            typeof this.projects[slugProjectName].authors === "object" &&
+            this.projects[slugProjectName].authors.filter(
+              k => k.name === this.$root.settings.project_filter.author
+            ).length > 0
+          ) {
+            sortable.push({ slugProjectName, orderBy });
+          }
+          continue;
+        }
+      }
+
+      // if there is no project in sortable, it is probable that filters
+      // were too restrictive
+      if (sortable.length === 0) {
+        // lets remove filters if there are any
+        this.$nextTick(() => {
+          // this.$root.settings.project_filter.keyword = false;
+        });
+      }
+
+      let sortedSortable = sortable.sort(function(a, b) {
+        let valA = a.orderBy;
+        let valB = b.orderBy;
+        if (typeof a.orderBy === "string" && typeof b.orderBy === "string") {
+          valA = valA.toLowerCase();
+          valB = valB.toLowerCase();
+        }
+        if (valA < valB) {
+          return -1;
+        }
+        if (valA > valB) {
+          return 1;
+        }
+        return 0;
+      });
+
+      if (this.currentSort.order === "descending") {
+        sortedSortable.reverse();
+      }
+
+      return sortedSortable;
     }
   },
   methods: {
@@ -87,42 +188,6 @@ export default {
       };
       this.$root.createFolder({ type: "projects", data: new_project_data });
       this.$root.show_create_project_modal = false;
-    },
-    removeProject(slugFolderName) {
-      this.$alertify
-        .okBtn(this.$t("yes"))
-        .cancelBtn(this.$t("cancel"))
-        .confirm(
-          this.$t("sureToRemoveProject"),
-          () => {
-            this.$root.removeFolder({
-              type: "projects",
-              slugFolderName
-            });
-          },
-          () => {}
-        );
-    },
-    projectDate(d) {
-      if (this.$root.lang.current === "fr") {
-        return this.$moment(d).calendar(null, {
-          lastDay: "[hier]",
-          sameDay: "[aujourd’hui]",
-          nextDay: "[demain]",
-          lastWeek: "dddd [dernier]",
-          nextWeek: "dddd [prochain]",
-          sameElse: "dddd D MMMM"
-        });
-      } else if (this.$root.lang.current === "en") {
-        return this.$moment(d).calendar(null, {
-          lastDay: "[yesterday]",
-          sameDay: "[today]",
-          nextDay: "[tomorrow]",
-          lastWeek: "[last] dddd",
-          nextWeek: "[next] dddd",
-          sameElse: "dddd, MMMM D"
-        });
-      }
     }
   }
 };
