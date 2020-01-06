@@ -130,7 +130,7 @@ export default {
 
       this.$socketio.copyFolder({
         type: "projects",
-        slugFolderName: this.slugProjectName,
+        slugFolderName: this.project.slugFolderName,
         new_folder_name: this.copy_project_name
       });
       this.showDuplicateProjectMenu = false;
