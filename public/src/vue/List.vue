@@ -197,11 +197,6 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   grid-auto-rows: max-content;
-
-  > * {
-    border-right: 1px solid black;
-    border-bottom: 1px solid black;
-    padding: var(--spacing);
-  }
+  margin: 0 var(--spacing);
 }
 </style>

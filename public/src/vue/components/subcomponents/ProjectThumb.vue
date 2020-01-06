@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="m_projectThumb">
     <div>
       <div class>{{ project.name }}</div>
       <div class="font-verysmall">
@@ -150,4 +150,11 @@ export default {
   }
 };
 </script>
-<style lang="scss"></style>
+<style lang="scss">
+.m_projectThumb {
+  border-bottom: 1px solid black;
+  background-color: #fff;
+  // padding: var(--spacing);
+  margin: var(--spacing);
+}
+</style>
