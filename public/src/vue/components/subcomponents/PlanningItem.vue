@@ -67,12 +67,12 @@
               $moment(media.planning_info_start).format("HH:mm:ss")
           }}
         </span>
-        <DateTime
+        <!-- <DateTime
           v-else-if="edit_mode"
           v-model="edited_media_infos.planning_info_start"
           :twowaybinding="true"
           :read_only="false"
-        />
+        /> -->
         <!-- <span v-if="!media.planning_info_start">début</span>
         -->
       </div>
@@ -110,14 +110,14 @@
         v-if="edit_mode"
         @click="edit_mode = !edit_mode"
       >
-        {{ $t("cancel") }}
+        {{ $t("annuler") }}
       </button>
       <button
         type="submit"
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
       >
-        {{ $t("submit") }}
+        {{ $t("valider") }}
       </button>
     </div>
 
@@ -220,6 +220,9 @@ export default {
       return this.media.content;
     },
     media_duration() {
+      if (!this.media.planning_info_duration) {
+        return false;
+      }
       return this.$root.format_duration_to_human({
         duration: this.media.planning_info_duration
       });
