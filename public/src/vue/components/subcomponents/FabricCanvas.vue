@@ -278,6 +278,7 @@ export default {
 <style lang="scss">
 .m_fabricCanvas {
   transform-origin: left top;
+  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 
   > .canvas-container {
     background-color: white;

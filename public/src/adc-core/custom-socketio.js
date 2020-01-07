@@ -58,6 +58,10 @@ module.exports = (function() {
             this.socket.on("pong", this._onPong);
 
             this.socket.on("listClients", this._listClients);
+            this.socket.on(
+              "receivedDataFromSpecificClient",
+              this._receivedDataFromSpecificClient
+            );
           },
           _onSocketConnect() {
             let sessionId = this.socket.io.engine.id;
@@ -257,6 +261,11 @@ module.exports = (function() {
           _listClients(data) {
             console.log("Received _listClients packet.");
             window.state.clients = data;
+          },
+
+          _receivedDataFromSpecificClient(data) {
+            console.log("Received data from another client.");
+            this.$eventHub.$emit("clients.receivedDataFromClient", data);
           },
 
           // for projects, authors and publications

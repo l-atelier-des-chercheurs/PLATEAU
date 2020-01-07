@@ -76,6 +76,10 @@ module.exports = (function() {
       socket.on("updateClientInfo", d => onUpdateClientInfo(socket, d));
       socket.on("listClientsInfo", d => onListClientsInfo(socket, d));
 
+      socket.on("sendDataToSpecificClient", d =>
+        sendDataToSpecificClient(socket, d)
+      );
+
       socket.on("disconnect", d => onClientDisconnect(socket));
     });
   }
@@ -785,10 +789,13 @@ module.exports = (function() {
   }
 
   function onUpdateClientInfo(socket, data) {
+    dev.logfunction(`EVENT - onUpdateClientInfo`);
+
     socket._data = data;
     sendClients();
   }
   function onListClientsInfo(socket) {
+    dev.logfunction(`EVENT - onListClientsInfo`);
     sendClients(socket);
   }
 
@@ -805,6 +812,25 @@ module.exports = (function() {
     });
 
     api.sendEventWithContent("listClients", connected_clients, io, socket);
+  }
+
+  function sendDataToSpecificClient(socket, data) {
+    dev.logfunction(
+      `EVENT - sendDataToSpecificClient with id = ${data.socketid}`
+    );
+
+    if (io.sockets.connected.hasOwnProperty(data.socketid)) {
+      data.from_id = socket.id;
+
+      api.sendEventWithContent(
+        "receivedDataFromSpecificClient",
+        data,
+        io,
+        io.sockets.connected[data.socketid]
+      );
+    } else {
+      dev.error(`Couldn’t find socketid to send the data to`);
+    }
   }
 
   function onClientDisconnect(socket) {
