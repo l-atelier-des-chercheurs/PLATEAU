@@ -4,7 +4,10 @@
     :class="{ 'is--editable': edit_mode }"
     @submit.prevent="sendEdits"
   >
-    <div class="m_planningItem--topbar">
+    <div
+      class="m_planningItem--topbar"
+      @click="$emit('toggleOpen', media.metaFileName)"
+    >
       <div class="m_planningItem--editButtons" v-if="mode === 'expanded'">
         <button type="button" @click="edit_mode = !edit_mode" title="edit">
           <svg
@@ -54,6 +57,7 @@
         <input v-else type="text" required v-model="edited_media_infos.name" />
       </div>
     </div>
+
     <div
       class="m_planningItem--date"
       v-if="edit_mode || media.planning_info_start || media_duration"
@@ -162,15 +166,6 @@
     <!-- edit_mode : {{ edit_mode }}
     edited_media_infos : {{ edited_media_infos.name }}
     media.name : {{ media.name }}-->
-
-    <button
-      class="m_planningItem--openButton"
-      type="button"
-      v-if="mode === 'collapsed'"
-      @click="$emit('toggleOpen', media.metaFileName)"
-    >
-      Ouvrir
-    </button>
   </form>
 </template>
 <script>
@@ -190,6 +185,7 @@ export default {
     DateTime,
     CollaborativeEditor
   },
+
   data() {
     return {
       edit_mode: false,
@@ -275,10 +271,9 @@ export default {
   padding: calc(var(--spacing) / 1) 0;
   background-color: #fff;
 
-  border: 1px solid black;
-  margin: -1px;
   display: flex;
   flex-flow: column nowrap;
+
   > * {
     flex: 1 0 auto;
     padding: 0 var(--spacing);
@@ -363,7 +358,7 @@ export default {
   bottom: 0;
   width: 100%;
 
-  text-indent: 1000px;
+  // text-indent: 1000px;
 }
 
 .m_planningItem--notes--topbar {

@@ -1,36 +1,29 @@
 <template>
-  <div class="m_planning">
-    <SlickList v-model="sorted_planning_medias" :useDragHandle="false">
+  <div class="m_planning" @click.self="open_planning_item = false">
+    <SlickList v-model="sorted_planning_medias" axis="y" :useDragHandle="true">
       <!-- @sort-end="sortEnded" -->
       <SlickItem
         v-for="(item, index) in sorted_planning_medias"
         :index="index"
         :key="item.key"
       >
-        <PlanningItem
-          :key="item.metaFileName"
-          :media="item"
-          :slugFolderName="slugFolderName"
-        />
+        <div class="m_planning--slickItem">
+          <div v-handle class="m_planning--slickItem--handle handle" />
+          <PlanningItem
+            class="m_planning--slickItem--item"
+            :key="item.metaFileName"
+            :media="item"
+            :class="{
+              'is--active': open_planning_item === item.metaFileName
+            }"
+            :slugFolderName="slugFolderName"
+            @toggleOpen="toggleOpenItem"
+          />
+        </div>
       </SlickItem>
     </SlickList>
 
-    BIM
-
     <div class="m_planning--container" @click.self="open_planning_item = false">
-      <transition-group tag="div" name="list-complete">
-        <PlanningItem
-          v-for="media in sorted_planning_medias"
-          :key="media.metaFileName"
-          :class="{
-            'is--active': open_planning_item === media.metaFileName
-          }"
-          :media="media"
-          :slugFolderName="slugFolderName"
-          @toggleOpen="toggleOpenItem"
-        />
-      </transition-group>
-
       <form
         @submit.prevent="createPlanningMedia"
         :key="'create'"
@@ -156,8 +149,20 @@ export default {
           return acc;
         }, []);
       },
-      set() {
-        debugger;
+      set(v) {
+        const planning_slugs_in_order = v.map(m => ({
+          metaFileName: m.metaFileName
+        }));
+
+        this.planning_slugs_in_order = planning_slugs_in_order;
+
+        this.$root.editFolder({
+          type: "projects",
+          slugFolderName: this.slugFolderName,
+          data: {
+            planning_slugs_in_order
+          }
+        });
       }
       // return this.planning_medias.sort((a, b) =>
       //   a.hasOwnProperty("planning_info_start") && a.planning_info_start
@@ -170,6 +175,10 @@ export default {
       // if source === 'user'
     },
     toggleOpenItem(item_meta) {
+      if (window.state.dev_mode === "debug") {
+        console.log("METHODS • Planning: toggleOpenItem");
+      }
+
       if (this.open_planning_item === item_meta) {
         this.open_planning_item = false;
         return;
@@ -179,7 +188,7 @@ export default {
     },
     createPlanningMedia() {
       if (window.state.dev_mode === "debug") {
-        console.log("METHODS • AddMediaButton: createPlanningMedia");
+        console.log("METHODS • Planning: createPlanningMedia");
       }
 
       let name = this.$refs.nameInput.value;
@@ -318,11 +327,41 @@ export default {
   pointer-events: auto;
   // width: 100%;
   // overflow: auto;
+  border-left: 1px solid black;
   margin-left: 10%;
   transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 
   > * {
     height: 100%;
   }
+}
+
+.m_planning--slickItem {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+  align-content: stretch;
+  margin-top: -1px;
+  border: 1px solid black;
+}
+
+.m_planning--slickItem--handle {
+  display: block;
+  flex: 0 0 auto;
+  width: 44px;
+  margin: 0;
+  border-radius: 0;
+  margin-right: -1px;
+  border-right: 1px solid black;
+
+  background-color: #eee;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.m_planning--slickItem--item {
+  flex: 1 1 auto;
 }
 </style>

@@ -148,7 +148,6 @@ export default {
   border-radius: 50%;
 
   cursor: col-resize;
-  transform: rotate(90deg);
 
   &::before {
     content: "";
@@ -159,6 +158,7 @@ export default {
     background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><path d="M0 7.5v5h50v-5H0zm0 15v5h50v-5H0zm0 15v5h50v-5H0z" color="%23000"/></svg>');
     background-size: contain;
     background-repeat: no-repeat;
+    transform: rotate(90deg);
   }
 
   &:hover {
