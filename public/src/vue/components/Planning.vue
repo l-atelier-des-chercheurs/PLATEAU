@@ -65,7 +65,7 @@
             'is--open': open_planning_item === media.metaFileName
           }"
         >
-          <transition name="slideright" :duration="800">
+          <transition name="slideright" :duration="400">
             <div
               class="m_planningPanes--pane--content"
               v-if="open_planning_item === media.metaFileName"
@@ -313,7 +313,7 @@ export default {
   overflow: hidden;
   pointer-events: none;
 
-  // background-color: rgba(255, 255, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.45);
   // box-shadow: 0 0 12px #888;
   // box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 
@@ -328,7 +328,7 @@ export default {
   // width: 100%;
   // overflow: auto;
   border-left: 1px solid black;
-  margin-left: 10%;
+  margin-left: 17%;
   transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 
   > * {
