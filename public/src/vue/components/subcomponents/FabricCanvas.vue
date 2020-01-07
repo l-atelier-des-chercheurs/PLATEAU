@@ -1,14 +1,18 @@
 <template>
   <div
     class="m_fabricCanvas"
-    :class="{ 
-      'is--receptiveToDrop' : !!$root.settings.media_being_dragged,
-      'is--dragover' : is_being_dragover  
+    :class="{
+      'is--receptiveToDrop': !!$root.settings.media_being_dragged,
+      'is--dragover': is_being_dragover
     }"
     @dragover="ondragover($event)"
     @drop="ondrop($event)"
   >
-    <canvas ref="canvas" :width="canvas_properties.width" :height="canvas_properties.height" />
+    <canvas
+      ref="canvas"
+      :width="canvas_properties.width"
+      :height="canvas_properties.height"
+    />
   </div>
 </template>
 <script>
@@ -129,6 +133,7 @@ export default {
       }
     },
     setDrawingOptions() {
+      console.log(`METHODS • FabricCanvas / setDrawingOptions`);
       this.canvas.selection = this.drawing_options.mode === "select";
       this.canvas.forEachObject(o => {
         o.evented = this.drawing_options.mode === "select";
@@ -137,7 +142,11 @@ export default {
         this.canvas.defaultCursor = "Handwriting";
         // this.canvas.defaultCursor = "crosshair";
       } else {
+        this.canvas.defaultCursor = "crosshair";
       }
+
+      this.canvas.backgroundColor = this.drawing_options.background_color;
+      this.canvas.renderAll();
 
       this.canvas.isDrawingMode = this.drawing_options.mode === "drawing";
       this.canvas.freeDrawingBrush.color = this.drawing_options.color;
@@ -153,6 +162,8 @@ export default {
     },
     updateCanvas: function() {
       const content = JSON.stringify(this.canvas.toJSON());
+
+      debugger;
 
       this.$root.editMedia({
         type: "projects",
