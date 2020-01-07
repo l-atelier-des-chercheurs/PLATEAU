@@ -1,15 +1,18 @@
 <template>
   <div
+    ref="fabric_canvas"
     class="m_fabricCanvas"
     :class="{
       'is--receptiveToDrop': !!$root.settings.media_being_dragged,
       'is--dragover': is_being_dragover
     }"
+    :style="containerProperties"
     @dragover="ondragover($event)"
     @drop="ondrop($event)"
   >
     <canvas
       ref="canvas"
+      :style="canvasProperties"
       :width="canvas_properties.width"
       :height="canvas_properties.height"
     />
@@ -34,7 +37,8 @@ export default {
       canvas_properties: {
         width: 1024,
         height: 768
-      }
+      },
+      zoom: 1
     };
   },
 
@@ -65,6 +69,14 @@ export default {
     }
 
     this.setDrawingOptions();
+
+    setTimeout(() => {
+      this.updateCanvasSizeAccordingToPanel();
+    }, 500);
+    this.$eventHub.$on(
+      `activity_panels_resized`,
+      this.updateCanvasSizeAccordingToPanel
+    );
 
     this.canvas.on("mouse:down", o => {
       this.isDown = true;
@@ -104,6 +116,11 @@ export default {
   beforeDestroy() {
     this.$eventHub.$off("remove_selection", this.removeSelection);
     document.removeEventListener("keyup", this.captureKeyListener);
+
+    this.$eventHub.$off(
+      `activity_panels_resized`,
+      this.updateCanvasSizeAccordingToPanel
+    );
   },
 
   watch: {
@@ -118,7 +135,19 @@ export default {
       deep: true
     }
   },
-  computed: {},
+  computed: {
+    containerProperties() {
+      return `transform: scale(${this.zoom})`;
+      // return `
+      //   width: ${page.width * this.$root.settings.publi_zoom}mm;
+      //   height: ${page.height * this.$root.settings.publi_zoom}mm;
+      // `;
+    },
+    canvasProperties() {
+      return `
+        `;
+    }
+  },
   methods: {
     captureKeyListener(event) {
       if (this.drawing_options.mode === "select" && event.key === "Backspace") {
@@ -140,7 +169,6 @@ export default {
 
       this.canvas.backgroundColor = this.drawing_options.background_color;
       this.canvas.renderAll();
-      this.updateCanvas();
 
       this.canvas.isDrawingMode = this.drawing_options.mode === "drawing";
       this.canvas.freeDrawingBrush.color = this.drawing_options.color;
@@ -233,12 +261,24 @@ export default {
           this.canvas.add(oImg);
         });
       }
+    },
+    updateCanvasSizeAccordingToPanel() {
+      const container = this.$refs.fabric_canvas.offsetWidth;
+      const canvas = this.$refs.canvas.offsetWidth;
+      if (canvas > 0 && container > 0) {
+        const margins = 0;
+        if (container < canvas + margins) {
+          this.zoom = container / (canvas + margins);
+        }
+      }
     }
   }
 };
 </script>
 <style lang="scss">
 .m_fabricCanvas {
+  transform-origin: left top;
+
   > .canvas-container {
     background-color: white;
     margin: var(--spacing) auto;

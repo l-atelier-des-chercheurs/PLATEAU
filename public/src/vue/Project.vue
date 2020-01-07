@@ -162,6 +162,7 @@ export default {
   methods: {
     resized() {
       console.log(`Project / methods: resized`);
+      this.$eventHub.$emit(`activity_panels_resized`);
     },
     refreshPanes() {
       console.log(`Project / methods: refreshPanes`);
