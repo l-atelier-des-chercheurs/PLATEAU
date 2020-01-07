@@ -100,6 +100,10 @@ body {
   flex-flow: column nowrap;
 }
 
+.alertify {
+  z-index: 1000;
+}
+
 hr {
   border: 0;
   border-top: var(--border-width) solid var(--border-color);
