@@ -4,30 +4,38 @@
       <table class>
         <thead>
           <tr>
-            <th style>{{ $t('notes') }}</th>
-            <th>{{ $t('date_modified') }}</th>
-            <th colspan="2">{{ $t('actions') }}</th>
+            <th style>{{ $t("notes") }}</th>
+            <th>{{ $t("date_modified") }}</th>
+            <th colspan="2">{{ $t("actions") }}</th>
           </tr>
         </thead>
         <transition-group tag="tbody" name="list-complete">
           <tr v-for="w in writeup_medias" :key="w.metaFileName">
             <td>{{ w.name }}</td>
-            <td
-              :title="$moment(w.date_modified).format('l LTS')"
-            >{{ format_date_to_human(w.date_modified) + ' ' + $moment(w.date_modified).format('HH:mm') }}</td>
+            <td :title="$moment(w.date_modified).format('l LTS')">
+              {{
+                format_date_to_human(w.date_modified) +
+                  " " +
+                  $moment(w.date_modified).format("HH:mm")
+              }}
+            </td>
             <td>
               <button
                 type="button"
                 class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
                 @click="openWriteupMedia(w.metaFileName)"
-              >{{ $t('open') }}</button>
+              >
+                {{ $t("open") }}
+              </button>
             </td>
             <td>
               <button
                 type="button"
                 class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
                 @click="removeWriteupMedia(w.metaFileName)"
-              >{{ $t('remove') }}</button>
+              >
+                {{ $t("remove") }}
+              </button>
             </td>
           </tr>
           <tr :key="'create'">
@@ -36,21 +44,32 @@
                 <button
                   type="button"
                   class="_create_button"
-                  @click="show_createwriteup_section = !show_createwriteup_section"
-                >{{ $t('create') }}</button>
+                  @click="
+                    show_createwriteup_section = !show_createwriteup_section
+                  "
+                >
+                  {{ $t("create") }}
+                </button>
               </td>
             </template>
 
             <template v-else>
               <td colspan="2">
-                <input type="text" class ref="nameInput" @keyup.enter="createWriteupMedia" />
+                <input
+                  type="text"
+                  class
+                  ref="nameInput"
+                  @keyup.enter="createWriteupMedia"
+                />
               </td>
               <td colspan="2">
                 <button
                   type="button"
                   class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
                   @click="createWriteupMedia"
-                >{{ $t('create') }}</button>
+                >
+                  {{ $t("create") }}
+                </button>
               </td>
             </template>
           </tr>
@@ -65,7 +84,9 @@
       :media="current_writeup_media"
       :readonly="read_only"
       @close="closeWriteupMedia"
-      @remove="removeWriteupMedia($root.settings.current_writeup_media_metaFileName)"
+      @remove="
+        removeWriteupMedia($root.settings.current_writeup_media_metaFileName)
+      "
     />
   </div>
 </template>
@@ -164,7 +185,7 @@ export default {
 
       this.show_createwriteup_section = false;
 
-      this.$eventHub.$on("socketio.media_created_or_updated", m =>
+      this.$eventHub.$once("socketio.media_created_or_updated", m =>
         this.openWriteupMedia(m.metaFileName)
       );
       this.$root.createMedia({

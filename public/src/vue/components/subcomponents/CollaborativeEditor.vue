@@ -653,7 +653,9 @@ export default {
     },
     addMediaAtCaretPosition(media) {
       var selection = this.editor.getSelection(true);
-      this.addMediaAtIndex(selection.index, media);
+      if (selection && selection.hasOwnProperty("index"))
+        this.addMediaAtIndex(selection.index, media);
+      this.addMediaAtIndex(this.editor.getLength() - 1, media);
     },
     addMediaAtIndex(index, media) {
       console.log(`CollaborativeEditor • addMediaAtIndex ${index}`);

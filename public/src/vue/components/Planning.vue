@@ -246,7 +246,7 @@ export default {
       this.$root.removeMedia({
         type: "projects",
         slugFolderName: this.slugFolderName,
-        metaFileName
+        slugMediaName: metaFileName
       });
 
       let planning_slugs_in_order = JSON.parse(
@@ -342,19 +342,23 @@ export default {
   justify-content: flex-start;
   align-content: stretch;
   margin-top: -1px;
+  margin-left: -1px;
+  margin-right: -1px;
   border: 1px solid black;
 }
 
 .m_planning--slickItem--handle {
   display: block;
   flex: 0 0 auto;
-  width: 44px;
+  width: 28px;
   margin: 0;
   border-radius: 0;
   margin-right: -1px;
+
+  border: none;
   border-right: 1px solid black;
 
-  background-color: #eee;
+  background-color: #ddd;
 
   display: flex;
   align-items: center;

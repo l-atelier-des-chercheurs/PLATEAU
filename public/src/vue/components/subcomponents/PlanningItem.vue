@@ -163,6 +163,14 @@
       </div>
     </div>
 
+    <button
+      class="m_planningItem--openButton"
+      type="button"
+      v-if="mode === 'collapsed'"
+      @click="$emit('toggleOpen', media.metaFileName)"
+    >
+      Ouvrir
+    </button>
     <!-- edit_mode : {{ edit_mode }}
     edited_media_infos : {{ edited_media_infos.name }}
     media.name : {{ media.name }}-->
@@ -195,10 +203,12 @@ export default {
   },
   created() {},
   mounted() {
-    this.$root.settings.current_planning_media_metaFileName = this.media.metaFileName;
+    if (this.mode === "expanded")
+      this.$root.settings.current_planning_media_metaFileName = this.media.metaFileName;
   },
   beforeDestroy() {
-    this.$root.settings.current_planning_media_metaFileName = false;
+    if (this.mode === "expanded")
+      this.$root.settings.current_planning_media_metaFileName = false;
   },
   watch: {
     edit_mode: function() {
@@ -358,7 +368,7 @@ export default {
   bottom: 0;
   width: 100%;
 
-  // text-indent: 1000px;
+  text-indent: 1800px;
 }
 
 .m_planningItem--notes--topbar {

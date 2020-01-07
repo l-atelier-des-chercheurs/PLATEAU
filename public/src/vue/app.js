@@ -195,6 +195,7 @@ let vm = new Vue({
 
       current_writeup_media_metaFileName: false,
       current_planning_media_metaFileName: false,
+
       current_composition_media_metaFileName: false,
       media_being_dragged: false,
 
@@ -410,6 +411,18 @@ let vm = new Vue({
         this.closeProject();
         return {};
       }
+    },
+    current_planning_media: function() {
+      if (
+        !this.settings.current_planning_media_metaFileName ||
+        Object.keys(this.currentProject).length === 0
+      )
+        return false;
+
+      return Object.values(this.currentProject.medias).find(
+        m =>
+          m.metaFileName === this.settings.current_planning_media_metaFileName
+      );
     },
     projects_that_are_accessible() {
       const type = "projects";
