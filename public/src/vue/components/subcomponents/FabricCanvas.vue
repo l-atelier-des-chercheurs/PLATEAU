@@ -97,14 +97,7 @@ export default {
       if (!this.isDown) return;
 
       this.isDown = false;
-      if (this.drawing_options.mode === "select") {
-        // this.new_line.setCoords();
-        this.updateCanvas();
-      }
-
-      if (o.target) {
-        this.updateCanvas();
-      }
+      this.updateCanvas();
     });
     // this.setMedias();
   },
@@ -147,6 +140,7 @@ export default {
 
       this.canvas.backgroundColor = this.drawing_options.background_color;
       this.canvas.renderAll();
+      this.updateCanvas();
 
       this.canvas.isDrawingMode = this.drawing_options.mode === "drawing";
       this.canvas.freeDrawingBrush.color = this.drawing_options.color;
@@ -161,9 +155,9 @@ export default {
       this.updateCanvas();
     },
     updateCanvas: function() {
-      const content = JSON.stringify(this.canvas.toJSON());
+      console.log(`METHODS • FabricCanvas / updateCanvas`);
 
-      debugger;
+      const content = JSON.stringify(this.canvas.toJSON());
 
       this.$root.editMedia({
         type: "projects",
