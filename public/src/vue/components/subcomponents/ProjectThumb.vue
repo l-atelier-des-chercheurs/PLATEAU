@@ -29,11 +29,11 @@
         @click="showDuplicateProjectMenu = !showDuplicateProjectMenu"
         :disabled="read_only"
       >
-        {{ $t("duplicate") }}
+        {{ $t("dupliquer") }}
       </button>
 
       <div v-if="showDuplicateProjectMenu" class="margin-bottom-small">
-        <label v-html="$t('name_of_copy')" />
+        <label v-html="'Nom de la copie'" />
         <form @submit.prevent="duplicateWithNewName()" class="input-group">
           <input
             type="text"
@@ -41,7 +41,7 @@
             required
             autofocus
           />
-          <button type="submit" v-html="$t('copy')" class="bg-bleuvert" />
+          <button type="submit" v-html="$t('copier')" class="bg-bleuvert" />
         </form>
       </div>
     </div>

@@ -173,6 +173,10 @@ input[type="text"] {
   }
 }
 
+.margin-bottom-small {
+  margin-bottom: ~"calc(var(--spacing) / 2)";
+}
+
 *[contenteditable] {
   &:focus {
     outline: 0;
