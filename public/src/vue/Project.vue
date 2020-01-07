@@ -5,7 +5,17 @@
     @resized="resized()"
     :key="JSON.stringify($root.settings.project_panes_in_order.map(p => p.key))"
   >
-    <template v-for="pane in $root.settings.project_panes_in_order">
+    <template
+      v-if="
+        $root.settings.project_panes_in_order.filter(p => p.enabled).length ===
+          0
+      "
+    >
+      <div class="m_project--noPane">
+        <i>Aucune panneau n’est actif</i>
+      </div>
+    </template>
+    <template v-else v-for="pane in $root.settings.project_panes_in_order">
       <pane
         v-if="pane.key === 'WriteUp' && pane.enabled"
         :key="pane.key"
@@ -168,11 +178,21 @@ export default {
   flex-flow: row nowrap;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  background-color: #eee;
   // background-color: #ecf0ed;
   // background-color: hsl(135, 12%, 96%);
 
   > * {
     height: 100%;
   }
+}
+
+.m_project--noPane {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  // font-weight: bold;
+  color: #999;
 }
 </style>
