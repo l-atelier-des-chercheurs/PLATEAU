@@ -18,9 +18,6 @@
       <button @click="$root.openProject(project.slugFolderName)">
         {{ $t("open") }}
       </button>
-      <button @click="removeProject(project.slugFolderName)">
-        {{ $t("remove") }}
-      </button>
 
       <button
         type="button"
@@ -44,6 +41,10 @@
           <button type="submit" v-html="$t('copier')" class="bg-bleuvert" />
         </form>
       </div>
+
+      <button @click="removeProject(project.slugFolderName)">
+        {{ $t("remove") }}
+      </button>
     </div>
   </div>
 </template>
