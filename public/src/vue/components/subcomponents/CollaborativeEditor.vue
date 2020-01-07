@@ -394,7 +394,8 @@ export default {
         "blockquote",
         "indent",
         "list",
-        "media"
+        "media",
+        "image"
       ],
       placeholder: "…"
     });
