@@ -867,6 +867,9 @@ html[lang="fr"] .ql-tooltip::before {
 
   --c-toolbar-warning-bg: var(--c-rouge);
   --c-toolbar-warning-c: white;
+  // --size-column-width: 800px;
+
+  margin-left: 0;
 
   &.is--focussed {
     background-color: blue;
@@ -1164,7 +1167,7 @@ html[lang="fr"] .ql-tooltip::before {
     // position: relative;
     max-width: var(--size-column-width);
     margin: 0 auto;
-    left: 20px;
+    left: calc(var(--spacing) * 2);
     color: rgba(0, 0, 0, 0.6);
     font-style: normal;
 

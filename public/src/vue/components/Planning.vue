@@ -358,7 +358,7 @@ export default {
   border: none;
   border-right: 1px solid black;
 
-  background-color: #ddd;
+  background-color: #fff;
 
   display: flex;
   align-items: center;
