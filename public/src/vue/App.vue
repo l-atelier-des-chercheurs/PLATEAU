@@ -413,23 +413,23 @@ input[type="text"] {
 .slideup-enter-active,
 .slideup-leave-active {
   transform: translateY(0);
-  transition: opacity 0.4s linear, transform 0.4s ease-out;
+  transition: opacity 0.4s linear, transform 0.8s ease-out;
 }
 .slideup-enter,
 .slideup-leave-to {
   // opacity: 0;
   transform: translateY(100%);
-  transition: opacity 0.4s linear, transform 0.4s ease-out;
+  transition: opacity 0.4s linear, transform 0.8s ease-out;
 }
 .slideright-enter-active,
 .slideright-leave-active {
   transform: translateX(0) !important;
-  transition: opacity 0.4s linear, transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: opacity 0.4s linear, transform 0.7s cubic-bezier(0.19, 1, 0.22, 1);
 }
 .slideright-enter,
 .slideright-leave-to {
   // opacity: 0;
   transform: translateX(100%) !important;
-  transition: opacity 0.4s linear, transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: opacity 0.4s linear, transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
 }
 </style>

@@ -289,10 +289,10 @@ export default {
 
   margin: 0 auto;
 
-  &:hover .m_planningPanes--pane--content:not(:hover) {
-    transform: translateX(46%);
-    // margin-left: 66%;
-  }
+  // &:hover .m_planningPanes--pane--content:not(:hover) {
+  //   transform: translateX(46%);
+  //   // margin-left: 66%;
+  // }
 }
 
 .m_planning--container--create {
