@@ -63,6 +63,7 @@
       >
         <Planning
           :slugFolderName="slugProjectName"
+          :project="project"
           :planning_medias="planning_medias"
           :read_only="read_only"
         />

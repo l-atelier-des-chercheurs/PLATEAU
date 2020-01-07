@@ -18,7 +18,11 @@
         :disabled="!item.enabled"
         :style="`--color-active: var(--color-${item.key});`"
       >
-        <input type="checkbox" :id="`enable_pane_for_${item.key}`" v-model="item.enabled" />
+        <input
+          type="checkbox"
+          :id="`enable_pane_for_${item.key}`"
+          v-model="item.enabled"
+        />
         <div>
           <div v-handle v-if="item.enabled" class="handle" />
           <span>{{ $t(item.key) }}</span>
@@ -38,18 +42,7 @@ export default {
   },
   directives: { handle: HandleDirective },
   data() {
-    return {
-      items: [
-        "Item 1",
-        "Item 2",
-        "Item 3",
-        "Item 4",
-        "Item 5",
-        "Item 6",
-        "Item 7",
-        "Item 8"
-      ]
-    };
+    return {};
   },
   created() {},
   mounted() {},

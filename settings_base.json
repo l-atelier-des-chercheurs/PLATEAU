@@ -57,6 +57,9 @@
         },
         "authors": {
           "type": "array"
+        },
+        "planning_slugs_in_order": {
+          "type": "array"
         }
       },
       "medias": {
@@ -123,13 +126,6 @@
           },
           "planning_info_duration": {
             "type": "string"
-          },
-          "planning_order": {
-            "type": "number",
-            "clip": {
-              "min": 0,
-              "max": 999
-            }
           }
         }
       }

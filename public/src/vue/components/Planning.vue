@@ -1,94 +1,94 @@
 <template>
   <div class="m_planning">
-    <splitpanes horizontal watch-slots>
-      <pane min-size="10" max-size="100" size="100">
-        <!-- not sure about having a reorderable list  -->
-        <!-- <SlickList
-      axis="y"
-      :useDragHandle="false"
-      v-model="ordered_planning_items"
-      @sort-end="sortEnded"
-    >
-      <SlickItem v-for="(item, index) in ordered_planning_items" :index="index" :key="item.key">
-        <PlanningItem :key="item.metaFileName" :media="item" :slugFolderName="slugFolderName" />
+    <SlickList v-model="sorted_planning_medias" :useDragHandle="false">
+      <!-- @sort-end="sortEnded" -->
+      <SlickItem
+        v-for="(item, index) in sorted_planning_medias"
+        :index="index"
+        :key="item.key"
+      >
+        <PlanningItem
+          :key="item.metaFileName"
+          :media="item"
+          :slugFolderName="slugFolderName"
+        />
       </SlickItem>
-        </SlickList>-->
-        <div
-          class="m_planning--container"
-          @click.self="open_planning_item = false"
-        >
-          <transition-group tag="div" name="list-complete">
-            <PlanningItem
-              v-for="media in sorted_planning_medias"
-              :key="media.metaFileName"
-              :class="{
-                'is--active': open_planning_item === media.metaFileName
-              }"
-              :media="media"
-              :slugFolderName="slugFolderName"
-              @toggleOpen="toggleOpenItem"
-            />
-          </transition-group>
+    </SlickList>
 
-          <form
-            @submit.prevent="createPlanningMedia"
-            :key="'create'"
-            class="m_planning--container--create"
-          >
-            <div v-if="!show_planning_section">
-              <td colspan="4">
-                <button
-                  type="button"
-                  class="_create_button"
-                  @click="show_planning_section = !show_planning_section"
-                >
-                  {{ $t("create") }}
-                </button>
-              </td>
-            </div>
+    BIM
 
-            <div v-else>
-              <td colspan="2">
-                <input type="text" class ref="nameInput" />
-              </td>
-              <td colspan="2">
-                <button
-                  type="submit"
-                  class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-                >
-                  {{ $t("create") }}
-                </button>
-              </td>
-            </div>
-          </form>
+    <div class="m_planning--container" @click.self="open_planning_item = false">
+      <transition-group tag="div" name="list-complete">
+        <PlanningItem
+          v-for="media in sorted_planning_medias"
+          :key="media.metaFileName"
+          :class="{
+            'is--active': open_planning_item === media.metaFileName
+          }"
+          :media="media"
+          :slugFolderName="slugFolderName"
+          @toggleOpen="toggleOpenItem"
+        />
+      </transition-group>
 
-          <div class="m_planningPanes">
-            <div
-              v-for="media in sorted_planning_medias"
-              :key="media.metaFileName + '_pane'"
-              class="m_planningPanes--pane"
-              :class="{
-                'is--open': open_planning_item === media.metaFileName
-              }"
+      <form
+        @submit.prevent="createPlanningMedia"
+        :key="'create'"
+        class="m_planning--container--create"
+      >
+        <div v-if="!show_planning_section">
+          <td colspan="4">
+            <button
+              type="button"
+              class="_create_button"
+              @click="show_planning_section = !show_planning_section"
             >
-              <transition name="slideright" :duration="800">
-                <div
-                  class="m_planningPanes--pane--content"
-                  v-if="open_planning_item === media.metaFileName"
-                >
-                  <PlanningItem
-                    :key="media.metaFileName"
-                    :media="media"
-                    :slugFolderName="slugFolderName"
-                    :mode="'expanded'"
-                  />
-                </div>
-              </transition>
-            </div>
-          </div>
+              {{ $t("create") }}
+            </button>
+          </td>
         </div>
-      </pane>
-    </splitpanes>
+
+        <div v-else>
+          <td colspan="2">
+            <input type="text" class ref="nameInput" />
+          </td>
+          <td colspan="2">
+            <button
+              type="submit"
+              class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
+            >
+              {{ $t("create") }}
+            </button>
+          </td>
+        </div>
+      </form>
+
+      <div class="m_planningPanes">
+        <div
+          v-for="media in sorted_planning_medias"
+          :key="media.metaFileName + '_pane'"
+          class="m_planningPanes--pane"
+          :class="{
+            'is--open': open_planning_item === media.metaFileName
+          }"
+        >
+          <transition name="slideright" :duration="800">
+            <div
+              class="m_planningPanes--pane--content"
+              v-if="open_planning_item === media.metaFileName"
+            >
+              <PlanningItem
+                :key="media.metaFileName"
+                :media="media"
+                :slugFolderName="slugFolderName"
+                :mode="'expanded'"
+                @removePlanningMedia="removePlanningMedia"
+              />
+            </div>
+          </transition>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <script>
@@ -100,6 +100,7 @@ import { SlickList, SlickItem, HandleDirective } from "vue-slicksort";
 export default {
   props: {
     slugFolderName: String,
+    project: Object,
     planning_medias: Array
   },
   components: {
@@ -113,32 +114,55 @@ export default {
   data() {
     return {
       show_planning_section: false,
-      open_planning_item: false
+      open_planning_item: false,
+
+      planning_slugs_in_order: []
     };
   },
 
   created() {},
-  mounted() {},
+  mounted() {
+    this.planning_slugs_in_order = Array.isArray(
+      this.project.planning_slugs_in_order
+    )
+      ? this.project.planning_slugs_in_order
+      : [];
+  },
   beforeDestroy() {},
 
-  watch: {},
+  watch: {
+    "project.planning_slugs_in_order": function() {
+      if (this.$root.state.dev_mode === "debug") {
+        console.log(`WATCH • Publication: publication.medias_slugs`);
+      }
+      this.planning_slugs_in_order = Array.isArray(
+        this.project.planning_slugs_in_order
+      )
+        ? this.project.planning_slugs_in_order
+        : [];
+    }
+  },
+
   computed: {
-    sorted_planning_medias() {
-      return this.planning_medias.sort((a, b) =>
-        a.hasOwnProperty("planning_info_start") && a.planning_info_start
-          ? a.planning_info_start.localeCompare(b.planning_info_start)
-          : false
-      );
-    },
-    ordered_planning_items: {
+    sorted_planning_medias: {
       get() {
-        return this.planning_medias.sort((a, b) =>
-          a.hasOwnProperty("planning_order") && a.planning_order
-            ? a.planning_order.localeCompare(b.planning_order)
-            : false
-        );
+        return this.planning_slugs_in_order.reduce((acc, { metaFileName }) => {
+          const _planning_media = this.planning_medias.find(
+            pm => pm.metaFileName === metaFileName
+          );
+          if (_planning_media) {
+            acc.push(_planning_media);
+          }
+          return acc;
+        }, []);
       },
-      set(new_order) {}
+      set() {
+        debugger;
+      }
+      // return this.planning_medias.sort((a, b) =>
+      //   a.hasOwnProperty("planning_info_start") && a.planning_info_start
+      //     ? a.planning_info_start.localeCompare(b.planning_info_start)
+      //     : false
     }
   },
   methods: {
@@ -173,13 +197,62 @@ export default {
 
       this.show_planning_section = false;
 
+      this.$eventHub.$on("socketio.media_created_or_updated", d => {
+        this.$eventHub.$off("socketio.media_created_or_updated");
+
+        let planning_slugs_in_order = JSON.parse(
+          JSON.stringify(this.planning_slugs_in_order)
+        );
+
+        planning_slugs_in_order.push({
+          metaFileName: d.metaFileName
+        });
+
+        this.$root.editFolder({
+          type: "projects",
+          slugFolderName: this.slugFolderName,
+          data: {
+            planning_slugs_in_order
+          }
+        });
+      });
+
       this.$root.createMedia({
-        slugFolderName: this.slugFolderName,
         type: "projects",
+        slugFolderName: this.slugFolderName,
         additionalMeta: {
           name,
           type: "planning"
-          // planning_order: 0
+        }
+      });
+    },
+    removePlanningMedia(metaFileName) {
+      if (this.$root.state.dev_mode === "debug") {
+        console.log(
+          `METHODS • Publication: removeMedia / metaFileName = ${metaFileName}`
+        );
+      }
+      this.open_planning_item = false;
+
+      this.$root.removeMedia({
+        type: "projects",
+        slugFolderName: this.slugFolderName,
+        metaFileName
+      });
+
+      let planning_slugs_in_order = JSON.parse(
+        JSON.stringify(this.planning_slugs_in_order)
+      );
+
+      planning_slugs_in_order = planning_slugs_in_order.filter(
+        m => m.metaFileName !== metaFileName
+      );
+
+      this.$root.editFolder({
+        type: "projects",
+        slugFolderName: this.slugFolderName,
+        data: {
+          planning_slugs_in_order
         }
       });
     },

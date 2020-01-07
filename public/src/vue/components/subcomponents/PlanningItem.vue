@@ -251,7 +251,7 @@ export default {
     removePlanningMedia() {
       if (window.state.dev_mode === "debug") {
         console.log(
-          `METHODS • Planning: removePlanningMedia / ${this.media.metaFileName}`
+          `METHODS • PlanningItem: removePlanningMedia / ${this.media.metaFileName}`
         );
       }
 
@@ -261,11 +261,7 @@ export default {
         .confirm(
           this.$t("sureToRemovePlanning"),
           () => {
-            this.$root.removeMedia({
-              type: "projects",
-              slugFolderName: this.slugFolderName,
-              slugMediaName: this.media.metaFileName
-            });
+            this.$emit("removePlanningMedia", this.media.metaFileName);
           },
           () => {}
         );
