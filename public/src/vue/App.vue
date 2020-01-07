@@ -221,6 +221,7 @@ input[type="text"] {
   cursor: pointer;
   cursor: -webkit-grab;
   cursor: -moz-grab;
+  z-index: 100;
 }
 .splitpanes--dragging .splitpanes__splitter {
   cursor: -webkit-grabbing;
