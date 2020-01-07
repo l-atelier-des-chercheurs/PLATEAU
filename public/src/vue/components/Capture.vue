@@ -519,8 +519,8 @@
                 id="enable_send_to_doc"
                 v-model="send_automatically_to_planning_media"
               />
-              add to the end of
-              <b v-html="$root.current_planning_media.name" />
+              ajouter à la fin de
+              <strong v-html="$root.current_planning_media.name" />
             </label>
           </div>
 
@@ -808,7 +808,7 @@ export default {
         `WATCH • Capture: media_to_validate = ${this.media_to_validate}`
       );
 
-      if (!this.validation_before_upload) {
+      if (!this.validation_before_upload && this.media_to_validate) {
         this.sendMedia({});
         return;
       }
@@ -1840,7 +1840,7 @@ var equalizer = (function() {
     min-height: 300px;
     border-radius: 10px;
     overflow: hidden;
-    color: white;
+    color: var(--c-noir);
   }
 
   .m_panel--modeOverlay {
@@ -2284,6 +2284,7 @@ var equalizer = (function() {
       text-align: center;
       padding: ~"calc(var(--spacing) / 2)";
       background-color: #333;
+      color: white;
     }
   }
 }

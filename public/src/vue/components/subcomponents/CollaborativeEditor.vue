@@ -448,7 +448,7 @@ export default {
       });
     });
 
-    this.$eventHub.$on("writeup.addMedia", this.addMediaAtCaretPosition);
+    this.$eventHub.$on("writeup.addMedia", this.addMediaAtTheEnd);
   },
   beforeDestroy() {
     if (!!this.socket) {
@@ -651,11 +651,17 @@ export default {
       );
       this.editor.root.spellcheck = this.spellcheck;
     },
+
+    addMediaAtTheEnd(media) {
+      this.addMediaAtIndex(this.editor.getLength() - 1, media);
+    },
     addMediaAtCaretPosition(media) {
       var selection = this.editor.getSelection(true);
-      if (selection && selection.hasOwnProperty("index"))
+      if (selection && selection.hasOwnProperty("index")) {
         this.addMediaAtIndex(selection.index, media);
-      this.addMediaAtIndex(this.editor.getLength() - 1, media);
+        return;
+      }
+      this.addMediaAtTheEnd(media);
     },
     addMediaAtIndex(index, media) {
       console.log(`CollaborativeEditor • addMediaAtIndex ${index}`);
