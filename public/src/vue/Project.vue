@@ -20,6 +20,7 @@
         v-if="pane.key === 'WriteUp' && pane.enabled"
         :key="pane.key"
         min-size="5"
+        ref="WriteUp"
       >
         <WriteUp
           :slugFolderName="slugProjectName"
@@ -32,6 +33,7 @@
         v-else-if="pane.key === 'MediaLibrary' && pane.enabled"
         :key="pane.key"
         min-size="5"
+        ref="MediaLibrary"
       >
         <MediaLibrary
           :slugProjectName="slugProjectName"
@@ -45,6 +47,7 @@
         v-else-if="pane.key === 'Composition' && pane.enabled"
         :key="pane.key"
         min-size="5"
+        ref="Composition"
       >
         <Composition
           :slugFolderName="slugProjectName"
@@ -57,12 +60,14 @@
         v-else-if="pane.key === 'Capture' && pane.enabled"
         :key="pane.key"
         min-size="5"
+        ref="Capture"
       >
         <Capture
           :slugProjectName="slugProjectName"
           :project="project"
           :read_only="!$root.state.connected"
           :validation_before_upload="false"
+          data-id="Capture"
         />
       </pane>
 
@@ -70,6 +75,7 @@
         v-if="pane.key === 'Planning' && pane.enabled"
         :key="pane.key"
         min-size="5"
+        ref="Planning"
       >
         <Planning
           :slugFolderName="slugProjectName"
@@ -114,9 +120,11 @@ export default {
   created() {},
   mounted() {
     this.$eventHub.$on("project.refresh_panes_order", this.refreshPanes);
+    this.$eventHub.$on("project.set_pane_size", this.setPaneSize);
   },
   beforeDestroy() {
     this.$eventHub.$off("project.refresh_panes_order", this.refreshPanes);
+    this.$eventHub.$off("project.set_pane_size", this.setPaneSize);
   },
   watch: {
     "$root.settings.project_panes_in_order": {
@@ -163,10 +171,38 @@ export default {
     resized() {
       console.log(`Project / methods: resized`);
       this.$eventHub.$emit(`activity_panels_resized`);
+
+      setTimeout(() => {
+        this.updateWidthInStore();
+      }, 500);
     },
     refreshPanes() {
       console.log(`Project / methods: refreshPanes`);
       this.$forceUpdate();
+    },
+    updateWidthInStore() {
+      console.log(`Project / methods: updateWidthInStore`);
+
+      Object.entries(this.$refs).map(([key, $el]) => {
+        this.$root.settings.project_panes_in_order = this.$root.settings.project_panes_in_order.map(
+          p => {
+            if (p.key === key && !!$el[0] && $el[0].hasOwnProperty("$el")) {
+              if (p.width !== $el[0].$el.style.width) {
+                p.width = $el[0].$el.style.width;
+              }
+            }
+            return p;
+          }
+        );
+      });
+    },
+    setPaneSize(panes_in_order) {
+      panes_in_order.map(p => {
+        if (p.enabled && this.$refs.hasOwnProperty(p.key)) {
+          console.log(`setting ${p.key} to ${p.width}`);
+          this.$refs[p.key][0].$el.style.width = p.width;
+        }
+      });
     }
   }
 };
