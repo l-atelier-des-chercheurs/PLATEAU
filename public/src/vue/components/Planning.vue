@@ -1,12 +1,8 @@
 <template>
-  <div class="m_planning" @click.self="open_planning_item = false">
+  <div class="m_planning" @click.self="$root.settings.current_planning_media_metaFileName = false">
     <SlickList v-model="sorted_planning_medias" axis="y" :useDragHandle="true">
       <!-- @sort-end="sortEnded" -->
-      <SlickItem
-        v-for="(item, index) in sorted_planning_medias"
-        :index="index"
-        :key="item.key"
-      >
+      <SlickItem v-for="(item, index) in sorted_planning_medias" :index="index" :key="item.key">
         <div class="m_planning--slickItem">
           <div v-handle class="m_planning--slickItem--handle handle" />
           <PlanningItem
@@ -14,7 +10,7 @@
             :key="item.metaFileName"
             :media="item"
             :class="{
-              'is--active': open_planning_item === item.metaFileName
+              'is--active': $root.settings.current_planning_media_metaFileName === item.metaFileName
             }"
             :slugFolderName="slugFolderName"
             @toggleOpen="toggleOpenItem"
@@ -23,7 +19,10 @@
       </SlickItem>
     </SlickList>
 
-    <div class="m_planning--container" @click.self="open_planning_item = false">
+    <div
+      class="m_planning--container"
+      @click.self="$root.settings.current_planning_media_metaFileName = false"
+    >
       <form
         @submit.prevent="createPlanningMedia"
         :key="'create'"
@@ -35,9 +34,7 @@
               type="button"
               class="_create_button"
               @click="show_planning_section = !show_planning_section"
-            >
-              {{ $t("create") }}
-            </button>
+            >{{ $t("create") }}</button>
           </td>
         </div>
 
@@ -49,9 +46,7 @@
             <button
               type="submit"
               class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-            >
-              {{ $t("create") }}
-            </button>
+            >{{ $t("create") }}</button>
           </td>
         </div>
       </form>
@@ -62,13 +57,13 @@
           :key="media.metaFileName + '_pane'"
           class="m_planningPanes--pane"
           :class="{
-            'is--open': open_planning_item === media.metaFileName
+            'is--open': $root.settings.current_planning_media_metaFileName === media.metaFileName
           }"
         >
           <transition name="slideright" :duration="400">
             <div
               class="m_planningPanes--pane--content"
-              v-if="open_planning_item === media.metaFileName"
+              v-if="$root.settings.current_planning_media_metaFileName === media.metaFileName"
             >
               <PlanningItem
                 :key="media.metaFileName"
@@ -107,7 +102,6 @@ export default {
   data() {
     return {
       show_planning_section: false,
-      open_planning_item: false,
 
       planning_slugs_in_order: []
     };
@@ -179,11 +173,13 @@ export default {
         console.log("METHODS • Planning: toggleOpenItem");
       }
 
-      if (this.open_planning_item === item_meta) {
-        this.open_planning_item = false;
+      if (
+        this.$root.settings.current_planning_media_metaFileName === item_meta
+      ) {
+        this.$root.settings.current_planning_media_metaFileName = false;
         return;
       }
-      this.open_planning_item = item_meta;
+      this.$root.settings.current_planning_media_metaFileName = item_meta;
       return;
     },
     createPlanningMedia() {
@@ -241,7 +237,7 @@ export default {
           `METHODS • Publication: removeMedia / metaFileName = ${metaFileName}`
         );
       }
-      this.open_planning_item = false;
+      this.$root.settings.current_planning_media_metaFileName = false;
 
       this.$root.removeMedia({
         type: "projects",

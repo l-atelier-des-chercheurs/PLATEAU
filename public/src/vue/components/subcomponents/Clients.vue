@@ -26,22 +26,12 @@
           $root.do_navigation.view === 'Project'
       "
       @click="sendCurrentPanesToSlaves"
-    >
-      Envoyer la disposition aux esclaves
-    </button>
+    >Envoyer la disposition aux esclaves</button>
 
     <div class="m_clientsList--list" v-if="showClientList">
-      <button
-        type="button"
-        class="m_clientsList--list--close"
-        @click="showClientList = false"
-      >
-        ×
-      </button>
+      <button type="button" class="m_clientsList--list--close" @click="showClientList = false">×</button>
 
-      <template v-if="uniqueClientsExceptSelf.length === 0">
-        Aucune autres appareils connectés
-      </template>
+      <template v-if="uniqueClientsExceptSelf.length === 0">Aucune autres appareils connectés</template>
 
       <template v-else>
         <label>{{ $t("autres appareils connectés") }}</label>
@@ -51,16 +41,13 @@
           :key="client.id"
           v-for="client in uniqueClientsExceptSelf"
         >
-          <template v-if="client.data.hasOwnProperty('author')">
-            {{ client.data.author.name }}
-          </template>
+          <template v-if="client.data.hasOwnProperty('author')">{{ client.data.author.name }}</template>
           <template v-else>{{ $t("anonyme") }}</template>
           <template
             v-if="
               client.data.hasOwnProperty('is_slave') && client.data.is_slave
             "
-            >(esclave)</template
-          >
+          >(esclave)</template>
         </span>
       </template>
     </div>
@@ -114,13 +101,36 @@ export default {
       this.connectedSlaves.map(c => {
         this.$socketio.socket.emit("sendDataToSpecificClient", {
           socketid: c.id,
-          data: this.$root.settings.project_panes_in_order
+          data: {
+            project_panes_in_order: this.$root.settings.project_panes_in_order,
+            current_planning_media_metaFileName: this.$root.settings
+              .current_planning_media_metaFileName,
+            current_composition_media_metaFileName: this.$root.settings
+              .current_composition_media_metaFileName
+          }
         });
       });
     },
-    gotInfoFromClient(data) {
-      const project_panes_in_order = data.data;
-      this.$root.settings.project_panes_in_order = project_panes_in_order;
+    gotInfoFromClient(d) {
+      if (!this.is_slave) return false;
+
+      console.log(
+        `Clients • METHODS / gotInfoFromClient : name = ${JSON.stringify(d)}`
+      );
+
+      const _data = d.data;
+
+      if (_data.hasOwnProperty("project_panes_in_order"))
+        this.$root.settings.project_panes_in_order =
+          _data.project_panes_in_order;
+
+      if (_data.hasOwnProperty("current_planning_media_metaFileName"))
+        this.$root.settings.current_planning_media_metaFileName =
+          _data.current_planning_media_metaFileName;
+
+      if (_data.hasOwnProperty("current_composition_media_metaFileName"))
+        this.$root.settings.current_composition_media_metaFileName =
+          _data.current_composition_media_metaFileName;
     }
   }
 };
