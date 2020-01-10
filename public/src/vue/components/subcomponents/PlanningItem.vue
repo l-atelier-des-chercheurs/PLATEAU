@@ -4,7 +4,10 @@
     :class="{ 'is--editable': edit_mode }"
     @submit.prevent="sendEdits"
   >
-    <div class="m_planningItem--topbar">
+    <div
+      class="m_planningItem--topbar"
+      @click="$emit('toggleOpen', media.metaFileName)"
+    >
       <div class="m_planningItem--editButtons" v-if="mode === 'expanded'">
         <button type="button" @click="edit_mode = !edit_mode" title="edit">
           <svg
@@ -54,6 +57,7 @@
         <input v-else type="text" required v-model="edited_media_infos.name" />
       </div>
     </div>
+
     <div
       class="m_planningItem--date"
       v-if="edit_mode || media.planning_info_start || media_duration"
@@ -67,12 +71,12 @@
               $moment(media.planning_info_start).format("HH:mm:ss")
           }}
         </span>
-        <DateTime
+        <!-- <DateTime
           v-else-if="edit_mode"
           v-model="edited_media_infos.planning_info_start"
           :twowaybinding="true"
           :read_only="false"
-        />
+        /> -->
         <!-- <span v-if="!media.planning_info_start">début</span>
         -->
       </div>
@@ -85,7 +89,12 @@
             type="button"
             style="color: var(--c-rouge)"
             v-if="mode === 'expanded'"
-            @click="$emit('startTimerFor', media.planning_info_duration)"
+            @click="
+              $eventHub.$emit(
+                'countdown.start_timer',
+                media.planning_info_duration
+              )
+            "
           >
             start timer
           </button>
@@ -105,14 +114,14 @@
         v-if="edit_mode"
         @click="edit_mode = !edit_mode"
       >
-        {{ $t("cancel") }}
+        {{ $t("annuler") }}
       </button>
       <button
         type="submit"
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
       >
-        {{ $t("submit") }}
+        {{ $t("valider") }}
       </button>
     </div>
 
@@ -154,10 +163,6 @@
       </div>
     </div>
 
-    <!-- edit_mode : {{ edit_mode }}
-    edited_media_infos : {{ edited_media_infos.name }}
-    media.name : {{ media.name }}-->
-
     <button
       class="m_planningItem--openButton"
       type="button"
@@ -166,6 +171,9 @@
     >
       Ouvrir
     </button>
+    <!-- edit_mode : {{ edit_mode }}
+    edited_media_infos : {{ edited_media_infos.name }}
+    media.name : {{ media.name }}-->
   </form>
 </template>
 <script>
@@ -185,6 +193,7 @@ export default {
     DateTime,
     CollaborativeEditor
   },
+
   data() {
     return {
       edit_mode: false,
@@ -194,10 +203,12 @@ export default {
   },
   created() {},
   mounted() {
-    this.$root.settings.current_planning_media_metaFileName = this.media.metaFileName;
+    if (this.mode === "expanded")
+      this.$root.settings.current_planning_media_metaFileName = this.media.metaFileName;
   },
   beforeDestroy() {
-    this.$root.settings.current_planning_media_metaFileName = false;
+    if (this.mode === "expanded")
+      this.$root.settings.current_planning_media_metaFileName = false;
   },
   watch: {
     edit_mode: function() {
@@ -215,9 +226,12 @@ export default {
       return this.media.content;
     },
     media_duration() {
-      return this.$root.format_duration_to_human(
-        this.media.planning_info_duration
-      );
+      if (!this.media.planning_info_duration) {
+        return false;
+      }
+      return this.$root.format_duration_to_human({
+        duration: this.media.planning_info_duration
+      });
     }
   },
   methods: {
@@ -243,7 +257,7 @@ export default {
     removePlanningMedia() {
       if (window.state.dev_mode === "debug") {
         console.log(
-          `METHODS • Planning: removePlanningMedia / ${this.media.metaFileName}`
+          `METHODS • PlanningItem: removePlanningMedia / ${this.media.metaFileName}`
         );
       }
 
@@ -253,11 +267,7 @@ export default {
         .confirm(
           this.$t("sureToRemovePlanning"),
           () => {
-            this.$root.removeMedia({
-              type: "projects",
-              slugFolderName: this.slugFolderName,
-              slugMediaName: this.media.metaFileName
-            });
+            this.$emit("removePlanningMedia", this.media.metaFileName);
           },
           () => {}
         );
@@ -271,10 +281,9 @@ export default {
   padding: calc(var(--spacing) / 1) 0;
   background-color: #fff;
 
-  border: 1px solid black;
-  margin: -1px;
   display: flex;
   flex-flow: column nowrap;
+
   > * {
     flex: 1 0 auto;
     padding: 0 var(--spacing);
@@ -359,7 +368,7 @@ export default {
   bottom: 0;
   width: 100%;
 
-  text-indent: 1000px;
+  text-indent: 1800px;
 }
 
 .m_planningItem--notes--topbar {

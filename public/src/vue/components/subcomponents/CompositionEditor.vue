@@ -1,33 +1,52 @@
-
 <template>
   <div class="m_compositioneditor">
     <div class="m_compositioneditor--topbar padding-small">
       <template v-if="!show_rename_field">
-        <span class="m_compositioneditor--topbar--title padding-verysmall">{{ media.name }}</span>
+        <span class="m_compositioneditor--topbar--title padding-verysmall">{{
+          media.name
+        }}</span>
       </template>
       <template v-else>
-        <form class="padding-verysmall" v-on:submit.prevent="renameComposition()">
+        <form
+          class="padding-verysmall"
+          v-on:submit.prevent="renameComposition()"
+        >
           <div class="input-group">
             <span class="input-addon input-addon-xs">Nom</span>
-            <input type="text" ref="nameInput" class="input-xs" v-model="new_name" required />
+            <input
+              type="text"
+              ref="nameInput"
+              class="input-xs"
+              v-model="new_name"
+              required
+            />
             <button
               type="submit"
               class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
-            >{{ $t('save') }}</button>
+            >
+              {{ $t("save") }}
+            </button>
           </div>
         </form>
       </template>
-      <span class="m_compositioneditor--topbar--buttons" v-if="!show_rename_field">
+      <span
+        class="m_compositioneditor--topbar--buttons"
+        v-if="!show_rename_field"
+      >
         <button
           type="button"
           class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
           @click="show_rename_field = !show_rename_field"
-        >{{ $t('rename') }}</button>
+        >
+          {{ $t("rename") }}
+        </button>
         <button
           type="button"
           class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
           @click="$emit('remove')"
-        >{{ $t('remove') }}</button>
+        >
+          {{ $t("remove") }}
+        </button>
         <!-- <span>
           <label for="spellcheck">spellcheck</label>
           <input type="checkbox" v-model="spellcheck" name="spellcheck" id="spellcheck" />
@@ -46,17 +65,33 @@
       ref="textField"
       :read_only="read_only"
     />-->
-    <div v-for="mode in ['select', 'drawing']" :key="mode">
-      <input type="radio" :id="mode" :name="mode" :value="mode" v-model="drawing_options.mode" />
-      <label :for="mode">
-        <span>{{ mode }}</span>
-      </label>
-    </div>
+    <fieldset>
+      <legend>Mode</legend>
+      <div v-for="mode in ['select', 'drawing']" :key="mode">
+        <input
+          type="radio"
+          :id="mode"
+          :name="mode"
+          :value="mode"
+          v-model="drawing_options.mode"
+        />
+        <label :for="mode">
+          <span>{{ mode }}</span>
+        </label>
+      </div>
+    </fieldset>
 
-    <label>
-      <input type="color" v-model="drawing_options.color" />
-      Couleur
-    </label>
+    <fieldset>
+      <legend>Options</legend>
+      <label>
+        <input type="color" v-model="drawing_options.color" />
+        Couleur
+      </label>
+      <label>
+        <input type="color" v-model="drawing_options.background_color" />
+        Couleur du fond
+      </label>
+    </fieldset>
 
     <FabricCanvas
       :medias="sortedMedias"
@@ -93,7 +128,8 @@ export default {
       drawing_options: {
         width: 4,
         mode: "select",
-        color: "#000"
+        color: "#000000",
+        background_color: "#ffffff"
       }
     };
   },

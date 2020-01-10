@@ -91,6 +91,9 @@ import "moment/locale/en-gb";
 moment.locale(lang_settings.current);
 Vue.prototype.$moment = moment;
 
+import momentDurationFormatSetup from "moment-duration-format";
+momentDurationFormatSetup(moment);
+
 const html = document.documentElement; // returns the html tag
 html.setAttribute("lang", lang_settings.current);
 
@@ -142,13 +145,9 @@ let vm = new Vue({
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
 
-      project_panes_in_order: [
+      default_project_panes: [
         {
           key: "Planning",
-          enabled: true
-        },
-        {
-          key: "Capture",
           enabled: true
         },
         {
@@ -157,13 +156,18 @@ let vm = new Vue({
         },
         {
           key: "Composition",
-          enabled: true
+          enabled: false
         },
         {
-          key: "WriteUp",
-          enabled: true
+          key: "Capture",
+          enabled: false
         }
+        // {
+        //   key: "WriteUp",
+        //   enabled: true
+        // }
       ],
+      project_panes_in_order: [],
 
       capture_options: {
         selected_mode: "",
@@ -191,13 +195,15 @@ let vm = new Vue({
 
       current_writeup_media_metaFileName: false,
       current_planning_media_metaFileName: false,
+
       current_composition_media_metaFileName: false,
       media_being_dragged: false,
 
       current_author: false,
       project_filter: {
-        keyword: false,
-        author: false
+        keyword: "",
+        author: "",
+        name: ""
       },
       media_filter: {
         keyword: false,
@@ -367,9 +373,19 @@ let vm = new Vue({
         // this.$root.settings.project_panes_in_order.map(pp =>
         //   console.log(`${pp.key} = ${pp.enabled}`)
         // );
+
+        // if (
+        //   this.$root.settings.project_panes_in_order.includes(
+        //     p => p.key === "WriteUp"
+        //   )
+        // )
+        //   this.$root.settings.project_panes_in_order = this.$root.settings.project_panes_in_order.filter(
+        //     p => p.key !== "WriteUp"
+        //   );
+
         localstore.set(
-          `panes.${this.$root.do_navigation.current_slugProjectName}`,
-          this.$root.settings.project_panes_in_order
+          `panes.${this.do_navigation.current_slugProjectName}`,
+          this.settings.project_panes_in_order
         );
       },
       deep: true
@@ -395,6 +411,18 @@ let vm = new Vue({
         this.closeProject();
         return {};
       }
+    },
+    current_planning_media: function() {
+      if (
+        !this.settings.current_planning_media_metaFileName ||
+        Object.keys(this.currentProject).length === 0
+      )
+        return false;
+
+      return Object.values(this.currentProject.medias).find(
+        m =>
+          m.metaFileName === this.settings.current_planning_media_metaFileName
+      );
     },
     projects_that_are_accessible() {
       const type = "projects";
@@ -492,18 +520,21 @@ let vm = new Vue({
         });
       }
     },
-    format_duration_to_human(d) {
-      const _m = this.$moment(d, "hh:mm a");
+    format_duration_to_human({ duration, format }) {
+      let _duration = this.$moment.isDuration(duration)
+        ? duration
+        : this.$moment.duration(duration);
+      if (!_duration.isValid()) return false;
 
-      if (!_m.isValid()) {
-        return false;
+      if (format) {
+        return _duration.format(format);
       }
-      if (_m.hours() === 0) {
-        return _m.format("m [minutes]");
+
+      if (_duration.asHours() < 1) {
+        return _duration.format("m [minutes]");
       }
-      return _m.format("H [heures] [et] m [minutes]");
+      return _duration.format("H [heures] [et] m [minutes]");
     },
-
     createFolder: function(fdata) {
       if (window.state.dev_mode === "debug") {
         console.log(
@@ -622,7 +653,11 @@ let vm = new Vue({
       this.do_navigation.view = "Project";
       this.do_navigation.current_slugProjectName = slugProjectName;
 
-      const panes_config_for_project = localstore.get(
+      this.settings.project_panes_in_order = JSON.parse(
+        JSON.stringify(this.settings.default_project_panes)
+      );
+
+      let panes_config_for_project = localstore.get(
         `panes.${this.$root.do_navigation.current_slugProjectName}`
       );
       if (panes_config_for_project) {
@@ -631,11 +666,11 @@ let vm = new Vue({
         // hence we need to compare both arrays and merge thoughtfully
 
         // find in panes_config_for_project those that are missing
-        const missing_panes = this.$root.settings.project_panes_in_order.filter(
+        let missing_panes = this.settings.project_panes_in_order.filter(
           p => !panes_config_for_project.map(_p => _p.key).includes(p.key)
         );
 
-        this.$root.settings.project_panes_in_order = panes_config_for_project.concat(
+        this.settings.project_panes_in_order = panes_config_for_project.concat(
           missing_panes
         );
       }

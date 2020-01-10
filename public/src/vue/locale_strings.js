@@ -24,6 +24,7 @@ module.exports = (function() {
       settings: "Règlages",
       new_project: "Nouveau Projet",
       project: "Projet",
+      copy_of: "Copie de",
 
       photo: "photo",
       video: "vidéo",
@@ -84,6 +85,7 @@ module.exports = (function() {
       settings: "Settings",
       new_project: "New Project",
       project: "Project",
+      copy_of: "Copy of",
 
       photo: "picture",
       video: "video",

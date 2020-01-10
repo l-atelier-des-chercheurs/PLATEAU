@@ -18,7 +18,11 @@
         :disabled="!item.enabled"
         :style="`--color-active: var(--color-${item.key});`"
       >
-        <input type="checkbox" :id="`enable_pane_for_${item.key}`" v-model="item.enabled" />
+        <input
+          type="checkbox"
+          :id="`enable_pane_for_${item.key}`"
+          v-model="item.enabled"
+        />
         <div>
           <div v-handle v-if="item.enabled" class="handle" />
           <span>{{ $t(item.key) }}</span>
@@ -38,18 +42,7 @@ export default {
   },
   directives: { handle: HandleDirective },
   data() {
-    return {
-      items: [
-        "Item 1",
-        "Item 2",
-        "Item 3",
-        "Item 4",
-        "Item 5",
-        "Item 6",
-        "Item 7",
-        "Item 8"
-      ]
-    };
+    return {};
   },
   created() {},
   mounted() {},
@@ -84,7 +77,7 @@ export default {
     // width: 100%;
 
     background-color: #fff;
-    border-bottom: 1px solid #efefef;
+    // border-bottom: 1px solid #efefef;
 
     user-select: none;
 
@@ -155,7 +148,6 @@ export default {
   border-radius: 50%;
 
   cursor: col-resize;
-  transform: rotate(90deg);
 
   &::before {
     content: "";
@@ -166,6 +158,7 @@ export default {
     background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><path d="M0 7.5v5h50v-5H0zm0 15v5h50v-5H0zm0 15v5h50v-5H0z" color="%23000"/></svg>');
     background-size: contain;
     background-repeat: no-repeat;
+    transform: rotate(90deg);
   }
 
   &:hover {

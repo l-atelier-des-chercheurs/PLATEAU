@@ -5,16 +5,16 @@
         <thead>
           <tr>
             <th style>{{ $t('compositions') }}</th>
-            <th>{{ $t('date_modified') }}</th>
+            <!-- <th>{{ $t('date_modified') }}</th> -->
             <th colspan="2">{{ $t('actions') }}</th>
           </tr>
         </thead>
         <transition-group tag="tbody" name="list-complete">
           <tr v-for="w in composition_medias" :key="w.metaFileName">
             <td>{{ w.name }}</td>
-            <td
+            <!-- <td
               :title="$moment(w.date_modified).format('l LTS')"
-            >{{ format_date_to_human(w.date_modified) + ' ' + $moment(w.date_modified).format('HH:mm') }}</td>
+            >{{ format_date_to_human(w.date_modified) + ' ' + $moment(w.date_modified).format('HH:mm') }}</td>-->
             <td>
               <button
                 type="button"
@@ -43,7 +43,7 @@
 
             <template v-else>
               <td colspan="2">
-                <input type="text" class ref="nameInput" />
+                <input type="text" class ref="nameInput" @keyup.enter="createCompositionMedia" />
               </td>
               <td colspan="2">
                 <button

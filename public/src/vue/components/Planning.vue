@@ -1,104 +1,82 @@
 <template>
-  <div class="m_planning">
-    <splitpanes horizontal watch-slots>
-      <pane min-size="10" max-size="100" size="100">
-        <!-- not sure about having a reorderable list  -->
-        <!-- <SlickList
-      axis="y"
-      :useDragHandle="false"
-      v-model="ordered_planning_items"
-      @sort-end="sortEnded"
-    >
-      <SlickItem v-for="(item, index) in ordered_planning_items" :index="index" :key="item.key">
-        <PlanningItem :key="item.metaFileName" :media="item" :slugFolderName="slugFolderName" />
-      </SlickItem>
-        </SlickList>-->
-        <div
-          class="m_planning--container"
-          @click.self="open_planning_item = false"
-        >
-          <transition-group tag="div" name="list-complete">
-            <PlanningItem
-              v-for="media in sorted_planning_medias"
-              :key="media.metaFileName"
-              :class="{
-                'is--active': open_planning_item === media.metaFileName
-              }"
-              :media="media"
-              :slugFolderName="slugFolderName"
-              @toggleOpen="toggleOpenItem"
-            />
-          </transition-group>
-
-          <form
-            @submit.prevent="createPlanningMedia"
-            :key="'create'"
-            class="m_planning--container--create"
-          >
-            <div v-if="!show_planning_section">
-              <td colspan="4">
-                <button
-                  type="button"
-                  class="_create_button"
-                  @click="show_planning_section = !show_planning_section"
-                >
-                  {{ $t("create") }}
-                </button>
-              </td>
-            </div>
-
-            <div v-else>
-              <td colspan="2">
-                <input type="text" class ref="nameInput" />
-              </td>
-              <td colspan="2">
-                <button
-                  type="submit"
-                  class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-                >
-                  {{ $t("create") }}
-                </button>
-              </td>
-            </div>
-          </form>
-
-          <div class="m_planningPanes">
-            <div
-              v-for="media in sorted_planning_medias"
-              :key="media.metaFileName + '_pane'"
-              class="m_planningPanes--pane"
-              :class="{
-                'is--open': open_planning_item === media.metaFileName
-              }"
-            >
-              <transition name="slideright" :duration="800">
-                <div
-                  class="m_planningPanes--pane--content"
-                  v-if="open_planning_item === media.metaFileName"
-                >
-                  <PlanningItem
-                    :key="media.metaFileName"
-                    :media="media"
-                    :slugFolderName="slugFolderName"
-                    :mode="'expanded'"
-                    @startTimerFor="startTimerFor"
-                  />
-                </div>
-              </transition>
-            </div>
-          </div>
+  <div class="m_planning" @click.self="$root.settings.current_planning_media_metaFileName = false">
+    <SlickList v-model="sorted_planning_medias" axis="y" :useDragHandle="true">
+      <!-- @sort-end="sortEnded" -->
+      <SlickItem v-for="(item, index) in sorted_planning_medias" :index="index" :key="item.key">
+        <div class="m_planning--slickItem">
+          <div v-handle class="m_planning--slickItem--handle handle" />
+          <PlanningItem
+            class="m_planning--slickItem--item"
+            :key="item.metaFileName"
+            :media="item"
+            :class="{
+              'is--active': $root.settings.current_planning_media_metaFileName === item.metaFileName
+            }"
+            :slugFolderName="slugFolderName"
+            @toggleOpen="toggleOpenItem"
+          />
         </div>
-      </pane>
-      <pane
-        v-if="show_media_notes_for"
-        :key="show_media_notes_for"
-        class
-        min-size="20"
-        max-size="70"
-        size="50"
-        style="position: relative;"
-      ></pane>
-    </splitpanes>
+      </SlickItem>
+    </SlickList>
+
+    <div
+      class="m_planning--container"
+      @click.self="$root.settings.current_planning_media_metaFileName = false"
+    >
+      <form
+        @submit.prevent="createPlanningMedia"
+        :key="'create'"
+        class="m_planning--container--create"
+      >
+        <div v-if="!show_planning_section">
+          <td colspan="4">
+            <button
+              type="button"
+              class="_create_button"
+              @click="show_planning_section = !show_planning_section"
+            >{{ $t("create") }}</button>
+          </td>
+        </div>
+
+        <div v-else>
+          <td colspan="2">
+            <input type="text" class ref="nameInput" />
+          </td>
+          <td colspan="2">
+            <button
+              type="submit"
+              class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
+            >{{ $t("create") }}</button>
+          </td>
+        </div>
+      </form>
+
+      <div class="m_planningPanes">
+        <div
+          v-for="media in sorted_planning_medias"
+          :key="media.metaFileName + '_pane'"
+          class="m_planningPanes--pane"
+          :class="{
+            'is--open': $root.settings.current_planning_media_metaFileName === media.metaFileName
+          }"
+        >
+          <transition name="slideright" :duration="400">
+            <div
+              class="m_planningPanes--pane--content"
+              v-if="$root.settings.current_planning_media_metaFileName === media.metaFileName"
+            >
+              <PlanningItem
+                :key="media.metaFileName"
+                :media="media"
+                :slugFolderName="slugFolderName"
+                :mode="'expanded'"
+                @removePlanningMedia="removePlanningMedia"
+              />
+            </div>
+          </transition>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <script>
@@ -110,6 +88,7 @@ import { SlickList, SlickItem, HandleDirective } from "vue-slicksort";
 export default {
   props: {
     slugFolderName: String,
+    project: Object,
     planning_medias: Array
   },
   components: {
@@ -123,32 +102,66 @@ export default {
   data() {
     return {
       show_planning_section: false,
-      open_planning_item: false
+
+      planning_slugs_in_order: []
     };
   },
 
   created() {},
-  mounted() {},
+  mounted() {
+    this.planning_slugs_in_order = Array.isArray(
+      this.project.planning_slugs_in_order
+    )
+      ? this.project.planning_slugs_in_order
+      : [];
+  },
   beforeDestroy() {},
 
-  watch: {},
+  watch: {
+    "project.planning_slugs_in_order": function() {
+      if (this.$root.state.dev_mode === "debug") {
+        console.log(`WATCH • Publication: publication.medias_slugs`);
+      }
+      this.planning_slugs_in_order = Array.isArray(
+        this.project.planning_slugs_in_order
+      )
+        ? this.project.planning_slugs_in_order
+        : [];
+    }
+  },
+
   computed: {
-    sorted_planning_medias() {
-      return this.planning_medias.sort((a, b) =>
-        a.hasOwnProperty("planning_info_start") && a.planning_info_start
-          ? a.planning_info_start.localeCompare(b.planning_info_start)
-          : false
-      );
-    },
-    ordered_planning_items: {
+    sorted_planning_medias: {
       get() {
-        return this.planning_medias.sort((a, b) =>
-          a.hasOwnProperty("planning_order") && a.planning_order
-            ? a.planning_order.localeCompare(b.planning_order)
-            : false
-        );
+        return this.planning_slugs_in_order.reduce((acc, { metaFileName }) => {
+          const _planning_media = this.planning_medias.find(
+            pm => pm.metaFileName === metaFileName
+          );
+          if (_planning_media) {
+            acc.push(_planning_media);
+          }
+          return acc;
+        }, []);
       },
-      set(new_order) {}
+      set(v) {
+        const planning_slugs_in_order = v.map(m => ({
+          metaFileName: m.metaFileName
+        }));
+
+        this.planning_slugs_in_order = planning_slugs_in_order;
+
+        this.$root.editFolder({
+          type: "projects",
+          slugFolderName: this.slugFolderName,
+          data: {
+            planning_slugs_in_order
+          }
+        });
+      }
+      // return this.planning_medias.sort((a, b) =>
+      //   a.hasOwnProperty("planning_info_start") && a.planning_info_start
+      //     ? a.planning_info_start.localeCompare(b.planning_info_start)
+      //     : false
     }
   },
   methods: {
@@ -156,19 +169,22 @@ export default {
       // if source === 'user'
     },
     toggleOpenItem(item_meta) {
-      if (this.open_planning_item === item_meta) {
-        this.open_planning_item = false;
+      if (window.state.dev_mode === "debug") {
+        console.log("METHODS • Planning: toggleOpenItem");
+      }
+
+      if (
+        this.$root.settings.current_planning_media_metaFileName === item_meta
+      ) {
+        this.$root.settings.current_planning_media_metaFileName = false;
         return;
       }
-      this.open_planning_item = item_meta;
+      this.$root.settings.current_planning_media_metaFileName = item_meta;
       return;
-    },
-    startTimerFor(d) {
-      const duration = this.$moment.duration(d, "hh:mm a");
     },
     createPlanningMedia() {
       if (window.state.dev_mode === "debug") {
-        console.log("METHODS • AddMediaButton: createPlanningMedia");
+        console.log("METHODS • Planning: createPlanningMedia");
       }
 
       let name = this.$refs.nameInput.value;
@@ -186,13 +202,62 @@ export default {
 
       this.show_planning_section = false;
 
+      this.$eventHub.$on("socketio.media_created_or_updated", d => {
+        this.$eventHub.$off("socketio.media_created_or_updated");
+
+        let planning_slugs_in_order = JSON.parse(
+          JSON.stringify(this.planning_slugs_in_order)
+        );
+
+        planning_slugs_in_order.push({
+          metaFileName: d.metaFileName
+        });
+
+        this.$root.editFolder({
+          type: "projects",
+          slugFolderName: this.slugFolderName,
+          data: {
+            planning_slugs_in_order
+          }
+        });
+      });
+
       this.$root.createMedia({
-        slugFolderName: this.slugFolderName,
         type: "projects",
+        slugFolderName: this.slugFolderName,
         additionalMeta: {
           name,
           type: "planning"
-          // planning_order: 0
+        }
+      });
+    },
+    removePlanningMedia(metaFileName) {
+      if (this.$root.state.dev_mode === "debug") {
+        console.log(
+          `METHODS • Publication: removeMedia / metaFileName = ${metaFileName}`
+        );
+      }
+      this.$root.settings.current_planning_media_metaFileName = false;
+
+      this.$root.removeMedia({
+        type: "projects",
+        slugFolderName: this.slugFolderName,
+        slugMediaName: metaFileName
+      });
+
+      let planning_slugs_in_order = JSON.parse(
+        JSON.stringify(this.planning_slugs_in_order)
+      );
+
+      planning_slugs_in_order = planning_slugs_in_order.filter(
+        m => m.metaFileName !== metaFileName
+      );
+
+      this.$root.editFolder({
+        type: "projects",
+        slugFolderName: this.slugFolderName,
+        data: {
+          planning_slugs_in_order
         }
       });
     },
@@ -220,10 +285,10 @@ export default {
 
   margin: 0 auto;
 
-  &:hover .m_planningPanes--pane--content:not(:hover) {
-    transform: translateX(46%);
-    // margin-left: 66%;
-  }
+  // &:hover .m_planningPanes--pane--content:not(:hover) {
+  //   transform: translateX(46%);
+  //   // margin-left: 66%;
+  // }
 }
 
 .m_planning--container--create {
@@ -244,12 +309,13 @@ export default {
   overflow: hidden;
   pointer-events: none;
 
-  // background-color: rgba(255, 255, 255, 0.4);
   // box-shadow: 0 0 12px #888;
   // box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 
   &.is--open {
     z-index: 6;
+    background-color: rgba(255, 255, 255, 0.45);
   }
 }
 .m_planningPanes--pane--content {
@@ -258,11 +324,45 @@ export default {
   pointer-events: auto;
   // width: 100%;
   // overflow: auto;
-  margin-left: 10%;
+  border-left: 1px solid black;
+  margin-left: 17%;
   transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 
   > * {
     height: 100%;
   }
+}
+
+.m_planning--slickItem {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-start;
+  align-content: stretch;
+  margin-top: -1px;
+  margin-left: -1px;
+  margin-right: -1px;
+  border: 1px solid black;
+}
+
+.m_planning--slickItem--handle {
+  display: block;
+  flex: 0 0 auto;
+  width: 28px;
+  margin: 0;
+  border-radius: 0;
+  margin-right: -1px;
+
+  border: none;
+  border-right: 1px solid black;
+
+  background-color: #fff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.m_planning--slickItem--item {
+  flex: 1 1 auto;
 }
 </style>
