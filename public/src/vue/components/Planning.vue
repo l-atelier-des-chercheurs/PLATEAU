@@ -10,7 +10,8 @@
             :key="item.metaFileName"
             :media="item"
             :class="{
-              'is--active': $root.settings.current_planning_media_metaFileName === item.metaFileName
+              'is--active': item.metaFileName === $root.settings.current_planning_media_metaFileName,
+              'has--timer': planning_item_with_timer === item.metaFileName
             }"
             :slugFolderName="slugFolderName"
             @toggleOpen="toggleOpenItem"
@@ -163,6 +164,15 @@ export default {
       //   a.hasOwnProperty("planning_info_start") && a.planning_info_start
       //     ? a.planning_info_start.localeCompare(b.planning_info_start)
       //     : false
+    },
+    planning_item_with_timer() {
+      if (
+        !Array.isArray(this.project.countdown_options) ||
+        this.project.countdown_options.length === 0
+      )
+        return false;
+
+      return this.project.countdown_options[0].attached_to;
     }
   },
   methods: {
@@ -355,5 +365,9 @@ export default {
 
 .m_planning--slickItem--item {
   flex: 1 1 auto;
+
+  &.has--timer {
+    color: #ff3e51;
+  }
 }
 </style>

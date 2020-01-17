@@ -1,5 +1,5 @@
 <template>
-  <div class="m_countdown" v-if="remaining_time">
+  <div class="m_countdown" v-if="remaining_time !== false">
     <div class="m_countdown--timer">
       <span>{{ remaining_time }}</span>
       <button type="button" @click="clear_timer">
@@ -64,7 +64,7 @@ export default {
 
       // si temps restant négatif
       // return false
-      if (_remaining_time < 0) return false;
+      if (_remaining_time < 0) return 0;
 
       _remaining_time = this.$root.format_duration_to_human({
         duration: _remaining_time,
@@ -74,7 +74,7 @@ export default {
     },
     originating_planning_item() {
       if (
-        !this.remaining_time ||
+        this.remaining_time === false ||
         !this.project.countdown_options[0].hasOwnProperty("attached_to")
       )
         return false;
