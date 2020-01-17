@@ -115,6 +115,8 @@ let vm = new Vue({
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
 
+      is_slave: false,
+
       default_project_panes: [
         {
           key: "Planning",

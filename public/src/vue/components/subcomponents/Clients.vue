@@ -1,5 +1,5 @@
 <template>
-  <div class="m_clientsList">
+  <div class="m_clientsList" :class="{ 'is--slave' : $root.settings.is_slave }">
     <button
       type="button"
       class="m_clientsList--indicator"
@@ -14,14 +14,14 @@
     </button>
 
     <label>
-      <input type="checkbox" v-model="is_slave" />
+      <input type="checkbox" v-model="$root.settings.is_slave" />
       esclave
     </label>
 
     <button
       type="button"
       v-if="
-        !is_slave &&
+        !$root.settings.is_slave &&
           connectedSlaves.length > 0 &&
           $root.do_navigation.view === 'Project'
       "
@@ -63,8 +63,7 @@ export default {
   components: {},
   data() {
     return {
-      showClientList: false,
-      is_slave: false
+      showClientList: false
     };
   },
   created() {},
@@ -81,7 +80,7 @@ export default {
     );
   },
   watch: {
-    is_slave: function() {
+    "$root.settings.is_slave": function() {
       this.$socketio.socket.emit("updateClientInfo", {
         is_slave: this.is_slave
       });
@@ -117,7 +116,7 @@ export default {
       });
     },
     gotInfoFromClient(d) {
-      if (!this.is_slave) return false;
+      if (!this.$root.settings.is_slave) return false;
 
       console.log(
         `Clients • METHODS / gotInfoFromClient : name = ${JSON.stringify(d)}`
@@ -183,14 +182,24 @@ export default {
   background-color: white;
   border: 1px solid black;
   border-radius: 2px;
+  padding: 0;
+  margin: 0 calc(var(--spacing));
 
-  margin-left: var(--spacing);
+  // margin-left: var(--spacing);
 
   display: flex;
   flex-flow: row wrap;
   align-items: center;
 
-  > *:not(:last-child) {
+  &.is--slave {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: calc(var(--spacing)) 0;
+  }
+
+  > * {
     margin-right: calc(var(--spacing) / 2);
   }
 }

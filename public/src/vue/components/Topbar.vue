@@ -1,6 +1,10 @@
 <template>
   <div>
-    <div class="m_topbar" :class="`mode--${$root.do_navigation.view}`">
+    <div
+      class="m_topbar"
+      :class="`mode--${$root.do_navigation.view}`"
+      v-if="!$root.settings.is_slave"
+    >
       <div @click="$root.navigation_back()">
         <h1>
           <svg
@@ -115,7 +119,6 @@
           </button>-->
         </transition-group>
       </template>
-
       <Clients />
 
       <PaneList class="m_topbar--paneList" v-if="$root.do_navigation.view === 'Project'" />
@@ -124,6 +127,7 @@
       class="m_topbar--status"
       v-if="!$root.state.connected"
     >{{ $t("notifications.connection_lost") }}</div>
+    <Clients v-if="$root.settings.is_slave" />
   </div>
 </template>
 <script>
