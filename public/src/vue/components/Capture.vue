@@ -1366,14 +1366,18 @@ export default {
         let formData = new FormData();
         formData.append("files", rawData, filename);
 
-        const meta = {
+        let meta = {
           fileCreationDate: modified,
           fav,
-          caption: "Le " + this.$moment().format("LLL"),
           authors: this.$root.settings.current_author.hasOwnProperty("name")
             ? [{ name: this.$root.settings.current_author.name }]
             : ""
         };
+
+        if (this.send_automatically_to_planning_media) {
+          meta.caption = "Le " + this.$moment().format("LLL");
+        }
+
         formData.append(filename, JSON.stringify(meta));
 
         const socketid = this.$socketio.socket.id;
