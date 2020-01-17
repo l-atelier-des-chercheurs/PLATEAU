@@ -1,5 +1,5 @@
 <template>
-  <div class="m_clientsList" :class="{ 'is--slave' : $root.settings.is_slave }">
+  <div class="m_clientsList" :class="{ 'is--slave': $root.settings.is_slave }">
     <button
       type="button"
       class="m_clientsList--indicator"
@@ -26,12 +26,22 @@
           $root.do_navigation.view === 'Project'
       "
       @click="sendCurrentPanesToSlaves"
-    >Envoyer la disposition aux esclaves</button>
+    >
+      Envoyer la disposition aux esclaves
+    </button>
 
     <div class="m_clientsList--list" v-if="showClientList">
-      <button type="button" class="m_clientsList--list--close" @click="showClientList = false">×</button>
+      <button
+        type="button"
+        class="m_clientsList--list--close"
+        @click="showClientList = false"
+      >
+        ×
+      </button>
 
-      <template v-if="uniqueClientsExceptSelf.length === 0">Aucune autres appareils connectés</template>
+      <template v-if="uniqueClientsExceptSelf.length === 0"
+        >Aucune autres appareils connectés</template
+      >
 
       <template v-else>
         <label>{{ $t("autres appareils connectés") }}</label>
@@ -42,16 +52,15 @@
           v-for="client in uniqueClientsExceptSelf"
         >
           <template v-if="client.data.hasOwnProperty('author')">
-            {{
-            client.data.author.name
-            }}
+            {{ client.data.author.name }}
           </template>
           <template v-else>{{ $t("anonyme") }}</template>
           <template
             v-if="
               client.data.hasOwnProperty('is_slave') && client.data.is_slave
             "
-          >(esclave)</template>
+            >(esclave)</template
+          >
         </span>
       </template>
     </div>
@@ -79,13 +88,7 @@ export default {
       this.gotInfoFromClient
     );
   },
-  watch: {
-    "$root.settings.is_slave": function() {
-      this.$socketio.socket.emit("updateClientInfo", {
-        is_slave: this.is_slave
-      });
-    }
-  },
+  watch: {},
   computed: {
     uniqueClients() {
       return this.$root.state.clients;

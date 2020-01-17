@@ -3,13 +3,15 @@
     <splitpanes
       watch-slots
       @resized="resized()"
-      :key="JSON.stringify($root.settings.project_panes_in_order.map(p => p.key))"
+      :key="
+        JSON.stringify($root.settings.project_panes_in_order.map(p => p.key))
+      "
     >
       <template
         v-if="
-        $root.settings.project_panes_in_order.filter(p => p.enabled).length ===
-          0
-      "
+          $root.settings.project_panes_in_order.filter(p => p.enabled)
+            .length === 0
+        "
       >
         <div class="m_project--noPane">
           <i>Aucune panneau n’est actif</i>
