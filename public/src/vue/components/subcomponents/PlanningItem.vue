@@ -1,14 +1,7 @@
 <template>
-  <form
-    class="m_planningItem"
-    :class="{ 'is--editable': edit_mode }"
-    @submit.prevent="sendEdits"
-  >
-    <div
-      class="m_planningItem--topbar"
-      @click="$emit('toggleOpen', media.metaFileName)"
-    >
-      <div class="m_planningItem--editButtons" v-if="mode === 'expanded'">
+  <form class="m_planningItem" :class="{ 'is--editable': edit_mode }" @submit.prevent="sendEdits">
+    <div class="m_planningItem--topbar">
+      <div class="m_planningItem--editButtons">
         <button type="button" @click="edit_mode = !edit_mode" title="edit">
           <svg
             version="1.1"
@@ -53,7 +46,11 @@
         </button>
       </div>
       <div class="m_planningItem--name">
-        <span v-if="!edit_mode" v-html="media.name" />
+        <span
+          v-if="!edit_mode"
+          v-html="media.name"
+          @click="$emit('toggleOpen', media.metaFileName)"
+        />
         <input v-else type="text" required v-model="edited_media_infos.name" />
       </div>
     </div>
@@ -66,9 +63,9 @@
       <div class="m_planningItem--date--start">
         <span v-if="!edit_mode && media.planning_info_start">
           {{
-            $root.format_date_to_human(media.planning_info_start) +
-              " " +
-              $moment(media.planning_info_start).format("HH:mm:ss")
+          $root.format_date_to_human(media.planning_info_start) +
+          " " +
+          $moment(media.planning_info_start).format("HH:mm:ss")
           }}
         </span>
         <!-- <DateTime
@@ -76,7 +73,7 @@
           v-model="edited_media_infos.planning_info_start"
           :twowaybinding="true"
           :read_only="false"
-        /> -->
+        />-->
         <!-- <span v-if="!media.planning_info_start">début</span>
         -->
       </div>
@@ -84,20 +81,19 @@
       <div class="m_planningItem--date--duration">
         <span v-if="!edit_mode && media_duration">
           {{ media_duration }}
-
           <button
             type="button"
             style="color: var(--c-rouge)"
-            v-if="mode === 'expanded'"
-            @click="
+            @click.stop="
               $eventHub.$emit(
                 'countdown.start_timer',
-                media.planning_info_duration
+                {
+                 duration: media.planning_info_duration,
+                  attached_to: media.metaFileName
+                }
               )
             "
-          >
-            start timer
-          </button>
+          >start timer</button>
         </span>
         <input
           v-else-if="edit_mode"
@@ -113,16 +109,12 @@
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
         @click="edit_mode = !edit_mode"
-      >
-        {{ $t("annuler") }}
-      </button>
+      >{{ $t("annuler") }}</button>
       <button
         type="submit"
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
-      >
-        {{ $t("valider") }}
-      </button>
+      >{{ $t("valider") }}</button>
     </div>
 
     <div class="m_planningItem--notes" v-if="edit_notes">
@@ -138,10 +130,7 @@
         </button>
       </div>-->
 
-      <div
-        class="m_planningItem--notes--staticNote"
-        v-if="false && !edit_notes"
-      >
+      <div class="m_planningItem--notes--staticNote" v-if="false && !edit_notes">
         <div
           v-html="notes_excerpt"
           class="m_planningItem--notes--staticNote--content"
@@ -163,14 +152,12 @@
       </div>
     </div>
 
-    <button
+    <!-- <button
       class="m_planningItem--openButton"
       type="button"
       v-if="mode === 'collapsed'"
       @click="$emit('toggleOpen', media.metaFileName)"
-    >
-      Ouvrir
-    </button>
+    >Ouvrir</button>-->
     <!-- edit_mode : {{ edit_mode }}
     edited_media_infos : {{ edited_media_infos.name }}
     media.name : {{ media.name }}-->
@@ -318,6 +305,14 @@ export default {
   margin: 0;
   font-weight: 500;
   font-family: "Work Sans";
+
+  span {
+    cursor: pointer;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
 }
 
 .m_planningItem--date {
@@ -341,6 +336,11 @@ export default {
 .m_planningItem--date--start {
 }
 .m_planningItem--date--duration {
+  button {
+    &:hover {
+      opacity: 0.3;
+    }
+  }
 }
 
 .m_planningItem--submitButtons {

@@ -45,51 +45,21 @@ Vue.use(VCalendar);
 
 let lang_settings = {
   available: {
-    en: "English",
     fr: "Français"
   },
-  default: "en",
-  current: "",
-  init: function() {
-    let localstore_lang = localstore.get("language");
-
-    // // force lang to french
-    // this.current = 'fr';
-    // return;
-
-    // has lang set
-    if (localstore_lang !== undefined) {
-      // exists in available
-      if (this.available[localstore_lang] !== undefined) {
-        this.current = localstore_lang;
-      }
-    }
-
-    if (this.current === "") {
-      // set current lang from window.navigator.language
-      // window.navigator.language can be 'fr', 'en', or 'fr-FR'
-
-      let browserLangIsAvailable = Object.keys(this.available).filter(x => {
-        return window.navigator.language.includes(x);
-      });
-      if (browserLangIsAvailable.length > 0) {
-        this.current = browserLangIsAvailable[0];
-      }
-    }
-
-    if (this.current === "") {
-      this.current = this.default;
-    }
-  }
+  default: "fr",
+  current: "fr",
+  init: function() {}
 };
 lang_settings.init();
 
 import moment from "moment";
 import "moment/locale/fr";
-import "moment/locale/en-gb";
 
 moment.locale(lang_settings.current);
 Vue.prototype.$moment = moment;
+
+debugger;
 
 import momentDurationFormatSetup from "moment-duration-format";
 momentDurationFormatSetup(moment);
@@ -144,6 +114,8 @@ let vm = new Vue({
     settings: {
       windowWidth: window.innerWidth,
       windowHeight: window.innerHeight,
+
+      is_slave: false,
 
       default_project_panes: [
         {
@@ -229,13 +201,20 @@ let vm = new Vue({
       console.log("ROOT EVENT: created / checking for password");
     }
 
+    this.$moment.locale("fr");
+
     window.addEventListener("resize", () => {
       this.settings.windowWidth = window.innerWidth;
       this.settings.windowHeight = window.innerHeight;
     });
 
-    this.currentTime = this.$moment().millisecond(0);
-    setInterval(() => (this.currentTime = this.$moment().millisecond(0)), 1000);
+    // self-correcting timer
+    let setCurrentTime = () => {
+      this.currentTime = this.$moment();
+      // console.log("off by " + this.$moment().milliseconds());
+      setTimeout(setCurrentTime, 1000 - this.$moment().milliseconds());
+    };
+    setCurrentTime();
 
     if (this.store.noticeOfError) {
       if (this.store.noticeOfError === "failed_to_find_folder") {

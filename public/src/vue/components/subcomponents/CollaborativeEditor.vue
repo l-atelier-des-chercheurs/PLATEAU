@@ -456,6 +456,8 @@ export default {
       this.socket.close();
     }
 
+    this.$eventHub.$off("writeup.addMedia", this.addMediaAtTheEnd);
+
     this.$root.settings.medias_present_in_writeup = [];
   },
   watch: {
@@ -687,6 +689,7 @@ export default {
             "media",
             {
               type: media.type,
+              caption: media.caption,
               src: thumb.path,
               metaFileName: media.metaFileName
             },
@@ -701,6 +704,7 @@ export default {
           "media",
           {
             type: media.type,
+            caption: media.caption,
             src: mediaURL,
             metaFileName: media.metaFileName
           },

@@ -7,7 +7,6 @@
       :project="$root.currentProject"
       :slugProjectName="$root.do_navigation.current_slugProjectName"
     />
-    <Countdown />
   </div>
 </template>
 
@@ -15,15 +14,13 @@
 import Topbar from "./components/Topbar.vue";
 import List from "./List.vue";
 import Project from "./Project.vue";
-import Countdown from "./components/subcomponents/Countdown.vue";
 
 export default {
   name: "app",
   components: {
     Topbar,
     List,
-    Project,
-    Countdown
+    Project
   },
   props: {},
   data() {
@@ -53,7 +50,7 @@ export default {
   --active-color: rgb(52, 122, 213);
 
   --c-orange: #f9ca00;
-  --c-rouge: #e45a6b;
+  --c-rouge: #ff3e51;
   --c-bleu: #2c75c5;
   --c-noir: #333;
   --c-gris: #eff2f3;
