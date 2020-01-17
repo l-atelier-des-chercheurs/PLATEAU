@@ -1,91 +1,93 @@
 <template>
-  <splitpanes
-    class="m_project"
-    watch-slots
-    @resized="resized()"
-    :key="JSON.stringify($root.settings.project_panes_in_order.map(p => p.key))"
-  >
-    <template
-      v-if="
+  <div class="m_project">
+    <splitpanes
+      watch-slots
+      @resized="resized()"
+      :key="JSON.stringify($root.settings.project_panes_in_order.map(p => p.key))"
+    >
+      <template
+        v-if="
         $root.settings.project_panes_in_order.filter(p => p.enabled).length ===
           0
       "
-    >
-      <div class="m_project--noPane">
-        <i>Aucune panneau n’est actif</i>
-      </div>
-    </template>
-    <template v-else v-for="pane in $root.settings.project_panes_in_order">
-      <pane
-        v-if="pane.key === 'WriteUp' && pane.enabled"
-        :key="pane.key"
-        min-size="5"
-        ref="WriteUp"
       >
-        <WriteUp
-          :slugFolderName="slugProjectName"
-          :writeup_medias="writeup_medias"
-          :read_only="read_only"
-        />
-      </pane>
+        <div class="m_project--noPane">
+          <i>Aucune panneau n’est actif</i>
+        </div>
+      </template>
+      <template v-else v-for="pane in $root.settings.project_panes_in_order">
+        <pane
+          v-if="pane.key === 'WriteUp' && pane.enabled"
+          :key="pane.key"
+          min-size="5"
+          ref="WriteUp"
+        >
+          <WriteUp
+            :slugFolderName="slugProjectName"
+            :writeup_medias="writeup_medias"
+            :read_only="read_only"
+          />
+        </pane>
 
-      <pane
-        v-else-if="pane.key === 'MediaLibrary' && pane.enabled"
-        :key="pane.key"
-        min-size="5"
-        ref="MediaLibrary"
-      >
-        <MediaLibrary
-          :slugProjectName="slugProjectName"
-          :project="project"
-          :library_medias="library_medias"
-          :read_only="false"
-        />
-      </pane>
+        <pane
+          v-else-if="pane.key === 'MediaLibrary' && pane.enabled"
+          :key="pane.key"
+          min-size="5"
+          ref="MediaLibrary"
+        >
+          <MediaLibrary
+            :slugProjectName="slugProjectName"
+            :project="project"
+            :library_medias="library_medias"
+            :read_only="false"
+          />
+        </pane>
 
-      <pane
-        v-else-if="pane.key === 'Composition' && pane.enabled"
-        :key="pane.key"
-        min-size="5"
-        ref="Composition"
-      >
-        <Composition
-          :slugFolderName="slugProjectName"
-          :composition_medias="composition_medias"
-          :read_only="read_only"
-        />
-      </pane>
+        <pane
+          v-else-if="pane.key === 'Composition' && pane.enabled"
+          :key="pane.key"
+          min-size="5"
+          ref="Composition"
+        >
+          <Composition
+            :slugFolderName="slugProjectName"
+            :composition_medias="composition_medias"
+            :read_only="read_only"
+          />
+        </pane>
 
-      <pane
-        v-else-if="pane.key === 'Capture' && pane.enabled"
-        :key="pane.key"
-        min-size="5"
-        ref="Capture"
-      >
-        <Capture
-          :slugProjectName="slugProjectName"
-          :project="project"
-          :read_only="!$root.state.connected"
-          :validation_before_upload="false"
-          data-id="Capture"
-        />
-      </pane>
+        <pane
+          v-else-if="pane.key === 'Capture' && pane.enabled"
+          :key="pane.key"
+          min-size="5"
+          ref="Capture"
+        >
+          <Capture
+            :slugProjectName="slugProjectName"
+            :project="project"
+            :read_only="!$root.state.connected"
+            :validation_before_upload="false"
+            data-id="Capture"
+          />
+        </pane>
 
-      <pane
-        v-if="pane.key === 'Planning' && pane.enabled"
-        :key="pane.key"
-        min-size="5"
-        ref="Planning"
-      >
-        <Planning
-          :slugFolderName="slugProjectName"
-          :project="project"
-          :planning_medias="planning_medias"
-          :read_only="read_only"
-        />
-      </pane>
-    </template>
-  </splitpanes>
+        <pane
+          v-if="pane.key === 'Planning' && pane.enabled"
+          :key="pane.key"
+          min-size="5"
+          ref="Planning"
+        >
+          <Planning
+            :slugFolderName="slugProjectName"
+            :project="project"
+            :planning_medias="planning_medias"
+            :read_only="read_only"
+          />
+        </pane>
+      </template>
+    </splitpanes>
+    <Countdown :slugFolderName="slugProjectName" :project="project" />
+  </div>
 </template>
 <script>
 import MediaLibrary from "./components/MediaLibrary.vue";
@@ -94,6 +96,7 @@ import Capture from "./components/Capture.vue";
 import Composition from "./components/Composition.vue";
 import Planning from "./components/Planning.vue";
 import { Splitpanes, Pane } from "splitpanes";
+import Countdown from "./components/subcomponents/Countdown.vue";
 
 export default {
   props: {
@@ -107,7 +110,8 @@ export default {
     Composition,
     Planning,
     Splitpanes,
-    Pane
+    Pane,
+    Countdown
   },
   data() {
     return {

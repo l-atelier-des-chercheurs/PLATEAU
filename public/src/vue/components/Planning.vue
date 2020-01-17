@@ -1,5 +1,5 @@
 <template>
-  <div class="m_planning" @click.self="$root.settings.current_planning_media_metaFileName = false">
+  <div class="m_planning">
     <SlickList v-model="sorted_planning_medias" axis="y" :useDragHandle="true">
       <!-- @sort-end="sortEnded" -->
       <SlickItem v-for="(item, index) in sorted_planning_medias" :index="index" :key="item.key">
@@ -55,6 +55,7 @@
         <div
           v-for="media in sorted_planning_medias"
           :key="media.metaFileName + '_pane'"
+          @click.self="$root.settings.current_planning_media_metaFileName = false"
           class="m_planningPanes--pane"
           :class="{
             'is--open': $root.settings.current_planning_media_metaFileName === media.metaFileName
@@ -173,12 +174,6 @@ export default {
         console.log("METHODS • Planning: toggleOpenItem");
       }
 
-      if (
-        this.$root.settings.current_planning_media_metaFileName === item_meta
-      ) {
-        this.$root.settings.current_planning_media_metaFileName = false;
-        return;
-      }
       this.$root.settings.current_planning_media_metaFileName = item_meta;
       return;
     },
@@ -284,11 +279,6 @@ export default {
   overflow-y: auto;
 
   margin: 0 auto;
-
-  // &:hover .m_planningPanes--pane--content:not(:hover) {
-  //   transform: translateX(46%);
-  //   // margin-left: 66%;
-  // }
 }
 
 .m_planning--container--create {
@@ -315,6 +305,7 @@ export default {
 
   &.is--open {
     z-index: 6;
+    pointer-events: auto;
     background-color: rgba(255, 255, 255, 0.45);
   }
 }
@@ -326,7 +317,7 @@ export default {
   // overflow: auto;
   border-left: 1px solid black;
   margin-left: 17%;
-  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  // transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 
   > * {
     height: 100%;

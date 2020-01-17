@@ -60,6 +60,9 @@
         },
         "planning_slugs_in_order": {
           "type": "array"
+        },
+        "countdown_end_date": {
+          "type": "date"
         }
       },
       "medias": {

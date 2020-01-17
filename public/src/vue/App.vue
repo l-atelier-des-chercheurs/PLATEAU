@@ -7,7 +7,6 @@
       :project="$root.currentProject"
       :slugProjectName="$root.do_navigation.current_slugProjectName"
     />
-    <Countdown />
   </div>
 </template>
 
@@ -15,15 +14,13 @@
 import Topbar from "./components/Topbar.vue";
 import List from "./List.vue";
 import Project from "./Project.vue";
-import Countdown from "./components/subcomponents/Countdown.vue";
 
 export default {
   name: "app",
   components: {
     Topbar,
     List,
-    Project,
-    Countdown
+    Project
   },
   props: {},
   data() {

@@ -234,8 +234,13 @@ let vm = new Vue({
       this.settings.windowHeight = window.innerHeight;
     });
 
-    this.currentTime = this.$moment().millisecond(0);
-    setInterval(() => (this.currentTime = this.$moment().millisecond(0)), 1000);
+    // self-correcting timer
+    let setCurrentTime = () => {
+      this.currentTime = this.$moment();
+      // console.log("off by " + this.$moment().milliseconds());
+      setTimeout(setCurrentTime, 1000 - this.$moment().milliseconds());
+    };
+    setCurrentTime();
 
     if (this.store.noticeOfError) {
       if (this.store.noticeOfError === "failed_to_find_folder") {

@@ -1,19 +1,18 @@
 <template>
   <div class="m_countdown" v-if="remaining_time">
     <span>{{ remaining_time }}</span>
-    <button type="button" @click="clear_timer">
-      ×
-    </button>
+    <button type="button" @click="clear_timer">×</button>
   </div>
 </template>
 <script>
 export default {
-  props: {},
+  props: {
+    slugFolderName: String,
+    project: Object
+  },
   components: {},
   data() {
-    return {
-      end_date: false
-    };
+    return {};
   },
   created() {},
   mounted() {
@@ -25,11 +24,13 @@ export default {
   watch: {},
   computed: {
     remaining_time() {
-      if (!this.end_date) {
+      if (!this.project.countdown_end_date) {
         return false;
       }
       let _remaining_time = this.$moment.duration(
-        this.end_date.diff(this.$root.currentTime)
+        this.$moment(this.project.countdown_end_date).diff(
+          this.$root.currentTime
+        )
       );
       _remaining_time = this.$root.format_duration_to_human({
         duration: _remaining_time,
@@ -41,10 +42,27 @@ export default {
   methods: {
     start_timer(d) {
       const _m = this.$moment.duration(d, "hh:mm a");
-      this.end_date = this.$moment(this.$root.currentTime).add(_m);
+      let _end_date = this.$moment(this.$root.currentTime).add(_m);
+      _end_date = _end_date.format("YYYY-MM-DD HH:mm:ss");
+
+      // editproject
+      this.$root.editFolder({
+        type: "projects",
+        slugFolderName: this.slugFolderName,
+        data: {
+          countdown_end_date: _end_date
+        }
+      });
     },
     clear_timer() {
-      this.end_date = false;
+      // editproject
+      this.$root.editFolder({
+        type: "projects",
+        slugFolderName: this.slugFolderName,
+        data: {
+          countdown_end_date: ""
+        }
+      });
     }
   }
 };
