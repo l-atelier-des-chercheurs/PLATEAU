@@ -45,10 +45,9 @@ Vue.use(VCalendar);
 
 let lang_settings = {
   available: {
-    en: "English",
     fr: "Français"
   },
-  default: "en",
+  default: "fr",
   current: "",
   init: function() {
     let localstore_lang = localstore.get("language");
@@ -86,7 +85,6 @@ lang_settings.init();
 
 import moment from "moment";
 import "moment/locale/fr";
-import "moment/locale/en-gb";
 
 moment.locale(lang_settings.current);
 Vue.prototype.$moment = moment;

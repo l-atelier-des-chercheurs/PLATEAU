@@ -87,7 +87,10 @@
             @click.stop="
               $eventHub.$emit(
                 'countdown.start_timer',
-                media.planning_info_duration
+                {
+                 duration: media.planning_info_duration,
+                  attached_to: media.metaFileName
+                }
               )
             "
           >start timer</button>
@@ -334,9 +337,6 @@ export default {
 }
 .m_planningItem--date--duration {
   button {
-    position: relative;
-    z-index: 1001;
-
     &:hover {
       opacity: 0.3;
     }
