@@ -21,7 +21,14 @@ export default {
   beforeDestroy() {
     this.$eventHub.$off("countdown.start_timer", this.start_timer);
   },
-  watch: {},
+  watch: {
+    "project.countdown_end_date": function() {
+      this.$alertify
+        .closeLogOnClick(true)
+        .delay(4000)
+        .success("Début du compte à rebours");
+    }
+  },
   computed: {
     remaining_time() {
       if (!this.project.countdown_end_date) {

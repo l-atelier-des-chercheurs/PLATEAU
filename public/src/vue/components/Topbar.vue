@@ -23,7 +23,6 @@
         </h1>
       </div>
 
-      {{ $root.currentTime }}
       <div class="m_topbar--separator">/</div>
 
       <template v-if="$root.state.mode === 'live' && !$root.state.authentificated">

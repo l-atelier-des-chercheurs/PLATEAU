@@ -61,7 +61,7 @@
             'is--open': $root.settings.current_planning_media_metaFileName === media.metaFileName
           }"
         >
-          <transition name="slideright" :duration="400">
+          <transition name="slideright">
             <div
               class="m_planningPanes--pane--content"
               v-if="$root.settings.current_planning_media_metaFileName === media.metaFileName"
@@ -317,7 +317,7 @@ export default {
   // overflow: auto;
   border-left: 1px solid black;
   margin-left: 17%;
-  // transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: all 1s cubic-bezier(0.19, 1, 0.22, 1) !important;
 
   > * {
     height: 100%;
