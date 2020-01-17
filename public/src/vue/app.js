@@ -48,38 +48,8 @@ let lang_settings = {
     fr: "Français"
   },
   default: "fr",
-  current: "",
-  init: function() {
-    let localstore_lang = localstore.get("language");
-
-    // // force lang to french
-    // this.current = 'fr';
-    // return;
-
-    // has lang set
-    if (localstore_lang !== undefined) {
-      // exists in available
-      if (this.available[localstore_lang] !== undefined) {
-        this.current = localstore_lang;
-      }
-    }
-
-    if (this.current === "") {
-      // set current lang from window.navigator.language
-      // window.navigator.language can be 'fr', 'en', or 'fr-FR'
-
-      let browserLangIsAvailable = Object.keys(this.available).filter(x => {
-        return window.navigator.language.includes(x);
-      });
-      if (browserLangIsAvailable.length > 0) {
-        this.current = browserLangIsAvailable[0];
-      }
-    }
-
-    if (this.current === "") {
-      this.current = this.default;
-    }
-  }
+  current: "fr",
+  init: function() {}
 };
 lang_settings.init();
 
@@ -88,6 +58,8 @@ import "moment/locale/fr";
 
 moment.locale(lang_settings.current);
 Vue.prototype.$moment = moment;
+
+debugger;
 
 import momentDurationFormatSetup from "moment-duration-format";
 momentDurationFormatSetup(moment);
@@ -226,6 +198,8 @@ let vm = new Vue({
     if (window.state.dev_mode === "debug") {
       console.log("ROOT EVENT: created / checking for password");
     }
+
+    this.$moment.locale("fr");
 
     window.addEventListener("resize", () => {
       this.settings.windowWidth = window.innerWidth;

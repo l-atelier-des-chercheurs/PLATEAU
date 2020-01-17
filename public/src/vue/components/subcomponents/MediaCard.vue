@@ -63,9 +63,7 @@
             :element_width_for_sizes="200"
             :preview_size="preview_size"
           />
-          <figcaption class="m_media--caption" v-if="!!media.caption">
-            {{ media.caption }}
-          </figcaption>
+          <figcaption class="m_media--caption" v-if="!!media.caption">{{ media.caption }}</figcaption>
         </div>
 
         <figcaption v-if="is_hovered && false">
@@ -309,5 +307,10 @@ export default {
       }
     }
   }
+}
+
+.m_media--caption {
+  font-size: 70%;
+  padding: 0 calc(var(--spacing) / 2);
 }
 </style>

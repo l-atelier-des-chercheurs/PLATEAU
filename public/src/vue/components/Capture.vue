@@ -1365,9 +1365,11 @@ export default {
 
         let formData = new FormData();
         formData.append("files", rawData, filename);
+
         const meta = {
           fileCreationDate: modified,
           fav,
+          caption: "Le " + this.$moment().format("LLL"),
           authors: this.$root.settings.current_author.hasOwnProperty("name")
             ? [{ name: this.$root.settings.current_author.name }]
             : ""
