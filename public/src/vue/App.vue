@@ -50,7 +50,7 @@ export default {
   --active-color: rgb(52, 122, 213);
 
   --c-orange: #f9ca00;
-  --c-rouge: #e45a6b;
+  --c-rouge: #ff3e51;
   --c-bleu: #2c75c5;
   --c-noir: #333;
   --c-gris: #eff2f3;

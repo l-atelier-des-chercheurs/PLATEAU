@@ -134,7 +134,7 @@ export default {
   min-height: 2em;
   min-width: 70px;
   height: auto;
-  background-color: #ff3e51;
+  background-color: var(--c-rouge);
   z-index: 11000;
   border-radius: 10px;
   margin: calc(var(--spacing));
