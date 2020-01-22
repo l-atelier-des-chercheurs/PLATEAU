@@ -193,8 +193,9 @@ export default {
         this.$root.settings.project_panes_in_order = this.$root.settings.project_panes_in_order.map(
           p => {
             if (p.key === key && !!$el[0] && $el[0].hasOwnProperty("$el")) {
-              if (p.width !== $el[0].$el.style.width) {
-                p.width = $el[0].$el.style.width;
+              const _width = parseInt($el[0].$el.style.width);
+              if (p.width !== _width) {
+                p.width = _width + "%";
               }
             }
             return p;

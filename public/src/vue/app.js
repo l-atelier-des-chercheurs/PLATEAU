@@ -59,8 +59,6 @@ import "moment/locale/fr";
 moment.locale(lang_settings.current);
 Vue.prototype.$moment = moment;
 
-debugger;
-
 import momentDurationFormatSetup from "moment-duration-format";
 momentDurationFormatSetup(moment);
 
