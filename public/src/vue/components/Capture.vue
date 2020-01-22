@@ -1,8 +1,21 @@
 <template>
-  <div class="m_capture">
-    <div class="m_capture--modeSelector">
-      <select v-model="selected_mode" :disabled="$root.settings.capture_mode_cant_be_changed">
-        <option v-for="mode in available_modes" :key="mode.key" :value="mode.key">{{ mode.key }}</option>
+  <div
+    class="m_capture"
+    :class="{
+      'is--slave': $root.settings.is_slave
+    }"
+  >
+    <div class="m_capture--modeSelector" v-if="!$root.settings.is_slave">
+      <select
+        v-model="selected_mode"
+        :disabled="$root.settings.capture_mode_cant_be_changed"
+      >
+        <option
+          v-for="mode in available_modes"
+          :key="mode.key"
+          :value="mode.key"
+          >{{ mode.key }}</option
+        >
       </select>
     </div>
 
@@ -16,11 +29,19 @@
     >
       <div class="m_panel">
         <transition name="enableMode" :duration="400">
-          <div class="m_panel--modeOverlay" v-if="mode_just_changed">{{ $t(selected_mode) }}</div>
+          <div class="m_panel--modeOverlay" v-if="mode_just_changed">
+            {{ $t(selected_mode) }}
+          </div>
         </transition>
 
-        <div class="m_panel--previewCard" v-show="!is_validating_stopmotion_video">
-          <div class="m_panel--previewCard--live" :class="{ 'is--recording': is_recording }">
+        <div
+          class="m_panel--previewCard"
+          v-show="!is_validating_stopmotion_video"
+        >
+          <div
+            class="m_panel--previewCard--live"
+            :class="{ 'is--recording': is_recording }"
+          >
             <!-- OPTIONS -->
             <transition name="slideleft" :duration="400">
               <div
@@ -31,7 +52,10 @@
                   <div>
                     <label>Sources</label>
                   </div>
-                  <div v-for="(currentId, kind) in selected_devicesId" :key="kind">
+                  <div
+                    v-for="(currentId, kind) in selected_devicesId"
+                    :key="kind"
+                  >
                     <span class="font-verysmall">{{ kind }}</span>
                     <select
                       v-if="sorted_available_devices.hasOwnProperty(kind)"
@@ -44,7 +68,9 @@
                         :value="device.deviceId"
                         :key="device.deviceId"
                       >
-                        <template v-if="device.label === ''">{{ $t("device") }} {{ index }}</template>
+                        <template v-if="device.label === ''"
+                          >{{ $t("device") }} {{ index }}</template
+                        >
                         <template v-else>{{ $t(device.label) }}</template>
                       </option>
                     </select>
@@ -63,7 +89,10 @@
                       {{ actual_current_video_resolution.height }}
                     </span>
                   </div>
-                  <div v-for="res in available_camera_resolutions" :key="res.name">
+                  <div
+                    v-for="res in available_camera_resolutions"
+                    :key="res.name"
+                  >
                     <input
                       type="radio"
                       :id="res.name"
@@ -95,14 +124,20 @@
                     </span>
                   </div>
 
-                  <template v-if="$root.settings.capture_options.distant_flux.active">
+                  <template
+                    v-if="$root.settings.capture_options.distant_flux.active"
+                  >
                     <div class="margin-bottom-small">
-                      <span class="font-verysmall">Partager les flux sous le nom&nbsp;:</span>
+                      <span class="font-verysmall"
+                        >Partager les flux sous le nom&nbsp;:</span
+                      >
                       <input type="text" v-model="current_username" />
                     </div>
 
                     <div class="margin-bottom-small">
-                      <span class="font-verysmall">Accéder au flux qui a le nom&nbsp;:</span>
+                      <span class="font-verysmall"
+                        >Accéder au flux qui a le nom&nbsp;:</span
+                      >
                       <input type="text" v-model="callee_username" />
                     </div>
                   </template>
@@ -120,7 +155,11 @@
               </div>
             </transition>
 
-            <transition-group tag="div" class="recording_timer" name="slideFromTop">
+            <transition-group
+              tag="div"
+              class="recording_timer"
+              name="slideFromTop"
+            >
               <label
                 v-if="
                   selected_mode !== 'stopmotion' &&
@@ -202,7 +241,11 @@
               :element_width_for_sizes="1600"
             />
 
-            <div id="vectoContainer" v-if="selected_mode === 'vecto'" v-html="vecto.svgstr" />
+            <div
+              id="vectoContainer"
+              v-if="selected_mode === 'vecto'"
+              v-html="vecto.svgstr"
+            />
 
             <transition name="slideright" :duration="400">
               <div
@@ -212,7 +255,10 @@
                 <div class="margin-bottom-small">
                   <template v-if="Object.keys(stopmotions).length > 0">
                     <ul>
-                      <li v-for="stopmotion in stopmotions" :key="stopmotion.slugFolderName">
+                      <li
+                        v-for="stopmotion in stopmotions"
+                        :key="stopmotion.slugFolderName"
+                      >
                         <button
                           type="button"
                           @mouseenter="
@@ -220,8 +266,12 @@
                           "
                           @click="loadStopmotion(stopmotion.slugFolderName)"
                         >
-                          <div class="padding-verysmall">{{ stopmotion.date_created }}</div>
-                          <template v-if="Object.values(stopmotion.medias).length > 0">
+                          <div class="padding-verysmall">
+                            {{ stopmotion.date_created }}
+                          </div>
+                          <template
+                            v-if="Object.values(stopmotion.medias).length > 0"
+                          >
                             <div class="padding-bottom-verysmall">
                               {{ Object.values(stopmotion.medias).length }}
                               photos
@@ -249,9 +299,7 @@
                     </ul>
                   </template>
                   <template v-else>
-                    {{
-                    $t("no_stopmotion_created_yet")
-                    }}
+                    {{ $t("no_stopmotion_created_yet") }}
                   </template>
                 </div>
               </div>
@@ -298,7 +346,10 @@
           </transition>-->
 
           <transition name="mediaCapture" :duration="300">
-            <div class="m_panel--previewCard--captureOverlay" v-show="capture_button_pressed" />
+            <div
+              class="m_panel--previewCard--captureOverlay"
+              v-show="capture_button_pressed"
+            />
           </transition>
         </div>
 
@@ -322,8 +373,11 @@
           "
         />
 
-        <div class="m_panel--buttons">
-          <div class="m_panel--buttons--row" :class="{ 'bg-orange': is_recording }">
+        <div class="m_panel--buttons" v-if="!$root.settings.is_slave">
+          <div
+            class="m_panel--buttons--row"
+            :class="{ 'bg-orange': is_recording }"
+          >
             <button
               type="button"
               @click="show_capture_settings = !show_capture_settings"
@@ -411,7 +465,13 @@
             <div class="m_panel--buttons--row--options">
               <div v-if="selected_mode === 'vecto'">
                 <label>{{ $t("smoothing") }}</label>
-                <input class="margin-none" type="range" v-model="vecto.blurradius" min="0" max="20" />
+                <input
+                  class="margin-none"
+                  type="range"
+                  v-model="vecto.blurradius"
+                  min="0"
+                  max="20"
+                />
               </div>
 
               <div
@@ -1638,6 +1698,20 @@ var equalizer = (function() {
 
   display: flex;
   flex-flow: column nowrap;
+
+  &.is--slave {
+    padding: 0;
+
+    .m_capture--panels {
+      margin: 0;
+    }
+
+    .m_panel {
+      flex-basis: 100% !important;
+      border-radius: 0 !important;
+      background-color: transparent !important;
+    }
+  }
 
   .m_capture--modeSelector {
     display: flex;
