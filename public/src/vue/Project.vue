@@ -193,8 +193,9 @@ export default {
         this.$root.settings.project_panes_in_order = this.$root.settings.project_panes_in_order.map(
           p => {
             if (p.key === key && !!$el[0] && $el[0].hasOwnProperty("$el")) {
-              if (p.width !== $el[0].$el.style.width) {
-                p.width = $el[0].$el.style.width;
+              const _width = parseInt($el[0].$el.style.width);
+              if (p.width !== _width) {
+                p.width = _width + "%";
               }
             }
             return p;
@@ -205,10 +206,14 @@ export default {
     setPaneSize(panes_in_order) {
       panes_in_order.map(p => {
         if (p.enabled && this.$refs.hasOwnProperty(p.key)) {
-          console.log(`setting ${p.key} to ${p.width}`);
+          console.log(`setPaneSize • setting ${p.key} to ${p.width}`);
           this.$refs[p.key][0].$el.style.width = p.width;
         }
       });
+
+      setTimeout(() => {
+        this.$eventHub.$emit(`activity_panels_resized`);
+      }, 500);
     }
   }
 };

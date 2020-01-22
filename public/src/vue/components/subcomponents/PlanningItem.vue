@@ -1,5 +1,9 @@
 <template>
-  <form class="m_planningItem" :class="{ 'is--editable': edit_mode }" @submit.prevent="sendEdits">
+  <form
+    class="m_planningItem"
+    :class="{ 'is--editable': edit_mode }"
+    @submit.prevent="sendEdits"
+  >
     <div class="m_planningItem--topbar">
       <div class="m_planningItem--editButtons">
         <button type="button" @click="edit_mode = !edit_mode" title="edit">
@@ -63,9 +67,9 @@
       <div class="m_planningItem--date--start">
         <span v-if="!edit_mode && media.planning_info_start">
           {{
-          $root.format_date_to_human(media.planning_info_start) +
-          " " +
-          $moment(media.planning_info_start).format("HH:mm:ss")
+            $root.format_date_to_human(media.planning_info_start) +
+              " " +
+              $moment(media.planning_info_start).format("HH:mm:ss")
           }}
         </span>
         <!-- <DateTime
@@ -85,21 +89,19 @@
             type="button"
             style="color: var(--c-rouge)"
             @click.stop="
-              $eventHub.$emit(
-                'countdown.start_timer',
-                {
-                 duration: media.planning_info_duration,
-                  attached_to: media.metaFileName
-                }
-              )
+              $eventHub.$emit('countdown.start_timer', {
+                duration: media.planning_info_duration,
+                attached_to: media.metaFileName
+              })
             "
-          >start timer</button>
+          >
+            start timer
+          </button>
         </span>
-        <input
+        <vue-timepicker
           v-else-if="edit_mode"
-          type="time"
           v-model="edited_media_infos.planning_info_duration"
-        />
+        ></vue-timepicker>
       </div>
     </div>
 
@@ -109,12 +111,16 @@
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
         @click="edit_mode = !edit_mode"
-      >{{ $t("annuler") }}</button>
+      >
+        {{ $t("annuler") }}
+      </button>
       <button
         type="submit"
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
-      >{{ $t("valider") }}</button>
+      >
+        {{ $t("valider") }}
+      </button>
     </div>
 
     <div class="m_planningItem--notes" v-if="edit_notes">
@@ -130,7 +136,10 @@
         </button>
       </div>-->
 
-      <div class="m_planningItem--notes--staticNote" v-if="false && !edit_notes">
+      <div
+        class="m_planningItem--notes--staticNote"
+        v-if="false && !edit_notes"
+      >
         <div
           v-html="notes_excerpt"
           class="m_planningItem--notes--staticNote--content"
@@ -166,6 +175,7 @@
 <script>
 import DateTime from "./DateTime.vue";
 import CollaborativeEditor from "./CollaborativeEditor.vue";
+import VueTimepicker from "vue2-timepicker";
 
 export default {
   props: {
@@ -178,7 +188,8 @@ export default {
   },
   components: {
     DateTime,
-    CollaborativeEditor
+    CollaborativeEditor,
+    VueTimepicker
   },
 
   data() {
@@ -225,6 +236,11 @@ export default {
     sendEdits() {
       let data = {};
 
+      this.edited_media_infos.planning_info_duration = this.edited_media_infos.planning_info_duration.replace(
+        /HH/g,
+        "00"
+      );
+
       const checkIfValueChanged = (key, val) => val !== this.media[key];
 
       Object.keys(this.edited_media_infos).map(k => {
@@ -262,7 +278,16 @@ export default {
   }
 };
 </script>
+<style
+  src="../../../../node_modules/vue2-timepicker/dist/VueTimepicker.css"
+></style>
 <style lang="scss">
+.vue__time-picker .dropdown ul li:not([disabled]).active,
+.vue__time-picker .dropdown ul li:not([disabled]).active:focus,
+.vue__time-picker .dropdown ul li:not([disabled]).active:hover {
+  background: var(--c-rouge);
+}
+
 .m_planningItem {
   position: relative;
   padding: calc(var(--spacing) / 1) 0;

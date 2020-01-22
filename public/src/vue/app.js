@@ -59,8 +59,6 @@ import "moment/locale/fr";
 moment.locale(lang_settings.current);
 Vue.prototype.$moment = moment;
 
-debugger;
-
 import momentDurationFormatSetup from "moment-duration-format";
 momentDurationFormatSetup(moment);
 
@@ -517,6 +515,7 @@ let vm = new Vue({
       if (_duration.asHours() < 1) {
         return _duration.format("m [minutes]");
       }
+
       return _duration.format("H [heures] [et] m [minutes]");
     },
     createFolder: function(fdata) {

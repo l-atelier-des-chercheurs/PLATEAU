@@ -1,6 +1,8 @@
 <template>
-  <div class="m_composition">
-    <div class>
+  <div class="m_composition" :class="{
+      'is--slave': $root.settings.is_slave
+    }">
+    <div class v-if="!$root.settings.is_slave">
       <table class v-if="mode === 'composition_list'">
         <thead>
           <tr>
@@ -228,6 +230,18 @@ export default {
   padding: var(--spacing);
   height: 100%;
   overflow: auto;
+
+  &.is--slave {
+    padding: 0;
+
+    .m_compositioneditor {
+      height: 100%;
+
+      .m_fabricCanvas {
+        transform-origin: left center;
+      }
+    }
+  }
 
   table {
     width: 100%;

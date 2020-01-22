@@ -51,16 +51,17 @@
           :key="client.id"
           v-for="client in uniqueClientsExceptSelf"
         >
-          <template v-if="client.data.hasOwnProperty('author')">
-            {{ client.data.author.name }}
-          </template>
+          <template v-if="client.data.hasOwnProperty('author')">{{
+            client.data.author.name
+          }}</template>
           <template v-else>{{ $t("anonyme") }}</template>
           <template
             v-if="
               client.data.hasOwnProperty('is_slave') && client.data.is_slave
             "
-            >(esclave)</template
           >
+            (esclave)
+          </template>
         </span>
       </template>
     </div>
@@ -181,12 +182,14 @@ export default {
   // left: 100%;
   // margin-left: calc(var(--spacing) / 4);
   font-size: 70%;
-  z-index: 100;
+
   background-color: white;
   border: 1px solid black;
   border-radius: 2px;
   padding: 0;
   margin: 0 calc(var(--spacing));
+
+  z-index: 10001;
 
   // margin-left: var(--spacing);
 
