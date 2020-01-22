@@ -1,7 +1,7 @@
 <template>
   <div class="m_countdown" v-if="remaining_time !== false">
     <div class="m_countdown--timer">
-      <span>{{ remaining_time }}</span>
+      <span v-html="remaining_time" />
       <button type="button" @click="clear_timer">
         <svg class="svg-icon" viewBox="0 0 20 20">
           <path
@@ -15,9 +15,9 @@
       </button>
     </div>
     <div v-if="originating_planning_item" class="m_countdown--planningName">
-      <span
-        @click="openPlanningItem(originating_planning_item.metaFileName)"
-      >→ {{ originating_planning_item.name }}</span>
+      <span @click="openPlanningItem(originating_planning_item.metaFileName)"
+        >→ {{ originating_planning_item.name }}</span
+      >
     </div>
   </div>
 </template>
@@ -68,7 +68,7 @@ export default {
 
       _remaining_time = this.$root.format_duration_to_human({
         duration: _remaining_time,
-        format: "h:mm:ss"
+        format: "h[&nbsp;h] mm[&nbsp;min] ss[&nbsp;s]"
       });
       return _remaining_time;
     },
@@ -133,8 +133,10 @@ export default {
   width: auto;
   min-height: 2em;
   min-width: 70px;
+  max-width: 800px;
   height: auto;
   background-color: var(--c-rouge);
+  border: 1px solid black;
   z-index: 11000;
   border-radius: 10px;
   margin: calc(var(--spacing));
@@ -147,6 +149,7 @@ export default {
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
+  justify-content: space-between;
   font-weight: 600;
   font-size: 2em;
   padding: calc(var(--spacing) / 2);
@@ -156,6 +159,11 @@ export default {
 
   > * {
     margin: 0 calc(var(--spacing) / 2);
+  }
+
+  > span {
+    flex-grow: 1;
+    text-align: center;
   }
 }
 
@@ -178,7 +186,7 @@ button {
 
 .m_countdown--planningName {
   background-color: rgba(0, 0, 0, 0.15);
-  padding: 0 calc(var(--spacing) / 2);
+  padding: calc(var(--spacing) / 4) calc(var(--spacing) / 2);
 
   span {
     cursor: pointer;

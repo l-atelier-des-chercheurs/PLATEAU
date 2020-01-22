@@ -515,6 +515,7 @@ let vm = new Vue({
       if (_duration.asHours() < 1) {
         return _duration.format("m [minutes]");
       }
+
       return _duration.format("H [heures] [et] m [minutes]");
     },
     createFolder: function(fdata) {
