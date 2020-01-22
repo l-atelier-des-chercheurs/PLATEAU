@@ -205,10 +205,14 @@ export default {
     setPaneSize(panes_in_order) {
       panes_in_order.map(p => {
         if (p.enabled && this.$refs.hasOwnProperty(p.key)) {
-          console.log(`setting ${p.key} to ${p.width}`);
+          console.log(`setPaneSize • setting ${p.key} to ${p.width}`);
           this.$refs[p.key][0].$el.style.width = p.width;
         }
       });
+
+      setTimeout(() => {
+        this.$eventHub.$emit(`activity_panels_resized`);
+      }, 500);
     }
   }
 };
