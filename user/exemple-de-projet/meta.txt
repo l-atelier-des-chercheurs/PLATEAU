@@ -1,0 +1,12 @@
+name: Exemple de projet
+
+----
+
+date_created: 20200127_112648
+
+----
+
+date_modified: 20200127_112648
+
+----
+
