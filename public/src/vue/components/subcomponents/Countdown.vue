@@ -15,9 +15,9 @@
       </button>
     </div>
     <div v-if="originating_planning_item" class="m_countdown--planningName">
-      <span @click="openPlanningItem(originating_planning_item.metaFileName)"
-        >→ {{ originating_planning_item.name }}</span
-      >
+      <span
+        @click="openPlanningItem(originating_planning_item.metaFileName)"
+      >→ {{ originating_planning_item.name }}</span>
     </div>
   </div>
 </template>
@@ -129,14 +129,14 @@ export default {
 .m_countdown {
   position: absolute;
   bottom: 0;
-  right: 10%;
+  right: 0;
   width: auto;
   min-height: 2em;
   min-width: 70px;
   max-width: 800px;
   height: auto;
   background-color: var(--c-rouge);
-  border: 1px solid black;
+  // border: 1px solid black;
   z-index: 11000;
   border-radius: 10px;
   margin: calc(var(--spacing));
