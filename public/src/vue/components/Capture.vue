@@ -1799,7 +1799,7 @@ var equalizer = (function() {
     flex-flow: column nowrap;
     // height: ~"calc(100vh - 105px - 80px - 40px)";
     min-height: 300px;
-    border-radius: 10px;
+    border-radius: 4px;
     overflow: hidden;
     color: var(--c-noir);
   }

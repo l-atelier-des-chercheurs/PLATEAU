@@ -25,6 +25,7 @@ module.exports = (function() {
       new_project: "Nouveau Projet",
       project: "Projet",
       copy_of: "Copie de",
+      onion_skin: "Onion skin",
 
       photo: "photo",
       video: "vidéo",
@@ -51,6 +52,8 @@ module.exports = (function() {
       duration: "Durée",
       send: "Envoyer",
 
+      stopmotion_list: "Liste des stopmotions",
+
       drop_here_to_import: "Déposez vos contenus ici pour les importer",
 
       notifications: {
@@ -59,7 +62,9 @@ module.exports = (function() {
           "Connection à plateau en utilisant le mot de passe enregistré",
 
         connection_active: "La connexion au serveur est active.",
-        connection_lost: "La connexion au serveur a été perdue."
+        connection_lost: "La connexion au serveur a été perdue.",
+        sure_to_cancel_stopmotion:
+          "Êtes-vous sur de vouloir annuler ce stopmoion ? Vous pourrez toujours le retrouver en cliquant sur Liste des stopmotions"
       }
     },
     en: {
