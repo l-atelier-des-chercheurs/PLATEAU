@@ -1,9 +1,5 @@
 <template>
-  <form
-    class="m_planningItem"
-    :class="{ 'is--editable': edit_mode }"
-    @submit.prevent="sendEdits"
-  >
+  <form class="m_planningItem" :class="{ 'is--editable': edit_mode }" @submit.prevent="sendEdits">
     <div class="m_planningItem--topbar">
       <div class="m_planningItem--editButtons">
         <button type="button" @click="edit_mode = !edit_mode" title="edit">
@@ -67,9 +63,9 @@
       <div class="m_planningItem--date--start">
         <span v-if="!edit_mode && media.planning_info_start">
           {{
-            $root.format_date_to_human(media.planning_info_start) +
-              " " +
-              $moment(media.planning_info_start).format("HH:mm:ss")
+          $root.format_date_to_human(media.planning_info_start) +
+          " " +
+          $moment(media.planning_info_start).format("HH:mm:ss")
           }}
         </span>
         <!-- <DateTime
@@ -94,14 +90,9 @@
                 attached_to: media.metaFileName
               })
             "
-          >
-            start timer
-          </button>
+          >start timer</button>
         </span>
-        <vue-timepicker
-          v-else-if="edit_mode"
-          v-model="edited_media_infos.planning_info_duration"
-        ></vue-timepicker>
+        <vue-timepicker v-else-if="edit_mode" v-model="edited_media_infos.planning_info_duration"></vue-timepicker>
       </div>
     </div>
 
@@ -111,16 +102,12 @@
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
         @click="edit_mode = !edit_mode"
-      >
-        {{ $t("annuler") }}
-      </button>
+      >{{ $t("annuler") }}</button>
       <button
         type="submit"
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
-      >
-        {{ $t("valider") }}
-      </button>
+      >{{ $t("valider") }}</button>
     </div>
 
     <div class="m_planningItem--notes" v-if="edit_notes">
@@ -136,10 +123,7 @@
         </button>
       </div>-->
 
-      <div
-        class="m_planningItem--notes--staticNote"
-        v-if="false && !edit_notes"
-      >
+      <div class="m_planningItem--notes--staticNote" v-if="false && !edit_notes">
         <div
           v-html="notes_excerpt"
           class="m_planningItem--notes--staticNote--content"
@@ -236,10 +220,16 @@ export default {
     sendEdits() {
       let data = {};
 
-      this.edited_media_infos.planning_info_duration = this.edited_media_infos.planning_info_duration.replace(
-        /HH/g,
-        "00"
-      );
+      // if (!!this.edited_media_infos.planning_info_duration) {
+      //   const HH = !!this.edited_media_infos.planning_info_duration.HH
+      //     ? this.edited_media_infos.planning_info_duration.HH
+      //     : "00";
+      //   const mm = !!this.edited_media_infos.planning_info_duration.mm
+      //     ? this.edited_media_infos.planning_info_duration.mm
+      //     : "00";
+
+      //   this.edited_media_infos.planning_info_duration = HH + "" + mm;
+      // }
 
       const checkIfValueChanged = (key, val) => val !== this.media[key];
 
