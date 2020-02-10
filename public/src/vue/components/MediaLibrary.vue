@@ -138,8 +138,14 @@
             :preview_size="preview_size"
           />
           <div class="m_library--mediaFocus--buttons">
-            <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t("remove") }}</button>
-            <button type="button" @click="closeMediaFocus()">{{ $t("close") }}</button>
+            <a
+              class="button"
+              :download="mediaShownInFocus.media_filename"
+              :href="mediaFocusDownloadURL"
+              target="_blank"
+            >{{ $t("télécharger") }}</a>
+            <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t("supprimer") }}</button>
+            <button type="button" @click="closeMediaFocus()">{{ $t("fermer") }}</button>
             <button type="button" @click="prevMedia">←</button>
             <button type="button" @click="nextMedia">→</button>
           </div>
@@ -289,6 +295,10 @@ export default {
     },
     mediaAuthors() {
       return this.$root.getAllAuthorsFrom(this.library_medias);
+    },
+
+    mediaFocusDownloadURL() {
+      return `/${this.slugProjectName}/${this.mediaShownInFocus.media_filename}`;
     },
 
     sortedMedias() {
