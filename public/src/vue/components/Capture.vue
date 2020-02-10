@@ -1,21 +1,10 @@
 <template>
-  <div
-    class="m_capture"
-    :class="{
+  <div class="m_capture" :class="{
       'is--slave': $root.settings.is_slave
-    }"
-  >
+    }">
     <div class="m_capture--modeSelector" v-if="!$root.settings.is_slave">
-      <select
-        v-model="selected_mode"
-        :disabled="$root.settings.capture_mode_cant_be_changed"
-      >
-        <option
-          v-for="mode in available_modes"
-          :key="mode.key"
-          :value="mode.key"
-          >{{ mode.key }}</option
-        >
+      <select v-model="selected_mode" :disabled="$root.settings.capture_mode_cant_be_changed">
+        <option v-for="mode in available_modes" :key="mode.key" :value="mode.key">{{ mode.key }}</option>
       </select>
     </div>
 
@@ -29,33 +18,22 @@
     >
       <div class="m_panel">
         <transition name="enableMode" :duration="400">
-          <div class="m_panel--modeOverlay" v-if="mode_just_changed">
-            {{ $t(selected_mode) }}
-          </div>
+          <div class="m_panel--modeOverlay" v-if="mode_just_changed">{{ $t(selected_mode) }}</div>
         </transition>
 
-        <div
-          class="m_panel--previewCard"
-          v-show="!is_validating_stopmotion_video"
-        >
-          <div
-            class="m_panel--previewCard--live"
-            :class="{ 'is--recording': is_recording }"
-          >
+        <div class="m_panel--previewCard" v-show="!is_validating_stopmotion_video">
+          <div class="m_panel--previewCard--live" :class="{ 'is--recording': is_recording }">
             <!-- OPTIONS -->
-            <transition name="slideleft" :duration="400">
-              <div
-                class="m_panel--previewCard--live--options"
-                v-if="show_capture_settings && !is_recording"
-              >
+            <div
+              class="m_panel--previewCard--live--options"
+              v-if="show_capture_settings && !is_recording"
+            >
+              <div class="_scrollBox">
                 <div class="margin-bottom-small">
                   <div>
                     <label>Sources</label>
                   </div>
-                  <div
-                    v-for="(currentId, kind) in selected_devicesId"
-                    :key="kind"
-                  >
+                  <div v-for="(currentId, kind) in selected_devicesId" :key="kind">
                     <span class="font-verysmall">{{ kind }}</span>
                     <select
                       v-if="sorted_available_devices.hasOwnProperty(kind)"
@@ -68,9 +46,7 @@
                         :value="device.deviceId"
                         :key="device.deviceId"
                       >
-                        <template v-if="device.label === ''"
-                          >{{ $t("device") }} {{ index }}</template
-                        >
+                        <template v-if="device.label === ''">{{ $t("device") }} {{ index }}</template>
                         <template v-else>{{ $t(device.label) }}</template>
                       </option>
                     </select>
@@ -89,10 +65,7 @@
                       {{ actual_current_video_resolution.height }}
                     </span>
                   </div>
-                  <div
-                    v-for="res in available_camera_resolutions"
-                    :key="res.name"
-                  >
+                  <div v-for="res in available_camera_resolutions" :key="res.name">
                     <input
                       type="radio"
                       :id="res.name"
@@ -124,42 +97,31 @@
                     </span>
                   </div>
 
-                  <template
-                    v-if="$root.settings.capture_options.distant_flux.active"
-                  >
+                  <template v-if="$root.settings.capture_options.distant_flux.active">
                     <div class="margin-bottom-small">
-                      <span class="font-verysmall"
-                        >Partager les flux sous le nom&nbsp;:</span
-                      >
+                      <span class="font-verysmall">Partager les flux sous le nom&nbsp;:</span>
                       <input type="text" v-model="current_username" />
                     </div>
 
                     <div class="margin-bottom-small">
-                      <span class="font-verysmall"
-                        >Accéder au flux qui a le nom&nbsp;:</span
-                      >
+                      <span class="font-verysmall">Accéder au flux qui a le nom&nbsp;:</span>
                       <input type="text" v-model="callee_username" />
                     </div>
                   </template>
                 </div>
-
-                <div class="m_panel--previewCard--live--options--updateButton">
-                  <button
-                    type="button"
-                    @click="updateSettings"
-                    class="button button-bg_rounded button-outline c-rouge"
-                  >
-                    <span class>{{ $t("update") }}</span>
-                  </button>
-                </div>
               </div>
-            </transition>
+              <div class="m_panel--previewCard--live--options--updateButton">
+                <button
+                  type="button"
+                  @click="updateSettings"
+                  class="button button-bg_rounded button-outline c-rouge"
+                >
+                  <span class>{{ $t("update") }}</span>
+                </button>
+              </div>
+            </div>
 
-            <transition-group
-              tag="div"
-              class="recording_timer"
-              name="slideFromTop"
-            >
+            <transition-group tag="div" class="recording_timer" name="slideFromTop">
               <label
                 v-if="
                   selected_mode !== 'stopmotion' &&
@@ -241,11 +203,7 @@
               :element_width_for_sizes="1600"
             />
 
-            <div
-              id="vectoContainer"
-              v-if="selected_mode === 'vecto'"
-              v-html="vecto.svgstr"
-            />
+            <div id="vectoContainer" v-if="selected_mode === 'vecto'" v-html="vecto.svgstr" />
 
             <transition name="slideright" :duration="400">
               <div
@@ -255,10 +213,7 @@
                 <div class="margin-bottom-small">
                   <template v-if="Object.keys(stopmotions).length > 0">
                     <ul>
-                      <li
-                        v-for="stopmotion in stopmotions"
-                        :key="stopmotion.slugFolderName"
-                      >
+                      <li v-for="stopmotion in stopmotions" :key="stopmotion.slugFolderName">
                         <button
                           type="button"
                           @mouseenter="
@@ -266,12 +221,8 @@
                           "
                           @click="loadStopmotion(stopmotion.slugFolderName)"
                         >
-                          <div class="padding-verysmall">
-                            {{ stopmotion.date_created }}
-                          </div>
-                          <template
-                            v-if="Object.values(stopmotion.medias).length > 0"
-                          >
+                          <div class="padding-verysmall">{{ stopmotion.date_created }}</div>
+                          <template v-if="Object.values(stopmotion.medias).length > 0">
                             <div class="padding-bottom-verysmall">
                               {{ Object.values(stopmotion.medias).length }}
                               photos
@@ -298,9 +249,7 @@
                       </li>
                     </ul>
                   </template>
-                  <template v-else>
-                    {{ $t("no_stopmotion_created_yet") }}
-                  </template>
+                  <template v-else>{{ $t("no_stopmotion_created_yet") }}</template>
                 </div>
               </div>
             </transition>
@@ -346,10 +295,7 @@
           </transition>-->
 
           <transition name="mediaCapture" :duration="300">
-            <div
-              class="m_panel--previewCard--captureOverlay"
-              v-show="capture_button_pressed"
-            />
+            <div class="m_panel--previewCard--captureOverlay" v-show="capture_button_pressed" />
           </transition>
         </div>
 
@@ -374,10 +320,7 @@
         />
 
         <div class="m_panel--buttons" v-if="!$root.settings.is_slave">
-          <div
-            class="m_panel--buttons--row"
-            :class="{ 'bg-orange': is_recording }"
-          >
+          <div class="m_panel--buttons--row" :class="{ 'bg-orange': is_recording }">
             <button
               type="button"
               @click="show_capture_settings = !show_capture_settings"
@@ -465,13 +408,7 @@
             <div class="m_panel--buttons--row--options">
               <div v-if="selected_mode === 'vecto'">
                 <label>{{ $t("smoothing") }}</label>
-                <input
-                  class="margin-none"
-                  type="range"
-                  v-model="vecto.blurradius"
-                  min="0"
-                  max="20"
-                />
+                <input class="margin-none" type="range" v-model="vecto.blurradius" min="0" max="20" />
               </div>
 
               <div
@@ -551,7 +488,7 @@ import StopmotionPanel from "./subcomponents/StopmotionPanel.vue";
 import MediaValidationButtons from "./subcomponents/MediaValidationButtons.vue";
 
 import RecordRTC from "recordrtc";
-import "webrtc-adapter";
+// import "webrtc-adapter";
 import ImageTracer from "imagetracerjs";
 import { setTimeout } from "timers";
 import * as axios from "axios";
@@ -1693,7 +1630,7 @@ var equalizer = (function() {
 <style lang="less">
 .m_capture {
   background-color: var(--color-Capture);
-  padding: var(--spacing);
+  // padding: var(--spacing);
   height: 100%;
 
   display: flex;
@@ -1819,7 +1756,7 @@ var equalizer = (function() {
       background-color: #fff;
 
       &:nth-child(1) {
-        flex-basis: 90%;
+        flex-basis: 95%;
       }
       &:nth-child(2) {
         flex-basis: 0;
@@ -1862,7 +1799,7 @@ var equalizer = (function() {
     flex-flow: column nowrap;
     // height: ~"calc(100vh - 105px - 80px - 40px)";
     min-height: 300px;
-    border-radius: 10px;
+    border-radius: 4px;
     overflow: hidden;
     color: var(--c-noir);
   }
@@ -1898,7 +1835,7 @@ var equalizer = (function() {
     .m_panel--previewCard--live {
       // border: 5px solid @c-gris_clair;
       display: flex;
-      flex-flow: column nowrap;
+      // flex-flow: column nowrap;
 
       &.is--recording {
         background-color: #000;
@@ -1914,6 +1851,7 @@ var equalizer = (function() {
       canvas {
         object-fit: contain;
         min-width: 120px;
+        height: 100%;
       }
 
       .recording_timer {
@@ -1979,49 +1917,54 @@ var equalizer = (function() {
       }
 
       .m_panel--previewCard--live--options {
-        order: 2;
-        flex: 0 1 auto;
+        // order: 1;
+        flex: 0 0 200px;
         // max-width: 250px;
         // background-color: #999;
-        background-color: #f9f9f9;
-        color: #000;
+        // background-color: var(--c-noir);
+        // color: #fff;
+        border-right: 2px solid var(--c-rouge);
         // color: white;
-        padding: ~"calc(var(--spacing))";
         // .margin-vert-small;
-        overflow-y: scroll;
         height: 100%;
-
-        padding-bottom: 50px;
+        // padding: 2px;
 
         // columns: 2 200px;
 
-        > * {
-          break-inside: avoid;
+        display: flex;
+        flex-flow: column nowrap;
 
-          select {
-            width: 100%;
-          }
+        ._scrollBox {
+          overflow-y: auto;
+          padding: ~"calc(var(--spacing))";
+          padding-bottom: 50px;
+          flex: 1 1 auto;
+        }
+
+        select {
+          width: 100%;
         }
 
         .m_panel--previewCard--live--options--updateButton {
-          position: absolute;
-          bottom: 0;
-          left: 0;
+          // position: absolute;
           width: 100%;
-          height: 50px;
+          // height: 50px;
           // background-color: white;
 
           display: flex;
           flex-flow: row wrap;
           justify-content: center;
           align-items: center;
+          padding: 5px;
 
           button {
             display: block;
             color: white;
             border-radius: 2px;
             text-decoration: none;
-            padding: 0 var(--spacing);
+            width: 100%;
+            padding: 0;
+            // padding: 0 var(--spacing);
             background-color: var(--c-rouge);
           }
         }

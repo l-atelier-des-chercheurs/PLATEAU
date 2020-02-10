@@ -196,6 +196,7 @@ export default {
   padding: var(--spacing) calc(var(--spacing) / 2);
 
   display: flex;
+  flex-flow: row wrap;
   line-height: 2;
   align-items: center;
   justify-content: flex-start;

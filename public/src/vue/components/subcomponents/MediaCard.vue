@@ -29,32 +29,6 @@
         :class="{ 'is--hovered': is_hovered }"
       >
         <div>
-          <!-- <div class="m_metaField padding-sides-verysmall">
-            <div>
-              <svg
-                version="1.1"
-                v-if="media.fav"
-                class="inline-svg"
-                xmlns="http://www.w3.org/2000/svg"
-                xmlns:xlink="http://www.w3.org/1999/xlink"
-                xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
-                x="0px"
-                y="0px"
-                width="78.5px"
-                height="106.4px"
-                viewBox="0 0 78.5 106.4"
-                style="enable-background:new 0 0 78.5 106.4;"
-                xml:space="preserve"
-              >
-                <polygon
-                  class="st0"
-                  points="60.4,29.7 78.5,7.3 78.5,7.3 12.7,7.3 12.7,52 78.5,52 78.5,52 	"
-                />
-                <polygon class="st0" points="9.6,106.4 0,106.4 0,2 9.6,0 " />
-              </svg>
-              <span v-if="!!media.type" :class="{ 'c-rouge' : media.fav }">{{ $t(media.type) }}</span>
-            </div>
-          </div>-->
           <MediaContent
             v-model="media.content"
             :context="'preview'"
@@ -64,6 +38,9 @@
             :preview_size="preview_size"
           />
           <figcaption class="m_media--caption" v-if="!!media.caption">{{ media.caption }}</figcaption>
+          <div
+            class="m_media--date"
+          >{{ $moment(media.date_uploaded, "YYYY-MM-DD HH:mm:ss").format("HH:mm") }}</div>
         </div>
 
         <figcaption v-if="is_hovered && false">
@@ -311,6 +288,11 @@ export default {
 
 .m_media--caption {
   font-size: 70%;
-  padding: 0 calc(var(--spacing) / 2);
+  padding: 0 calc(var(--spacing) / 4);
+}
+.m_media--date {
+  font-size: 70%;
+  font-weight: bold;
+  padding: 0 calc(var(--spacing) / 4);
 }
 </style>

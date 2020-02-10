@@ -234,13 +234,19 @@ export default {
   padding: calc(var(--spacing) / 2);
   flex: 0 0 auto;
   text-transform: uppercase;
-  font-size: 50%;
+  font-size: 70%;
   height: auto;
 
   background-color: var(--c-noir);
+  color: white;
 
   > * {
     flex: 0 1 180px;
+  }
+
+  svg {
+    width: 30px;
+    height: 30px;
   }
 
   .m_mediaValidationButtons--overlay {

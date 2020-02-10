@@ -89,7 +89,7 @@
           <!-- <span class="text-cap font-verysmall">
             {{ $t('generate') }}
           </span>-->
-          <img src="/images/i_play.svg" width="48" height="48" draggable="false" />
+          Compiler
         </button>
       </div>
     </div>
@@ -289,5 +289,279 @@ export default {
   }
 };
 </script>
-<style>
+<style lang="scss" scoped>
+.m_stopmotionpanel {
+  position: relative;
+  display: flex;
+  // .bg-noir;
+  flex-flow: column nowrap;
+  flex: 0 1 auto;
+
+  &.is--showing_video_validation {
+    flex-grow: 1;
+  }
+
+  > * {
+    transition: all 0.4s;
+  }
+
+  .m_stopmotionpanel--toprowbuttons {
+    position: absolute;
+    left: 0;
+    z-index: 10;
+    bottom: 100%;
+
+    button {
+      background-color: var(--c-noir);
+      color: white;
+    }
+  }
+
+  .m_stopmotionpanel--medias {
+    // .bg-noir;
+    flex: 1 1 auto;
+    display: flex;
+    flex-flow: row nowrap;
+    max-height: 120px;
+    // justify-content: flex-end;
+
+    // .m_stopmotionpanel--medias--single {
+    //   position: relative;
+    //   flex: 1 1 auto;
+    //   .bg-noir;
+
+    //   .mediaContainer {
+    //     position: absolute;
+    //     height: 100%;
+    //     width: 100%;
+    //     img {
+    //       height: 100%;
+    //       width: 100%;
+    //       margin: 0;
+    //       object-fit: contain;
+    //       object-position: center;
+    //     }
+    //   }
+
+    //   .m_stopmotionpanel--medias--single--removeMedia {
+    //     position: absolute;
+    //     bottom: 0;right: 0;
+    //   }
+    // }
+
+    .m_stopmotionpanel--medias--list {
+      display: block;
+      flex: 1 1 auto;
+      position: relative;
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: center;
+
+      overflow-x: auto;
+      overflow-y: hidden;
+
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior-y: contain;
+      padding: calc(var(--spacing) / 4);
+      margin: calc(var(--spacing) / 4);
+      scroll-behavior: smooth;
+
+      background-color: var(--c-gris);
+      border-radius: 6px;
+
+      // .custom_scrollbar(1px, 3px, 2px, rgba(255, 255, 255, 0), #333);
+
+      counter-reset: compteListe;
+
+      &::before,
+      &::after {
+        // content: '';
+        // height: 100%;
+        // padding-left: 2px;
+      }
+
+      > * {
+        position: relative;
+        overflow: hidden;
+        // background-color: @c-gris_clair;
+        // border-radius: 10px;
+        // height: 100px;
+        width: auto;
+        flex: 0 0 90px;
+        margin-right: 1px;
+        cursor: pointer;
+
+        &::before {
+          counter-increment: compteListe 1;
+          content: counter(compteListe) " ";
+          position: absolute;
+          left: 0;
+          top: 0;
+          padding: calc(var(--spacing) / 4);
+          // .c-noir;
+          // .c-blanc;
+          text-transform: uppercase;
+          font-size: 50%;
+          // font-weight: 600;
+          background-color: var(--c-noir);
+          color: white;
+          border-radius: 0 0 0.4em 0;
+          line-height: 1;
+          z-index: 1;
+        }
+
+        &:last-child {
+          flex-basis: 190px;
+
+          video {
+            width: 90px;
+          }
+          &::before {
+            content: "LIVE";
+            // .bg-bleuvert;
+          }
+          // &::after {
+          //   content:'';
+          //   display: block;
+          //   width: 100px;
+          //   height: 1px;
+          // }
+        }
+
+        &.is--current_single::before {
+          // .c-rouge;
+          color: white;
+          background-color: var(--c-rouge);
+        }
+
+        .mediaContainer {
+          width: 100%;
+          height: 100%;
+          width: auto;
+          img,
+          video {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            object-fit: contain;
+            background-color: var(--c-noir);
+          }
+        }
+      }
+    }
+
+    .m_stopmotionpanel--medias--validation {
+      // .bg-rouge;
+      flex-shrink: 0;
+      padding: calc(var(--spacing) / 4);
+
+      display: flex;
+      flex: row nowrap;
+      align-items: center;
+
+      --input-height: 2em;
+
+      .m_stopmotionpanel--medias--validation--fpscounter {
+        // .padding-sides-small;
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+
+        select {
+          margin-left: calc(var(--spacing) / 4);
+          margin-left: calc(var(--spacing) / 4);
+          flex: 0 0 auto;
+          max-width: 50px;
+          font-size: 70%;
+          // .bg-noir;
+        }
+        label {
+          margin-left: calc(var(--spacing) / 4);
+          margin-left: calc(var(--spacing) / 4);
+          // display: none;
+          color: white;
+          max-width: 80px;
+          font-size: 0.6em;
+        }
+      }
+
+      button {
+        // width: 100%;
+        // height: 100%;
+        padding: 0;
+        // .margin-small;
+        // min-height: 0;
+      }
+    }
+  }
+  .m_stopmotionpanel--videopreview {
+    position: relative;
+    flex: 1 1 auto;
+    overflow: hidden;
+
+    .mediaContainer {
+      position: absolute;
+      height: 100%;
+      width: 100%;
+
+      display: flex;
+      align-items: center;
+
+      > * {
+        width: 100%;
+        height: 100%;
+      }
+
+      video {
+        height: 100%;
+        width: 100%;
+        background-color: var(--c-noir);
+      }
+    }
+  }
+
+  .m_stopmotionpanel--buttons {
+    flex: 0 0 auto;
+    width: 100%;
+    // min-height: 50px;
+    color: var(--c-noir);
+
+    > * {
+      display: flex;
+      flex-flow: row wrap;
+      justify-content: space-between;
+      align-items: center;
+      padding: calc(var(--spacing) / 2);
+      // .bg-noir;
+
+      &:nth-child(1) {
+      }
+      &:nth-child(2) {
+        border-top: 2px solid white;
+        justify-content: center;
+        background-color: var(--c-noir);
+      }
+    }
+
+    label {
+      // color: white;
+    }
+    input[type="number"] {
+      width: 50px;
+    }
+  }
+
+  .m_stopmotionpanel--loader {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
 </style>

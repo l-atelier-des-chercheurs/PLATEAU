@@ -18,11 +18,7 @@
         :disabled="!item.enabled"
         :style="`--color-active: var(--color-${item.key});`"
       >
-        <input
-          type="checkbox"
-          :id="`enable_pane_for_${item.key}`"
-          v-model="item.enabled"
-        />
+        <input type="checkbox" :id="`enable_pane_for_${item.key}`" v-model="item.enabled" />
         <div>
           <div v-handle v-if="item.enabled" class="handle" />
           <span>{{ $t(item.key) }}</span>
@@ -63,6 +59,7 @@ export default {
   width: 500px;
   height: auto;
   display: flex;
+  flex-flow: row wrap;
   justify-content: flex-end;
   white-space: nowrap;
 

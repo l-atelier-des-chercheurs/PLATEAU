@@ -22,6 +22,8 @@
   </div>
 </template>
 <script>
+import Draggabilly from "draggabilly";
+
 export default {
   props: {
     slugFolderName: String,
@@ -34,6 +36,10 @@ export default {
   created() {},
   mounted() {
     this.$eventHub.$on("countdown.start_timer", this.start_timer);
+    new Draggabilly(this.$el, {
+      containment: true
+    });
+    debugger;
   },
   beforeDestroy() {
     this.$eventHub.$off("countdown.start_timer", this.start_timer);
@@ -45,6 +51,9 @@ export default {
           .closeLogOnClick(true)
           .delay(4000)
           .success("Début du compte à rebours");
+    },
+    remaining_time: function() {
+      if (!!this.$el) new Draggabilly(this.$el);
     }
   },
   computed: {
@@ -129,18 +138,22 @@ export default {
 .m_countdown {
   position: absolute;
   bottom: 0;
-  right: 10%;
-  width: auto;
-  min-height: 2em;
+  right: 0;
+  width: 25em;
+  height: 7em;
   min-width: 70px;
   max-width: 800px;
-  height: auto;
   background-color: var(--c-rouge);
-  border: 1px solid black;
+  // border: 1px solid black;
   z-index: 11000;
   border-radius: 10px;
   margin: calc(var(--spacing));
 
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: space-between;
+
+  user-select: none;
   text-align: center;
   // font-family: "Work Sans";
 }
