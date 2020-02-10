@@ -1952,11 +1952,10 @@ module.exports = (function() {
                 global.settings.structure[type].preview.height,
                 {
                   fit: "inside",
-                  withoutEnlargement: true,
-                  background: "white"
+                  withoutEnlargement: true
                 }
               )
-              .flatten()
+              .flatten({ background: "white" })
               .withMetadata()
               .toFormat(global.settings.thumbFormat, {
                 quality: global.settings.mediaThumbQuality
