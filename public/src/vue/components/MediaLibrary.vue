@@ -98,6 +98,7 @@
               >
                 <div v-for="media in item[1]" :key="media.slugMediaName">
                   <MediaCard
+                    :class="{ 'is--inMediaFocus' : media.slugMediaName === show_media_detail_for }"
                     :key="media.slugMediaName"
                     :media="media"
                     :metaFileName="media.metaFileName"

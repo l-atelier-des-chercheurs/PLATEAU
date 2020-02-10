@@ -195,7 +195,7 @@ export default {
   // width: var(--media-width);
   // height: var(--media-width);
 
-  transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
+  // transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.4);
@@ -220,6 +220,10 @@ export default {
     &::after {
       opacity: 1;
     }
+  }
+
+  &.is--inMediaFocus {
+    border: 1px solid black;
   }
 
   &.is--draggable_to_writeup {
