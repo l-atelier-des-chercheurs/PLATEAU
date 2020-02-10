@@ -15,6 +15,7 @@
             }"
             :slugFolderName="slugFolderName"
             @toggleOpen="toggleOpenItem"
+            @removePlanningMedia="removePlanningMedia"
           />
         </div>
       </SlickItem>

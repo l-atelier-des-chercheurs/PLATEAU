@@ -6,18 +6,16 @@
         {{ $t(selected_field_to_show) }}
         <br />
         {{
-          projectDate(project[selected_field_to_show]) +
-            " " +
-            $t("at") +
-            " " +
-            $moment(project[selected_field_to_show]).format("HH:mm")
+        projectDate(project[selected_field_to_show]) +
+        " " +
+        $t("at") +
+        " " +
+        $moment(project[selected_field_to_show]).format("HH:mm")
         }}
       </div>
     </div>
     <div class>
-      <button @click="$root.openProject(project.slugFolderName)">
-        {{ $t("open") }}
-      </button>
+      <button @click="$root.openProject(project.slugFolderName)">{{ $t("ouvrir") }}</button>
 
       <button
         type="button"
@@ -25,26 +23,24 @@
         :class="{ 'is--active': showDuplicateProjectMenu }"
         @click="showDuplicateProjectMenu = !showDuplicateProjectMenu"
         :disabled="read_only"
-      >
-        {{ $t("dupliquer") }}
-      </button>
+      >{{ $t("dupliquer") }}</button>
+
+      <button
+        type="button"
+        class="buttonLink"
+        :disabled="zip_export_started"
+        @click="downloadProjectArchive"
+      >{{ $t("télécharger") }}</button>
 
       <div v-if="showDuplicateProjectMenu" class="margin-bottom-small">
         <label v-html="'Nom de la copie'" />
         <form @submit.prevent="duplicateWithNewName()" class="input-group">
-          <input
-            type="text"
-            v-model.trim="copy_project_name"
-            required
-            autofocus
-          />
+          <input type="text" v-model.trim="copy_project_name" required autofocus />
           <button type="submit" v-html="$t('copier')" class="bg-bleuvert" />
         </form>
       </div>
 
-      <button @click="removeProject(project.slugFolderName)">
-        {{ $t("remove") }}
-      </button>
+      <button @click="removeProject(project.slugFolderName)">{{ $t("remove") }}</button>
     </div>
   </div>
 </template>
@@ -150,6 +146,30 @@ export default {
           .delay(4000)
           .success(this.$t("notifications.project_copy_completed"));
       });
+    },
+    downloadProjectArchive() {
+      if (this.$root.state.dev_mode === "debug") {
+        console.log(`ProjectThumb • METHODS: downloadProjectArchive`);
+      }
+
+      this.zip_export_started = true;
+      setTimeout(() => {
+        this.zip_export_started = false;
+      }, 2000);
+
+      // const pwd = this.$auth.hashCode(this.project_password);
+      const query_url =
+        window.location.origin +
+        "/_archives/projects/" +
+        this.project.slugFolderName;
+      // + `?pwd=${pwd}`;
+
+      if (this.$root.state.dev_mode === "debug")
+        console.log(
+          `Project • METHODS: downloadProjectArchive with query ${query_url}`
+        );
+
+      window.location.replace(query_url);
     }
   }
 };

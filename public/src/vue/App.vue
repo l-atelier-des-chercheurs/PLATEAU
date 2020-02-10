@@ -117,6 +117,7 @@ video {
 }
 
 button,
+.button,
 label {
   appearance: none;
   background-color: transparent;
@@ -133,6 +134,8 @@ label {
 button,
 .button {
   text-decoration: underline;
+  font-size: inherit;
+  font-weight: bold;
   cursor: pointer;
   padding: 0.2em;
   transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);

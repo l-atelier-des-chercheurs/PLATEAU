@@ -14,10 +14,13 @@
         </svg>
       </button>
     </div>
-    <div v-if="originating_planning_item" class="m_countdown--planningName">
-      <span @click="openPlanningItem(originating_planning_item.metaFileName)"
-        >→ {{ originating_planning_item.name }}</span
-      >
+    <div
+      v-if="originating_planning_item"
+      class="m_countdown--planningName"
+      @click="openPlanningItem(originating_planning_item.metaFileName)"
+      role="button"
+    >
+      <span>→ {{ originating_planning_item.name }}</span>
     </div>
   </div>
 </template>
@@ -166,6 +169,7 @@ export default {
   font-weight: 600;
   font-size: 2em;
   padding: calc(var(--spacing) / 2);
+  cursor: move;
 
   font-variant-numeric: tabular-nums;
   // margin: calc(var(--spacing));
@@ -200,6 +204,7 @@ button {
 .m_countdown--planningName {
   background-color: rgba(0, 0, 0, 0.15);
   padding: calc(var(--spacing) / 4) calc(var(--spacing) / 2);
+  cursor: pointer;
 
   span {
     cursor: pointer;
