@@ -180,7 +180,8 @@ export default {
     return {
       edit_mode: false,
       edit_notes: this.mode === "expanded",
-      show_full_notes: false
+      show_full_notes: false,
+      duration_picker_data: "00:00"
     };
   },
   created() {},
@@ -198,7 +199,9 @@ export default {
         this.edited_media_infos = {
           name: this.media.name,
           planning_info_start: this.media.planning_info_start,
-          planning_info_duration: this.media.planning_info_duration
+          planning_info_duration: !!this.media.planning_info_duration
+            ? this.media.planning_info_duration
+            : "00:00"
         };
       }
     }
@@ -229,6 +232,10 @@ export default {
       //     : "00";
 
       //   this.edited_media_infos.planning_info_duration = HH + "" + mm;
+      // }
+
+      // if (!!this.duration_picker_data) {
+      //   this.edited_media_infos.planning_info_duration = this.duration_picker_data;
       // }
 
       const checkIfValueChanged = (key, val) => val !== this.media[key];
