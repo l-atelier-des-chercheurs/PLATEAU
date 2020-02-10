@@ -1,40 +1,41 @@
-const path = require('path'),
-  fs = require('fs-extra'),
-  archiver = require('archiver');
+const path = require("path"),
+  fs = require("fs-extra"),
+  archiver = require("archiver");
 
-const sockets = require('./core/sockets'),
-  dev = require('./core/dev-log'),
-  cache = require('./core/cache'),
-  api = require('./core/api'),
-  file = require('./core/file'),
-  exporter = require('./core/exporter'),
-  importer = require('./core/importer'),
-  remote_api = require('./core/remote_api');
+const sockets = require("./core/sockets"),
+  dev = require("./core/dev-log"),
+  cache = require("./core/cache"),
+  api = require("./core/api"),
+  file = require("./core/file"),
+  exporter = require("./core/exporter"),
+  importer = require("./core/importer"),
+  remote_api = require("./core/remote_api");
 
 module.exports = function(app) {
   /**
    * routing event
    */
-  app.get('/', showIndex);
-  app.get('/:slugProjectName', loadFolder);
-  app.get('/:type/:slugFolderName', printFolder);
-  app.get('/:type/:slugFolderName/pdf', createAndDownloadPDF);
-  app.post('/file-upload/:type/:slugFolderName', postFile2);
+  app.get("/", showIndex);
+  app.get("/:slugProjectName", loadFolder);
+  app.get("/:type/:slugFolderName", printFolder);
+  app.get("/:type/:slugFolderName/pdf", createAndDownloadPDF);
+  app.get("/_archives/:type/:slugFolderName", downloadArchive);
+  app.post("/file-upload/:type/:slugFolderName", postFile2);
 
   remote_api.init(app);
 
   // app.ws('/_collaborative-editing', collaborativeEditing);
 
   function collaborativeEditing(ws, req) {
-    console.log('WebSocket sharedb event');
+    console.log("WebSocket sharedb event");
 
-    ws.on('message', msg => {
-      console.log('WebSocket was closed');
+    ws.on("message", msg => {
+      console.log("WebSocket was closed");
       ws.send(msg);
     });
 
-    ws.on('close', () => {
-      console.log('WebSocket was closed');
+    ws.on("close", () => {
+      console.log("WebSocket was closed");
     });
   }
 
@@ -43,7 +44,7 @@ module.exports = function(app) {
    */
   function generatePageData(req) {
     return new Promise(function(resolve, reject) {
-      let fullUrl = req.protocol + '://' + req.get('host') + req.originalUrl;
+      let fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
       dev.log(`••• the following page has been requested: ${fullUrl} •••`);
 
       let pageData = {};
@@ -51,7 +52,7 @@ module.exports = function(app) {
       pageData.pageTitle = global.appInfos.productName;
       // full path on the storage space, as displayed in the footer
       pageData.folderPath = api.getFolderPath();
-      pageData.slugFolderName = '';
+      pageData.slugFolderName = "";
       pageData.url = req.path;
       pageData.protocol = req.protocol;
       pageData.structure = global.settings.structure;
@@ -66,7 +67,7 @@ module.exports = function(app) {
         {}
       );
 
-      pageData.mode = 'live';
+      pageData.mode = "live";
 
       resolve(pageData);
     });
@@ -80,7 +81,7 @@ module.exports = function(app) {
         //   `Rendering index with data `,
         //   JSON.stringify(pageData, null, 4)
         // );
-        res.render('index', pageData);
+        res.render("index", pageData);
       },
       err => {
         dev.error(`Err while getting index data: ${err}`);
@@ -89,8 +90,8 @@ module.exports = function(app) {
   }
 
   function loadFolder(req, res) {
-    let slugFolderName = req.param('slugProjectName');
-    const type = 'projects';
+    let slugFolderName = req.param("slugProjectName");
+    const type = "projects";
 
     generatePageData(req).then(
       pageData => {
@@ -101,16 +102,16 @@ module.exports = function(app) {
             foldersData => {
               pageData.slugFolderName = slugFolderName;
               pageData.store[slugFolderName] = foldersData;
-              return res.render('index', pageData);
+              return res.render("index", pageData);
             },
             (err, p) => {
               dev.error(`Failed to get folder: ${err}`);
-              pageData.noticeOfError = 'failed_to_find_folder';
-              res.render('index', pageData);
+              pageData.noticeOfError = "failed_to_find_folder";
+              res.render("index", pageData);
             }
           )
           .catch(err => {
-            dev.error('No folder found');
+            dev.error("No folder found");
           });
       },
       err => {
@@ -120,8 +121,8 @@ module.exports = function(app) {
   }
 
   function printFolder(req, res) {
-    const type = req.param('type');
-    const slugFolderName = req.param('slugFolderName');
+    const type = req.param("type");
+    const slugFolderName = req.param("slugFolderName");
 
     generatePageData(req).then(pageData => {
       dev.logverbose(`Generated slugFolderName pageData`);
@@ -131,15 +132,15 @@ module.exports = function(app) {
 
       exporter.loadFolder({ type, slugFolderName, pageData }).then(pageData => {
         pageData.slugFolderName = slugFolderName;
-        pageData.mode = 'print_folder';
-        res.render('index', pageData);
+        pageData.mode = "print_folder";
+        res.render("index", pageData);
       });
     });
   }
 
   function createAndDownloadPDF(req, res) {
-    const type = req.param('type');
-    const slugFolderName = req.param('slugFolderName');
+    const type = req.param("type");
+    const slugFolderName = req.param("slugFolderName");
 
     // générer le PDF
     exporter
@@ -153,9 +154,72 @@ module.exports = function(app) {
       });
   }
 
+  function downloadArchive(req, res) {
+    let type = req.param("type");
+    let slugFolderName = req.param("slugFolderName");
+
+    // check if folder is protected
+    file
+      .getFolder({ type: type, slugFolderName })
+      .then(foldersData => {
+        const folder_meta = Object.values(foldersData)[0];
+        if (!folder_meta.hasOwnProperty("password") || !folder_meta.password) {
+          return;
+        }
+        // if it is, check that we have a socketid with the request and if so, if that id is allowed to access that folder
+        if (!req.query.hasOwnProperty("pwd")) {
+          throw "Missing password for protected folder";
+        }
+        const pwd = req.query.pwd;
+
+        if (String(auth.hashCode(folder_meta.password)) !== String(pwd)) {
+          throw "Wrong password for folder";
+        }
+
+        return;
+      })
+      .then(() => {
+        dev.log(
+          `Will create and stream archive for folder ${type}/${slugFolderName}`
+        );
+
+        // checks passed
+        var archive = archiver("zip", {
+          zlib: { level: 0 } //
+        });
+
+        archive.on("error", function(err) {
+          res.status(500).send({ error: err.message });
+        });
+
+        //on stream closed we can end the request
+        archive.on("end", function() {
+          dev.log("Archive wrote %d bytes", archive.pointer());
+        });
+
+        //set the archive name
+        res.attachment(slugFolderName + ".zip");
+
+        //this is the streaming magic
+        archive.pipe(res);
+
+        const baseFolderPath = global.settings.structure[type].path;
+        const mainFolderPath = api.getFolderPath(baseFolderPath);
+        const thisFolderPath = path.join(mainFolderPath, slugFolderName);
+
+        archive.directory(thisFolderPath, false);
+
+        archive.finalize();
+      })
+      .catch(err => {
+        dev.error(`Error! ${err}`);
+        res.status(500).send({ error: err });
+      });
+  }
+
   function postFile2(req, res) {
-    let type = req.param('type');
-    let slugFolderName = req.param('slugFolderName');
+    let type = req.param("type");
+    let slugFolderName = req.param("slugFolderName");
     importer.handleForm({ req, res, type, slugFolderName });
   }
 };
