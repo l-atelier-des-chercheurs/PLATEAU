@@ -140,6 +140,8 @@
           <div class="m_library--mediaFocus--buttons">
             <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t("remove") }}</button>
             <button type="button" @click="closeMediaFocus()">{{ $t("close") }}</button>
+            <button type="button" @click="prevMedia">←</button>
+            <button type="button" @click="nextMedia">→</button>
           </div>
         </div>
       </pane>
@@ -208,7 +210,7 @@ export default {
   data() {
     return {
       mediaSort: {
-        field: "date_uploaded",
+        field: "date_created",
         type: "date",
         order: "descending"
       },
@@ -382,29 +384,29 @@ export default {
     }
   },
   methods: {
-    // prevMedia() {
-    //   this.mediaNav(-1);
-    // },
-    // nextMedia() {
-    //   this.mediaNav(+1);
-    // },
-    // mediaNav(relative_index) {
-    //   const current_media_index = this.sortedMedias.findIndex(
-    //     m => m.metaFileName === this.$root.media_modal.current_metaFileName
-    //   );
-    //   const new_media = this.sortedMedias[current_media_index + relative_index];
-    //   this.$root.closeMedia();
+    prevMedia() {
+      this.mediaNav(-1);
+    },
+    nextMedia() {
+      this.mediaNav(+1);
+    },
+    mediaNav(relative_index) {
+      const current_media_index = this.sortedMedias.findIndex(
+        m => m.metaFileName === this.show_media_detail_for
+      );
+      const new_media = this.sortedMedias[current_media_index + relative_index];
 
-    //   if (
-    //     !!new_media &&
-    //     new_media.hasOwnProperty("metaFileName") &&
-    //     !!new_media.metaFileName
-    //   ) {
-    //     this.$nextTick(() => {
-    //       this.openMediaModal(new_media.metaFileName);
-    //     });
-    //   }
-    // },
+      if (
+        !!new_media &&
+        new_media.hasOwnProperty("metaFileName") &&
+        !!new_media.metaFileName
+      ) {
+        this.$nextTick(() => {
+          this.openMedia(new_media.metaFileName);
+        });
+      }
+    },
+
     getAllKeywordsFrom(base) {
       let uniqueKeywords = [];
       Object.values(base).map(meta => {
