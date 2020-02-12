@@ -46,7 +46,6 @@
       <template v-else>
         <label>{{ $t("autres appareils connectés") }}</label>
         <br />
-          v-for="client in uniqueClientsExceptSelf"
         <ul>
           <li
             class="m_clientsList--list--client"
