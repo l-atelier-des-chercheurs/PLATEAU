@@ -193,7 +193,7 @@ export default {
   min-height: 55px;
   border-bottom: 1px solid black;
 
-  padding: var(--spacing) calc(var(--spacing) / 2);
+  padding: calc(var(--spacing) / 2);
 
   display: flex;
   flex-flow: row wrap;
