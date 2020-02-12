@@ -1,14 +1,17 @@
 <template>
-  <div class="m_composition" :class="{
+  <div
+    class="m_composition"
+    :class="{
       'is--slave': $root.settings.is_slave
-    }">
+    }"
+  >
     <div class v-if="!$root.settings.is_slave">
       <table class v-if="mode === 'composition_list'">
         <thead>
           <tr>
-            <th style>{{ $t('compositions') }}</th>
-            <!-- <th>{{ $t('date_modified') }}</th> -->
-            <th colspan="2">{{ $t('actions') }}</th>
+            <th style>{{ $t("compositions") }}</th>
+            <th>{{ $t("aperçu") }}</th>
+            <th colspan="2">{{ $t("actions") }}</th>
           </tr>
         </thead>
         <transition-group tag="tbody" name="list-complete">
@@ -18,18 +21,32 @@
               :title="$moment(w.date_modified).format('l LTS')"
             >{{ format_date_to_human(w.date_modified) + ' ' + $moment(w.date_modified).format('HH:mm') }}</td>-->
             <td>
+              <div class="_composition_preview">
+                <FabricCanvas
+                  :media="w"
+                  :max_zoom="0.1"
+                  :slugFolderName="slugFolderName"
+                  :drawing_options="{ mode: 'select' }"
+                />
+              </div>
+            </td>
+            <td>
               <button
                 type="button"
                 class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
                 @click="openCompositionMedia(w.metaFileName)"
-              >{{ $t('open') }}</button>
+              >
+                {{ $t("open") }}
+              </button>
             </td>
             <td>
               <button
                 type="button"
                 class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
                 @click="removeCompositionMedia(w.metaFileName)"
-              >{{ $t('remove') }}</button>
+              >
+                {{ $t("remove") }}
+              </button>
             </td>
           </tr>
           <tr :key="'create'">
@@ -38,21 +55,32 @@
                 <button
                   type="button"
                   class="_create_button"
-                  @click="show_createcomposition_section = !show_createcomposition_section"
-                >{{ $t('create') }}</button>
+                  @click="
+                    show_createcomposition_section = !show_createcomposition_section
+                  "
+                >
+                  {{ $t("create") }}
+                </button>
               </td>
             </template>
 
             <template v-else>
               <td colspan="2">
-                <input type="text" class ref="nameInput" @keyup.enter="createCompositionMedia" />
+                <input
+                  type="text"
+                  class
+                  ref="nameInput"
+                  @keyup.enter="createCompositionMedia"
+                />
               </td>
               <td colspan="2">
                 <button
                   type="button"
                   class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
                   @click="createCompositionMedia"
-                >{{ $t('create') }}</button>
+                >
+                  {{ $t("create") }}
+                </button>
               </td>
             </template>
           </tr>
@@ -63,7 +91,9 @@
           class="button_backtolist"
           type="button"
           @click="closeCompositionMedia"
-        >← {{ $t('back_to_list') }}</button>
+        >
+          ← {{ $t("back_to_list") }}
+        </button>
       </div>
     </div>
 
@@ -73,11 +103,16 @@
       :slugFolderName="slugFolderName"
       :media="current_composition_media"
       :readonly="read_only"
-      @remove="removeCompositionMedia($root.settings.current_composition_media_metaFileName)"
+      @remove="
+        removeCompositionMedia(
+          $root.settings.current_composition_media_metaFileName
+        )
+      "
     />
   </div>
 </template>
 <script>
+import FabricCanvas from "./subcomponents/FabricCanvas.vue";
 import CompositionEditor from "./subcomponents/CompositionEditor.vue";
 
 export default {
@@ -86,7 +121,8 @@ export default {
     composition_medias: Array
   },
   components: {
-    CompositionEditor
+    CompositionEditor,
+    FabricCanvas
   },
   data() {
     return {
@@ -313,6 +349,7 @@ table td:first-child {
   padding-left: 20px;
   border-left: 0;
 }
+
 table td {
   padding: 18px;
   border-bottom: 1px solid #000;
@@ -349,5 +386,11 @@ table tr:hover td {
 
 ._create_button {
   width: 100%;
+}
+
+._composition_preview {
+  width: 102px;
+  height: 77px;
+  margin: 0;
 }
 </style>

@@ -23,10 +23,13 @@ import debounce from "debounce";
 
 export default {
   props: {
-    medias: Array,
     media: Object,
     slugFolderName: String,
-    drawing_options: Object
+    drawing_options: Object,
+    max_zoom: {
+      type: Number,
+      default: 1
+    }
   },
   components: {},
   data() {
@@ -38,7 +41,7 @@ export default {
         width: 1024,
         height: 768
       },
-      zoom: 1
+      zoom: this.max_zoom
     };
   },
 
@@ -268,9 +271,9 @@ export default {
       if (canvas > 0 && container > 0) {
         const margins = 0;
         if (container < canvas + margins) {
-          this.zoom = container / (canvas + margins);
+          this.zoom = Math.min(this.max_zoom, container / (canvas + margins));
         } else {
-          this.zoom = 1;
+          this.zoom = Math.min(this.max_zoom, 1);
         }
       }
     }
