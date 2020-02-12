@@ -269,6 +269,8 @@ export default {
         const margins = 0;
         if (container < canvas + margins) {
           this.zoom = container / (canvas + margins);
+        } else {
+          this.zoom = 1;
         }
       }
     }
