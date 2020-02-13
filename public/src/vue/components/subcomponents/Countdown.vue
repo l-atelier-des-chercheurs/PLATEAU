@@ -42,7 +42,6 @@ export default {
     new Draggabilly(this.$el, {
       containment: true
     });
-    debugger;
   },
   beforeDestroy() {
     this.$eventHub.$off("countdown.start_timer", this.start_timer);
