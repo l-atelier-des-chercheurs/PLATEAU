@@ -5,48 +5,50 @@
       'is--slave': $root.settings.is_slave
     }"
   >
-    <div class v-if="!$root.settings.is_slave">
-      <div class v-if="mode === 'composition_list'">
-        <transition-group
-          tag="div"
-          class="m_composition--items"
-          name="list-complete"
+    <div
+      class="m_composition--list"
+      v-if="!$root.settings.is_slave && mode === 'composition_list'"
+    >
+      <transition-group
+        tag="div"
+        class="m_composition--items"
+        name="list-complete"
+      >
+        <div
+          v-for="w in composition_medias"
+          :key="w.metaFileName"
+          class="m_composition--items--item"
+          @click="openCompositionMedia(w.metaFileName)"
         >
-          <div
-            v-for="w in composition_medias"
-            :key="w.metaFileName"
-            class="m_composition--items--item"
-            @click="openCompositionMedia(w.metaFileName)"
-          >
-            <div class="_composition_preview">
-              <FabricCanvas
-                :media="w"
-                :max_zoom="0.3"
-                :slugFolderName="slugFolderName"
-                :drawing_options="{ mode: 'select' }"
-              />
-            </div>
+          <div class="_composition_preview">
+            <FabricCanvas
+              :media="w"
+              :max_zoom="0.3"
+              :slugFolderName="slugFolderName"
+              :drawing_options="{ mode: 'select' }"
+            />
+          </div>
 
-            <div class="m_composition--items--item--name">
-              {{ w.name }}
-            </div>
-            <div :title="$moment(w.date_modified).format('l LTS')">
-              Modifié le
-              {{
-                format_date_to_human(w.date_modified) +
-                  " " +
-                  $moment(w.date_modified).format("HH:mm")
-              }}
-            </div>
+          <div class="m_composition--items--item--name">
+            {{ w.name }}
+          </div>
+          <div :title="$moment(w.date_modified).format('l LTS')">
+            Modifié le
+            {{
+              format_date_to_human(w.date_modified) +
+                " " +
+                $moment(w.date_modified).format("HH:mm")
+            }}
+          </div>
 
-            <div class="m_composition--items--item--buttons">
-              <!-- <button
+          <div class="m_composition--items--item--buttons">
+            <!-- <button
                 type="button"
                 class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
               >
                 {{ $t("open") }}
               </button> -->
-              <!-- <div>
+            <!-- <div>
                 <button
                   type="button"
                   class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
@@ -55,48 +57,38 @@
                   {{ $t("remove") }}
                 </button>
               </div> -->
-            </div>
           </div>
-          <div :key="'create'" class="m_composition--items--item_create">
-            <template v-if="!show_createcomposition_section">
-              <button
-                type="button"
-                class="_create_button"
-                @click="
-                  show_createcomposition_section = !show_createcomposition_section
-                "
-              >
-                {{ $t("create") }}
-              </button>
-            </template>
+        </div>
+        <div :key="'create'" class="m_composition--items--item_create">
+          <template v-if="!show_createcomposition_section">
+            <button
+              type="button"
+              class="_create_button"
+              @click="
+                show_createcomposition_section = !show_createcomposition_section
+              "
+            >
+              {{ $t("create") }}
+            </button>
+          </template>
 
-            <template v-else>
-              <input
-                type="text"
-                class
-                ref="nameInput"
-                @keyup.enter="createCompositionMedia"
-              />
-              <button
-                type="button"
-                class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-                @click="createCompositionMedia"
-              >
-                {{ $t("create") }}
-              </button>
-            </template>
-          </div>
-        </transition-group>
-      </div>
-      <div v-else-if="mode === 'single_composition'" class="text-centered">
-        <button
-          class="button_backtolist"
-          type="button"
-          @click="closeCompositionMedia"
-        >
-          ← {{ $t("back_to_list") }}
-        </button>
-      </div>
+          <template v-else>
+            <input
+              type="text"
+              class
+              ref="nameInput"
+              @keyup.enter="createCompositionMedia"
+            />
+            <button
+              type="button"
+              class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
+              @click="createCompositionMedia"
+            >
+              {{ $t("create") }}
+            </button>
+          </template>
+        </div>
+      </transition-group>
     </div>
 
     <CompositionEditor
@@ -110,6 +102,7 @@
           $root.settings.current_composition_media_metaFileName
         )
       "
+      @back="closeCompositionMedia"
     />
   </div>
 </template>
@@ -265,9 +258,7 @@ export default {
 .m_composition {
   position: relative;
   background-color: var(--color-Composition);
-  padding: var(--spacing);
   height: 100%;
-  overflow: auto;
 
   &.is--slave {
     padding: 0;
@@ -292,9 +283,10 @@ export default {
   button {
   }
 }
-
-.button_backtolist {
-  margin: 0 var(--spacing);
+.m_composition--list {
+  height: 100%;
+  padding: var(--spacing);
+  overflow: auto;
 }
 
 ._create_button {
