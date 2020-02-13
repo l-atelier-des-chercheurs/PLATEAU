@@ -41,7 +41,7 @@ export default {
         width: 1024,
         height: 768
       },
-      zoom: this.max_zoom
+      zoom: 0
     };
   },
 
