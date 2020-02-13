@@ -20,8 +20,7 @@ const renice = 0;
 
 module.exports = (function() {
   return {
-    loadPublication: (slugPubliName, pageData) =>
-      loadPublication(slugPubliName, pageData),
+    loadFolder: loadFolder,
 
     copyFolderContent: ({ html, folders_and_medias, slugFolderName }) => {
       return new Promise(function(resolve, reject) {
@@ -298,7 +297,7 @@ module.exports = (function() {
 
         let type_of_publication = "";
 
-        loadPublication(slugPubliName, {})
+        loadFolder({ type: "publications", slugFolderName: slugPubliName })
           .then(pageData => {
             type_of_publication =
               pageData.publiAndMediaData[slugPubliName].template;
@@ -401,7 +400,10 @@ module.exports = (function() {
           fs.mkdirp(
             imagesCachePath,
             function() {
-              loadPublication(slugPubliName, {})
+              loadFolder({
+                type: "publications",
+                slugFolderName: slugPubliName
+              })
                 .then(pageData => {
                   let ratio = _getMediaRatioFromFirstFilename(
                     slugPubliName,
@@ -494,14 +496,15 @@ module.exports = (function() {
     }
   };
 
-  function loadPublication(slugPubliName, pageData) {
+  function loadFolder({
+    type = "publications",
+    slugFolderName,
+    pageData = {}
+  }) {
     return new Promise((resolve, reject) => {
       dev.logfunction(
-        `EXPORTER — loadPublication with slugPubliName = ${slugPubliName}`
+        `EXPORTER — loadFolder with slugFolderName = ${slugFolderName}`
       );
-
-      let slugFolderName = slugPubliName;
-      let type = "publications";
 
       let publi_and_medias = {};
 
@@ -534,29 +537,29 @@ module.exports = (function() {
                 .then(publi_medias => {
                   publi_and_medias[slugFolderName].medias =
                     publi_medias[slugFolderName].medias;
-                  pageData.publiAndMediaData = publi_and_medias;
+                  pageData.planningData = publi_and_medias;
 
-                  // we need to get the list of original medias in the publi
-                  var list_of_linked_medias = [];
+                  // // we need to get the list of original medias in the publi
+                  // var list_of_linked_medias = [];
 
-                  Object.entries(publi_medias[slugFolderName].medias).forEach(
-                    ([key, value]) => {
-                      list_of_linked_medias.push({
-                        slugFolderName: value.slugProjectName,
-                        metaFileName: value.slugMediaName
-                      });
-                    }
-                  );
+                  // Object.entries(publi_medias[slugFolderName].medias).forEach(
+                  //   ([key, value]) => {
+                  //     list_of_linked_medias.push({
+                  //       slugFolderName: value.slugProjectName,
+                  //       metaFileName: value.slugMediaName
+                  //     });
+                  //   }
+                  // );
 
-                  file
-                    .readMediaList({
-                      type: "projects",
-                      medias_list: list_of_linked_medias
-                    })
-                    .then(folders_and_medias => {
-                      pageData.folderAndMediaData = folders_and_medias;
-                      resolve(pageData);
-                    });
+                  // file
+                  //   .readMediaList({
+                  //     type: "projects",
+                  //     medias_list: list_of_linked_medias
+                  //   })
+                  //   .then(folders_and_medias => {
+                  //     pageData.folderAndMediaData = folders_and_medias;
+                  //     resolve(pageData);
+                  //   });
                 });
             });
         });

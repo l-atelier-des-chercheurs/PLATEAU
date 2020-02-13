@@ -19,6 +19,7 @@ module.exports = function(app) {
   app.get("/:slugProjectName", loadFolder);
   app.get("/:type/:slugFolderName", printFolder);
   app.get("/:type/:slugFolderName/pdf", createAndDownloadPDF);
+  app.get("/:type/:slugFolderName/full_planning", getFullPlanning);
   app.get("/_archives/:type/:slugFolderName", downloadArchive);
   app.post("/file-upload/:type/:slugFolderName", postFile2);
 
@@ -152,6 +153,15 @@ module.exports = function(app) {
           }
         });
       });
+  }
+
+  function getFullPlanning(req, res) {
+    dev.log(`ROUTER : getFullPlanning`);
+
+    const type = req.param("type");
+    const slugFolderName = req.param("slugFolderName");
+
+    res.render("index");
   }
 
   function downloadArchive(req, res) {
