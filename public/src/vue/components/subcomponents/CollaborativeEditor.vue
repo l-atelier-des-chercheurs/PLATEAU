@@ -1437,7 +1437,6 @@ html[lang="fr"] .ql-tooltip::before {
   // border-radius: 0 0 4px 4px;
   // border-radius: 4px;
   // top: 121px;
-  z-index: 10;
   background-color: var(--c-popup-bg);
   border-radius: 1px;
 
