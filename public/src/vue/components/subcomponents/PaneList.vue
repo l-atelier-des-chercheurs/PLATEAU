@@ -65,7 +65,9 @@ export default {
 
   > * {
     flex: 0 0 auto;
-    margin-right: var(--spacing);
+    margin-right: calc(var(--spacing) / 2);
+    margin-top: calc(var(--spacing) / 4);
+    margin-bottom: calc(var(--spacing) / 4);
 
     display: -webkit-box;
     display: -ms-flexbox;
@@ -88,6 +90,7 @@ export default {
   align-items: center;
   text-decoration: none;
   cursor: pointer;
+  padding: 0;
   // overrided by pane type color
   --color-active: #ccc;
   --height-panebutton: 32px;

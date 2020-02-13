@@ -79,7 +79,11 @@
             </div>
           </div>
 
-          <transition-group tag="div" class="m_library--chronology" name="list-complete">
+          <transition-group
+            tag="div"
+            class="m_library--chronology"
+            name="list-complete"
+          >
             <!-- <MediaCard
               v-for="media in sortedMedias"
               :key="media.slugMediaName"
@@ -98,7 +102,10 @@
               >
                 <div v-for="media in item[1]" :key="media.slugMediaName">
                   <MediaCard
-                    :class="{ 'is--inMediaFocus' : media.slugMediaName === show_media_detail_for }"
+                    :class="{
+                      'is--inMediaFocus':
+                        media.slugMediaName === show_media_detail_for
+                    }"
                     :key="media.slugMediaName"
                     :media="media"
                     :metaFileName="media.metaFileName"
@@ -143,9 +150,14 @@
               :download="mediaShownInFocus.media_filename"
               :href="mediaFocusDownloadURL"
               target="_blank"
-            >{{ $t("télécharger") }}</a>
-            <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t("supprimer") }}</button>
-            <button type="button" @click="closeMediaFocus()">{{ $t("fermer") }}</button>
+              >{{ $t("télécharger") }}</a
+            >
+            <button type="button" @click="removeMedia(show_media_detail_for)">
+              {{ $t("supprimer") }}
+            </button>
+            <button type="button" @click="toggleMedia()">
+              {{ $t("fermer") }}
+            </button>
             <button type="button" @click="prevMedia">←</button>
             <button type="button" @click="nextMedia">→</button>
           </div>
@@ -259,7 +271,7 @@ export default {
 
     this.cancelDragOver = debounce(this.cancelDragOver, 300);
 
-    this.$eventHub.$on("library.openMedia", this.openMedia);
+    this.$eventHub.$on("library.toggleMedia", this.toggleMedia);
     this.$eventHub.$on("modal.prev_media", this.prevMedia);
     this.$eventHub.$on("modal.next_media", this.nextMedia);
     this.$eventHub.$on("socketio.media_created_or_updated", this.media_created);
@@ -270,7 +282,7 @@ export default {
     this.$root.settings.media_filter.keyword = false;
     this.$root.settings.media_filter.fav = false;
 
-    this.$eventHub.$off("library.openMedia", this.openMedia);
+    this.$eventHub.$off("library.toggleMedia", this.toggleMedia);
     this.$eventHub.$off("modal.prev_media", this.prevMedia);
     this.$eventHub.$off("modal.next_media", this.nextMedia);
     this.$eventHub.$off(
@@ -444,11 +456,15 @@ export default {
       }
       this.show_media_detail_for = metaFileName;
     },
-    closeMediaFocus() {
+
+    toggleMedia(metaFileName) {
       if (this.$root.state.dev_mode === "debug") {
-        console.log("METHODS • MediaLibrary: closeMediaFocus");
+        console.log("METHODS • MediaLibrary: toggleMedia");
       }
-      this.show_media_detail_for = false;
+
+      if (this.show_media_detail_for === metaFileName)
+        this.show_media_detail_for = false;
+      else this.show_media_detail_for = metaFileName;
     },
     createTextMedia() {
       this.$eventHub.$on(

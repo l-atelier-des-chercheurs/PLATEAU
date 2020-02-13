@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <Topbar />
+    <Topbar v-if="$root.do_navigation.view !== 'List'" />
     <component
       :is="$root.do_navigation.view"
       :projects="$root.store.projects"

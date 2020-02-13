@@ -39,35 +39,36 @@
         ×
       </button>
 
-      <template v-if="uniqueClientsExceptSelf.length === 0"
-        >Aucune autres appareils connectés</template
-      >
+      <template v-if="uniqueClientsExceptSelf.length === 0">
+        Aucune autres appareils connectés
+      </template>
 
       <template v-else>
         <label>{{ $t("autres appareils connectés") }}</label>
         <br />
-        <span
-          class="m_clientsList--list--client"
-          :key="client.id"
-          v-for="client in uniqueClientsExceptSelf"
-        >
-          <template v-if="client.data.hasOwnProperty('author')">{{
-            client.data.author.name
-          }}</template>
-          <template v-else>{{ $t("anonyme") }}</template>
-          <template
-            v-if="
-              client.data.hasOwnProperty('is_slave') && client.data.is_slave
-            "
+        <ul>
+          <li
+            class="m_clientsList--list--client"
+            :key="client.id"
+            v-for="client in uniqueClientsExceptSelf"
           >
-            (esclave)
-          </template>
-        </span>
+            {{ getDeviceName(client.data.device) }}
+            <template
+              v-if="
+                client.data.hasOwnProperty('is_slave') && client.data.is_slave
+              "
+            >
+              (esclave)
+            </template>
+          </li>
+        </ul>
       </template>
     </div>
   </div>
 </template>
 <script>
+import DeviceDetector from "device-detector-js";
+
 export default {
   props: {},
   components: {},
@@ -82,6 +83,11 @@ export default {
       "clients.receivedDataFromClient",
       this.gotInfoFromClient
     );
+
+    const deviceDetector = new DeviceDetector();
+    const device = deviceDetector.parse(navigator.userAgent);
+
+    this.$socketio.socket.emit("updateClientInfo", { device });
   },
   beforeDestroy() {
     this.$eventHub.$off(
@@ -152,6 +158,15 @@ export default {
           _data.project_panes_in_order
         );
       });
+    },
+    getDeviceName(device) {
+      let str = "";
+
+      if (device.hasOwnProperty("client"))
+        str += device.client.name + " " + device.client.version;
+      if (device.hasOwnProperty("os")) str += " sur " + device.os.name;
+
+      return str;
     }
   }
 };
@@ -181,7 +196,7 @@ export default {
   // transform: translateY(-50%);
   // left: 100%;
   // margin-left: calc(var(--spacing) / 4);
-  font-size: 70%;
+  font-size: 75%;
 
   background-color: white;
   border: 1px solid black;
@@ -214,6 +229,7 @@ export default {
   position: absolute;
   top: 100%;
   margin-top: calc(var(--spacing) / 4);
+  padding: 0 calc(var(--spacing) / 4);
 
   left: 0%;
   background-color: white;
@@ -224,11 +240,9 @@ export default {
   max-height: 200px;
   overflow: auto;
 
-  // .margin-sides-medium;
-  padding: calc(var(--spacing) / 4);
-
   border-radius: 2px;
   max-width: 220px;
+  line-height: 1.4;
   // .bg-blanc;
   // border: 2px solid @c-noir;
 
@@ -243,8 +257,20 @@ export default {
     min-height: 0;
     padding: calc(var(--spacing) / 2);
     background-color: transparent;
-    font-size: 2em;
+    font-size: 1em;
     line-height: 0.5;
+    text-decoration: none;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0 1em;
+    margin: 0;
+    li {
+      &::before {
+        content: "•";
+      }
+    }
   }
 
   .m_clientsList--list--client {

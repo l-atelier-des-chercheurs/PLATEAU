@@ -1,70 +1,94 @@
 <template>
-  <div class="m_composition" :class="{
+  <div
+    class="m_composition"
+    :class="{
       'is--slave': $root.settings.is_slave
-    }">
-    <div class v-if="!$root.settings.is_slave">
-      <table class v-if="mode === 'composition_list'">
-        <thead>
-          <tr>
-            <th style>{{ $t('compositions') }}</th>
-            <!-- <th>{{ $t('date_modified') }}</th> -->
-            <th colspan="2">{{ $t('actions') }}</th>
-          </tr>
-        </thead>
-        <transition-group tag="tbody" name="list-complete">
-          <tr v-for="w in composition_medias" :key="w.metaFileName">
-            <td>{{ w.name }}</td>
-            <!-- <td
-              :title="$moment(w.date_modified).format('l LTS')"
-            >{{ format_date_to_human(w.date_modified) + ' ' + $moment(w.date_modified).format('HH:mm') }}</td>-->
-            <td>
-              <button
-                type="button"
-                class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
-                @click="openCompositionMedia(w.metaFileName)"
-              >{{ $t('open') }}</button>
-            </td>
-            <td>
-              <button
-                type="button"
-                class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
-                @click="removeCompositionMedia(w.metaFileName)"
-              >{{ $t('remove') }}</button>
-            </td>
-          </tr>
-          <tr :key="'create'">
-            <template v-if="!show_createcomposition_section">
-              <td colspan="4">
-                <button
-                  type="button"
-                  class="_create_button"
-                  @click="show_createcomposition_section = !show_createcomposition_section"
-                >{{ $t('create') }}</button>
-              </td>
-            </template>
+    }"
+  >
+    <div
+      class="m_composition--list"
+      v-if="!$root.settings.is_slave && mode === 'composition_list'"
+    >
+      <transition-group
+        tag="div"
+        class="m_composition--items"
+        name="list-complete"
+      >
+        <div
+          v-for="w in composition_medias"
+          :key="w.metaFileName"
+          class="m_composition--items--item"
+          @click="openCompositionMedia(w.metaFileName)"
+        >
+          <div class="_composition_preview">
+            <FabricCanvas
+              :media="w"
+              :max_zoom="0.3"
+              :slugFolderName="slugFolderName"
+              :drawing_options="{ mode: 'select' }"
+            />
+          </div>
 
-            <template v-else>
-              <td colspan="2">
-                <input type="text" class ref="nameInput" @keyup.enter="createCompositionMedia" />
-              </td>
-              <td colspan="2">
+          <div class="m_composition--items--item--name">
+            {{ w.name }}
+          </div>
+          <div :title="$moment(w.date_modified).format('l LTS')">
+            Modifié le
+            {{
+              format_date_to_human(w.date_modified) +
+                " " +
+                $moment(w.date_modified).format("HH:mm")
+            }}
+          </div>
+
+          <div class="m_composition--items--item--buttons">
+            <!-- <button
+                type="button"
+                class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
+              >
+                {{ $t("open") }}
+              </button> -->
+            <!-- <div>
                 <button
                   type="button"
-                  class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-                  @click="createCompositionMedia"
-                >{{ $t('create') }}</button>
-              </td>
-            </template>
-          </tr>
-        </transition-group>
-      </table>
-      <div v-else-if="mode === 'single_composition'" class="text-centered">
-        <button
-          class="button_backtolist"
-          type="button"
-          @click="closeCompositionMedia"
-        >← {{ $t('back_to_list') }}</button>
-      </div>
+                  class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
+                  @click="removeCompositionMedia(w.metaFileName)"
+                >
+                  {{ $t("remove") }}
+                </button>
+              </div> -->
+          </div>
+        </div>
+        <div :key="'create'" class="m_composition--items--item_create">
+          <template v-if="!show_createcomposition_section">
+            <button
+              type="button"
+              class="_create_button"
+              @click="
+                show_createcomposition_section = !show_createcomposition_section
+              "
+            >
+              {{ $t("create") }}
+            </button>
+          </template>
+
+          <template v-else>
+            <input
+              type="text"
+              class
+              ref="nameInput"
+              @keyup.enter="createCompositionMedia"
+            />
+            <button
+              type="button"
+              class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
+              @click="createCompositionMedia"
+            >
+              {{ $t("create") }}
+            </button>
+          </template>
+        </div>
+      </transition-group>
     </div>
 
     <CompositionEditor
@@ -73,11 +97,17 @@
       :slugFolderName="slugFolderName"
       :media="current_composition_media"
       :readonly="read_only"
-      @remove="removeCompositionMedia($root.settings.current_composition_media_metaFileName)"
+      @remove="
+        removeCompositionMedia(
+          $root.settings.current_composition_media_metaFileName
+        )
+      "
+      @back="closeCompositionMedia"
     />
   </div>
 </template>
 <script>
+import FabricCanvas from "./subcomponents/FabricCanvas.vue";
 import CompositionEditor from "./subcomponents/CompositionEditor.vue";
 
 export default {
@@ -86,7 +116,8 @@ export default {
     composition_medias: Array
   },
   components: {
-    CompositionEditor
+    CompositionEditor,
+    FabricCanvas
   },
   data() {
     return {
@@ -227,9 +258,7 @@ export default {
 .m_composition {
   position: relative;
   background-color: var(--color-Composition);
-  padding: var(--spacing);
   height: 100%;
-  overflow: auto;
 
   &.is--slave {
     padding: 0;
@@ -254,100 +283,64 @@ export default {
   button {
   }
 }
-
-table a:link {
-  color: #666;
-  font-weight: bold;
-  text-decoration: none;
-}
-table a:visited {
-  color: #999999;
-  font-weight: bold;
-  text-decoration: none;
-}
-table a:active,
-table a:hover {
-  color: #bd5a35;
-  text-decoration: underline;
-}
-
-table {
-  // font-family:Arial, Helvetica, sans-serif;
-  // color: #666;
-  // font-size:12px;
-  // text-shadow: 1px 1px 0px #fff;
-  // background:#ccc;
-  margin: 20px;
-  border-bottom: #000 1px solid;
-
-  // -moz-box-shadow: 0 1px 2px #d1d1d1;
-  // -webkit-box-shadow: 0 1px 2px #d1d1d1;
-  // box-shadow: 0 1px 2px #d1d1d1;
-}
-
-table th {
+.m_composition--list {
+  height: 100%;
   padding: var(--spacing);
-  // border-top: 1px solid #fafafa;
-  // border-bottom: 1px solid #e0e0e0;
-
-  // background: #ededed;
-  // background: -webkit-gradient(
-  //   linear,
-  //   left top,
-  //   left bottom,
-  //   from(#ededed),
-  //   to(#ebebeb)
-  // );
-  border-bottom: 1px solid black;
-}
-table th:first-child {
-  text-align: left;
-  padding-left: 20px;
-}
-table tr {
-  text-align: center;
-  padding-left: 20px;
-}
-table td:first-child {
-  text-align: left;
-  padding-left: 20px;
-  border-left: 0;
-}
-table td {
-  padding: 18px;
-  border-bottom: 1px solid #000;
-  border-left: 1px solid #000;
-}
-table tr:last-child td {
-  border-bottom: 0;
-}
-table tr:last-child td:first-child {
-  -moz-border-radius-bottomleft: 3px;
-  -webkit-border-bottom-left-radius: 3px;
-  border-bottom-left-radius: 3px;
-}
-table tr:last-child td:last-child {
-  -moz-border-radius-bottomright: 3px;
-  -webkit-border-bottom-right-radius: 3px;
-  border-bottom-right-radius: 3px;
-}
-table tr:hover td {
-  background: #f2f2f2;
-  background: -webkit-gradient(
-    linear,
-    left top,
-    left bottom,
-    from(#f2f2f2),
-    to(#f0f0f0)
-  );
-  background: -moz-linear-gradient(top, #f2f2f2, #f0f0f0);
-}
-
-.button_backtolist {
-  margin: 0 var(--spacing);
+  overflow: auto;
 }
 
 ._create_button {
   width: 100%;
+}
+
+._composition_preview {
+  width: 100%;
+  padding-bottom: 75%;
+  height: 0;
+  margin: 0;
+}
+
+.m_composition--items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 220px));
+  grid-auto-rows: max-content;
+  grid-gap: calc(var(--spacing) / 1.5);
+  // padding: 0 var(--spacing);
+
+  > * {
+    border: 1px solid black;
+    padding: calc(var(--spacing) / 2);
+  }
+
+  .m_fabricCanvas > .canvas-container {
+    margin: 0;
+  }
+}
+
+.m_composition--items--item {
+  cursor: pointer;
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+  }
+
+  > * {
+    pointer-events: none;
+  }
+}
+.m_composition--items--item_create {
+  display: flex;
+  align-items: center;
+}
+
+.m_composition--items--item--name {
+  font-weight: 500;
+  font-family: "Work Sans";
+  font-size: 150%;
+  margin-top: 0;
+}
+.m_composition--items--item--buttons {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
 }
 </style>
