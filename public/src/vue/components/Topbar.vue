@@ -23,18 +23,30 @@
             <path class="st0" d="M4,8H2.6L0,4.1L2.6,0h1.4L2.1,4.1L4,8z" />
           </svg>
           plateau &nbsp;
-          <small>{{ $root.state.appVersion }}</small>
+          <!-- <small>{{ $root.state.appVersion }}</small> -->
         </h1>
       </div>
 
       <div class="m_topbar--separator">/</div>
 
-      <template v-if="$root.state.mode === 'live' && !$root.state.authentificated">
-        <div class="m_inputSessionPassword" v-if="$root.show_session_password_prompt">
+      <template
+        v-if="$root.state.mode === 'live' && !$root.state.authentificated"
+      >
+        <div
+          class="m_inputSessionPassword"
+          v-if="$root.show_session_password_prompt"
+        >
           <form @submit.prevent="submitPassword">
             <label for="inp" class="inp">
               <span class="label">Connexion&nbsp;password</span>
-              <input type="password" v-model="pwd" required autofocus autoselect placeholder />
+              <input
+                type="password"
+                v-model="pwd"
+                required
+                autofocus
+                autoselect
+                placeholder
+              />
               <span class="border"></span>
             </label>
             <span class="switch switch-xs margin-bottom-small">
@@ -43,7 +55,9 @@
                 type="checkbox"
                 v-model="remember_password_on_this_device"
               />
-              <label for="remember_password_on_this_device">remember password on this device</label>
+              <label for="remember_password_on_this_device"
+                >remember password on this device</label
+              >
             </span>
 
             <input type="submit" value="submit" />
@@ -51,7 +65,12 @@
         </div>
       </template>
       <template v-else>
-        <transition-group class="m_topbar--list" tag="div" name="list-complete" :duration="300">
+        <transition-group
+          class="m_topbar--list"
+          tag="div"
+          name="list-complete"
+          :duration="300"
+        >
           <button
             type="button"
             v-if="$root.do_navigation.view === 'List'"
@@ -84,7 +103,9 @@
             v-if="$root.do_navigation.view === 'Project'"
             :key="`projectname`"
             @click="$root.navigation_back()"
-          >{{ $root.currentProject.name }}</span>
+            style="  font-weight: 700;"
+            >{{ $root.currentProject.name }}</span
+          >
           <!-- <button
           type="button"
           v-if="$root.do_navigation.view === 'Project'"
@@ -121,12 +142,14 @@
       </template>
       <Clients />
 
-      <PaneList class="m_topbar--paneList" v-if="$root.do_navigation.view === 'Project'" />
+      <PaneList
+        class="m_topbar--paneList"
+        v-if="$root.do_navigation.view === 'Project'"
+      />
     </div>
-    <div
-      class="m_topbar--status"
-      v-if="!$root.state.connected"
-    >{{ $t("notifications.connection_lost") }}</div>
+    <div class="m_topbar--status" v-if="!$root.state.connected">
+      {{ $t("notifications.connection_lost") }}
+    </div>
     <Clients v-if="$root.settings.is_slave" />
   </div>
 </template>
@@ -209,8 +232,16 @@ export default {
 
   h1 {
     font-size: inherit;
-    font-weight: 600;
     margin: 0;
+    font-weight: 800;
+    font-family: "Work Sans";
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+
+    small {
+      font-family: "Fira Code";
+      font-weight: normal;
+    }
   }
 
   &.mode--Project {
