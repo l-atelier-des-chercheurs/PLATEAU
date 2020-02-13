@@ -23,7 +23,7 @@
   >
     <div draggable="false">
       <figure
-        @click.stop="openMediaModal()"
+        @click.stop="toggleMediaModal()"
         @mouseover="is_hovered = true"
         @mouseleave="is_hovered = false"
         :class="{ 'is--hovered': is_hovered }"
@@ -37,10 +37,16 @@
             :element_width_for_sizes="200"
             :preview_size="preview_size"
           />
-          <figcaption class="m_media--caption" v-if="!!media.caption">{{ media.caption }}</figcaption>
-          <div
-            class="m_media--date"
-          >{{ $moment(media.date_uploaded, "YYYY-MM-DD HH:mm:ss").format("HH:mm") }}</div>
+          <figcaption class="m_media--caption" v-if="!!media.caption">
+            {{ media.caption }}
+          </figcaption>
+          <div class="m_media--date">
+            {{
+              $moment(media.date_uploaded, "YYYY-MM-DD HH:mm:ss").format(
+                "HH:mm"
+              )
+            }}
+          </div>
         </div>
 
         <figcaption v-if="is_hovered && false">
@@ -65,7 +71,7 @@
           <button 
             type="button" 
             class="button-redthin "
-            @click.stop="openMediaModal()"
+            @click.stop="toggleMediaModal()"
           >
             {{ $t('open') }}
           </button>
@@ -151,13 +157,13 @@ export default {
     }
   },
   methods: {
-    openMediaModal() {
+    toggleMediaModal() {
       if (this.$root.state.dev_mode === "debug") {
         console.log(
-          `METHODS • MediaCard: openMediaModal = ${this.metaFileName}`
+          `METHODS • MediaCard: toggleMediaModal = ${this.metaFileName}`
         );
       }
-      this.$eventHub.$emit("library.openMedia", this.metaFileName);
+      this.$eventHub.$emit("library.toggleMedia", this.metaFileName);
     },
     addToCurrentWriteup() {
       if (this.$root.state.dev_mode === "debug") {
