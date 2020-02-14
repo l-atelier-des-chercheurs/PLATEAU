@@ -275,7 +275,7 @@ export default {
   position: relative;
 
   display: flex;
-  flex-flow: row wrap;
+  flex-flow: row nowrap;
 
   > * {
     flex: 1;
