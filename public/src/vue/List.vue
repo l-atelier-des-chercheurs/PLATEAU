@@ -89,7 +89,7 @@ export default {
       currentSort: {
         field: "date_created",
         type: "date",
-        order: "ascending"
+        order: "descending"
       },
 
       show_filters: false,
