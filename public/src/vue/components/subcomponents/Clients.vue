@@ -71,6 +71,11 @@ export default {
       this.gotInfoFromClient
     );
 
+    this.$eventHub.$on(
+      "clients.sendCaptureEventToSlaves",
+      this.sendCaptureEventToSlaves
+    );
+
     const deviceDetector = new DeviceDetector();
     const device = deviceDetector.parse(navigator.userAgent);
 
@@ -80,6 +85,11 @@ export default {
     this.$eventHub.$off(
       "clients.receivedDataFromClient",
       this.gotInfoFromClient
+    );
+
+    this.$eventHub.$off(
+      "clients.sendCaptureEventToSlaves",
+      this.sendCaptureEventToSlaves
     );
   },
   watch: {},
@@ -93,7 +103,9 @@ export default {
       );
     },
     connectedSlaves() {
-      return this.uniqueClientsExceptSelf.filter(c => c.data.is_slave);
+      const slaves = this.uniqueClientsExceptSelf.filter(c => c.data.is_slave);
+      this.$root.settings.has_slave_connected = slaves.length > 0;
+      return slaves;
     }
   },
   methods: {
@@ -107,7 +119,18 @@ export default {
               .current_planning_media_metaFileName,
             current_composition_media_metaFileName: this.$root.settings
               .current_composition_media_metaFileName,
-            openProject: this.$root.do_navigation.current_slugProjectName
+            openProject: this.$root.do_navigation.current_slugProjectName,
+            selected_mode: this.$root.settings.capture_options.selected_mode
+          }
+        });
+      });
+    },
+    sendCaptureEventToSlaves() {
+      this.connectedSlaves.map(c => {
+        this.$socketio.socket.emit("sendDataToSpecificClient", {
+          socketid: c.id,
+          data: {
+            event: "start_capture"
           }
         });
       });
@@ -127,6 +150,13 @@ export default {
       )
         this.$root.openProject(_data.openProject);
 
+      if (
+        _data.hasOwnProperty("selected_mode") &&
+        _data.selected_mode !==
+          this.$root.settings.capture_options.selected_mode
+      )
+        this.$root.settings.capture_options.selected_mode = _data.selected_mode;
+
       if (_data.hasOwnProperty("project_panes_in_order"))
         this.$root.settings.project_panes_in_order =
           _data.project_panes_in_order;
@@ -138,6 +168,12 @@ export default {
       if (_data.hasOwnProperty("current_composition_media_metaFileName"))
         this.$root.settings.current_composition_media_metaFileName =
           _data.current_composition_media_metaFileName;
+
+      if (_data.hasOwnProperty("event")) {
+        if (_data.event === "start_capture") {
+          this.$eventHub.$emit("capture.start");
+        }
+      }
 
       this.$nextTick(() => {
         this.$eventHub.$emit(
