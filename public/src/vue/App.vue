@@ -1,6 +1,11 @@
 <template>
   <div id="app">
-    <Topbar v-if="$root.do_navigation.view !== 'List' && $root.state.mode !== 'export_planning'" />
+    <Topbar
+      v-if="
+        $root.do_navigation.view !== 'List' &&
+          $root.state.mode !== 'export_planning'
+      "
+    />
     <component
       v-if="$root.state.mode !== 'export_planning'"
       :is="$root.do_navigation.view"

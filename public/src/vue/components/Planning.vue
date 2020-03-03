@@ -2,7 +2,11 @@
   <div class="m_planning">
     <SlickList v-model="sorted_planning_medias" axis="y" :useDragHandle="true">
       <!-- @sort-end="sortEnded" -->
-      <SlickItem v-for="(item, index) in sorted_planning_medias" :index="index" :key="item.key">
+      <SlickItem
+        v-for="(item, index) in sorted_planning_medias"
+        :index="index"
+        :key="item.key"
+      >
         <div class="m_planning--slickItem">
           <div v-handle class="m_planning--slickItem--handle handle" />
           <PlanningItem
@@ -10,7 +14,9 @@
             :key="item.metaFileName"
             :media="item"
             :class="{
-              'is--active': item.metaFileName === $root.settings.current_planning_media_metaFileName,
+              'is--active':
+                item.metaFileName ===
+                $root.settings.current_planning_media_metaFileName,
               'has--timer': planning_item_with_timer === item.metaFileName
             }"
             :slugFolderName="slugFolderName"
@@ -36,7 +42,9 @@
               type="button"
               class="_create_button"
               @click="show_planning_section = !show_planning_section"
-            >{{ $t("create") }}</button>
+            >
+              {{ $t("create") }}
+            </button>
           </td>
         </div>
 
@@ -48,31 +56,41 @@
             <button
               type="submit"
               class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-            >{{ $t("create") }}</button>
+            >
+              {{ $t("create") }}
+            </button>
           </td>
         </div>
       </form>
 
       <a
-        class="button"
+        class="button js--openInBrowser"
         :href="`projects/${slugFolderName}/full_planning`"
         target="_blank"
-      >Exporter au format HTML</a>
+        >Exporter au format HTML</a
+      >
 
       <div class="m_planningPanes">
         <div
           v-for="media in sorted_planning_medias"
           :key="media.metaFileName + '_pane'"
-          @click.self="$root.settings.current_planning_media_metaFileName = false"
+          @click.self="
+            $root.settings.current_planning_media_metaFileName = false
+          "
           class="m_planningPanes--pane"
           :class="{
-            'is--open': $root.settings.current_planning_media_metaFileName === media.metaFileName
+            'is--open':
+              $root.settings.current_planning_media_metaFileName ===
+              media.metaFileName
           }"
         >
           <transition name="slideright">
             <div
               class="m_planningPanes--pane--content"
-              v-if="$root.settings.current_planning_media_metaFileName === media.metaFileName"
+              v-if="
+                $root.settings.current_planning_media_metaFileName ===
+                  media.metaFileName
+              "
             >
               <PlanningItem
                 :key="media.metaFileName"
