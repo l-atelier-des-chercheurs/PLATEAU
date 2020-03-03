@@ -161,7 +161,19 @@ module.exports = function(app) {
     const type = req.param("type");
     const slugFolderName = req.param("slugFolderName");
 
-    res.render("index");
+    generatePageData(req).then(pageData => {
+      dev.logverbose(`Generated slugFolderName pageData`);
+      dev.logverbose(
+        `Now getting data for type = ${type} and slugFolderName = ${slugFolderName}`
+      );
+
+      exporter.loadFolder({ type, slugFolderName, pageData }).then(medias => {
+        pageData.slugFolderName = slugFolderName;
+        pageData.store.projects[slugFolderName] = { medias };
+        pageData.mode = "export_planning";
+        res.render("index", pageData);
+      });
+    });
   }
 
   function downloadArchive(req, res) {

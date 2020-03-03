@@ -53,6 +53,12 @@
         </div>
       </form>
 
+      <a
+        class="button"
+        :href="`projects/${slugFolderName}/full_planning`"
+        target="_blank"
+      >Exporter au format HTML</a>
+
       <div class="m_planningPanes">
         <div
           v-for="media in sorted_planning_medias"

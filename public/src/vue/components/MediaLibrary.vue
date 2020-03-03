@@ -79,11 +79,7 @@
             </div>
           </div>
 
-          <transition-group
-            tag="div"
-            class="m_library--chronology"
-            name="list-complete"
-          >
+          <transition-group tag="div" class="m_library--chronology" name="list-complete">
             <!-- <MediaCard
               v-for="media in sortedMedias"
               :key="media.slugMediaName"
@@ -150,14 +146,9 @@
               :download="mediaShownInFocus.media_filename"
               :href="mediaFocusDownloadURL"
               target="_blank"
-              >{{ $t("télécharger") }}</a
-            >
-            <button type="button" @click="removeMedia(show_media_detail_for)">
-              {{ $t("supprimer") }}
-            </button>
-            <button type="button" @click="toggleMedia()">
-              {{ $t("fermer") }}
-            </button>
+            >{{ $t("télécharger") }}</a>
+            <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t("supprimer") }}</button>
+            <button type="button" @click="toggleMedia()">{{ $t("fermer") }}</button>
             <button type="button" @click="prevMedia">←</button>
             <button type="button" @click="nextMedia">→</button>
           </div>
@@ -657,15 +648,17 @@ export default {
 }
 
 .m_library--mediaFocus {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-flow: column nowrap;
+
   // box-shadow: 0 10px 23px rgba(0, 0, 0, 0.4);
 
   .mediaContainer {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    // background-color: rgba(193, 154, 0, 0.4);
-    // background-color: rgba(255, 255, 255, 0.2);
-    // border-radius: 2px;
+    position: relative;
+    flex: 1 1 auto;
 
     > * {
       position: absolute;
@@ -677,16 +670,16 @@ export default {
   }
 
   .m_library--mediaFocus--buttons {
+    flex: 0 0 auto;
+
     position: relative;
-    height: 100%;
-    width: 100%;
     z-index: 1;
     padding: 0 calc(var(--spacing) / 2);
     pointer-events: none;
 
     display: flex;
     justify-content: flex-end;
-    align-items: flex-start;
+    align-items: flex-end;
 
     > * {
       pointer-events: auto;

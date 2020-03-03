@@ -1,12 +1,22 @@
 <template>
   <div id="app">
-    <Topbar v-if="$root.do_navigation.view !== 'List'" />
+    <Topbar v-if="$root.do_navigation.view !== 'List' && $root.state.mode !== 'export_planning'" />
     <component
+      v-if="$root.state.mode !== 'export_planning'"
       :is="$root.do_navigation.view"
       :projects="$root.store.projects"
       :project="$root.currentProject"
       :slugProjectName="$root.do_navigation.current_slugProjectName"
     />
+    <div v-else>
+      <PlanningItem
+        v-for="media in planning_items"
+        :key="media.metaFileName"
+        :media="media"
+        :slugFolderName="$root.do_navigation.current_slugProjectName"
+        :mode="'expanded'"
+      />
+    </div>
   </div>
 </template>
 
@@ -14,13 +24,15 @@
 import Topbar from "./components/Topbar.vue";
 import List from "./List.vue";
 import Project from "./Project.vue";
+import PlanningItem from "./components/subcomponents/PlanningItem.vue";
 
 export default {
   name: "app",
   components: {
     Topbar,
     List,
-    Project
+    Project,
+    PlanningItem
   },
   props: {},
   data() {
@@ -31,7 +43,14 @@ export default {
   },
   watch: {},
   created() {},
-  computed: {},
+  computed: {
+    planning_items() {
+      if (typeof this.$root.currentProject.medias !== "object") return [];
+      return Object.values(this.$root.currentProject.medias).filter(
+        m => m.type === "planning"
+      );
+    }
+  },
   methods: {}
 };
 </script>

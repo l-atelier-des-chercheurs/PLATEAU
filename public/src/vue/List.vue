@@ -5,9 +5,9 @@
       <div class="m_panes--leftPane--versionNumber">
         <small>{{ $root.state.appVersion }}</small>
       </div>
-      <div class="m_panes--leftPane--text">
-        Plateau est un outil de documentation pour les workshops participatifs.
-      </div>
+      <div
+        class="m_panes--leftPane--text"
+      >Plateau est un outil de documentation pour les workshops participatifs.</div>
     </div>
     <div class="m_panes--rightPane">
       <div class="m_bar">
@@ -41,12 +41,7 @@
         </button>
       </div>
 
-      <transition-group
-        class="m_list"
-        name="list-complete"
-        :duration="300"
-        tag="div"
-      >
+      <transition-group class="m_list" name="list-complete" :duration="300" tag="div">
         <div :key="`create_project`" v-if="$root.show_create_project_modal">
           <form @submit.prevent="createProject">
             <label>{{ $t("name") }}</label>
@@ -286,11 +281,9 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   grid-auto-rows: max-content;
-  padding: 0 calc(var(--spacing) * 2);
+  padding: calc(10vh + 2.55em) calc(var(--spacing) * 2) 50px;
   flex-basis: 50%;
 
-  padding-top: 150px;
-  padding-bottom: 50px;
   overflow-y: auto;
 
   > * {
@@ -303,9 +296,8 @@ export default {
 
 .m_bar {
   order: 2;
-  padding: 0 calc(var(--spacing) * 2);
+  padding: calc(10vh + 2.55em) calc(var(--spacing) * 2) 50px;
   flex-basis: 50%;
-  padding-top: 150px;
 
   > button {
     border: 2px solid black;

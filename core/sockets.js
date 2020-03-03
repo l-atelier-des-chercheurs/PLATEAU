@@ -791,7 +791,7 @@ module.exports = (function() {
   function onUpdateClientInfo(socket, data) {
     dev.logfunction(`EVENT - onUpdateClientInfo`);
 
-    socket._data = data;
+    Object.assign(socket._data, data);
     sendClients();
   }
   function onListClientsInfo(socket) {

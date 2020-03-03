@@ -313,6 +313,10 @@ export default {
 .m_planningItem--editButtons {
   order: 1;
 
+  body[data-mode="export_planning"] & {
+    display: none;
+  }
+
   button {
     svg {
       width: 0.8rem;
@@ -361,6 +365,10 @@ export default {
   button {
     &:hover {
       opacity: 0.3;
+    }
+
+    body[data-mode="export_planning"] & {
+      display: none;
     }
   }
 }

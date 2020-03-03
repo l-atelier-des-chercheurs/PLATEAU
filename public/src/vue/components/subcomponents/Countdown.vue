@@ -39,9 +39,11 @@ export default {
   created() {},
   mounted() {
     this.$eventHub.$on("countdown.start_timer", this.start_timer);
-    new Draggabilly(this.$el, {
-      containment: true
-    });
+    if (!!this.$el && this.$el.nodeName !== "#comment") {
+      new Draggabilly(this.$el, {
+        containment: true
+      });
+    }
   },
   beforeDestroy() {
     this.$eventHub.$off("countdown.start_timer", this.start_timer);
@@ -55,7 +57,8 @@ export default {
           .success("Début du compte à rebours");
     },
     remaining_time: function() {
-      if (!!this.$el) new Draggabilly(this.$el);
+      if (!!this.$el && this.$el.nodeName !== "#comment")
+        new Draggabilly(this.$el);
     }
   },
   computed: {

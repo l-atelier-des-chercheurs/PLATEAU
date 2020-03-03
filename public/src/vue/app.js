@@ -114,6 +114,7 @@ let vm = new Vue({
       windowHeight: window.innerHeight,
 
       is_slave: false,
+      has_slave_connected: false,
 
       default_project_panes: [
         {
@@ -341,9 +342,9 @@ let vm = new Vue({
         this.unsetAuthor();
       }
     },
-    "$root.settings.is_slave": function() {
+    "settings.is_slave": function() {
       this.$socketio.socket.emit("updateClientInfo", {
-        is_slave: this.$root.settings.is_slave
+        is_slave: this.settings.is_slave
       });
     },
     "settings.project_panes_in_order": {

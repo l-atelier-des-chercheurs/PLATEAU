@@ -418,7 +418,21 @@ export default {
         this.initWebsocketMode();
         this.editor.focus();
       } else {
-        this.editor.root.innerHTML = this.value;
+        let content = this.value;
+        if (this.$root.state.mode === "export_planning") {
+          var el = document.createElement("html");
+          el.innerHTML = content;
+          el.querySelectorAll("[src]").forEach(function(item) {
+            item.setAttribute(
+              "src",
+              item
+                .getAttribute("src")
+                .substring(1, item.getAttribute("src").length)
+            );
+          });
+          content = el.innerHTML;
+        }
+        this.editor.root.innerHTML = content;
       }
 
       this.editor.on("text-change", (delta, oldDelta, source) => {
@@ -880,7 +894,7 @@ html[lang="fr"] .ql-tooltip::before {
     background-color: blue;
   }
 
-  &.is--disabled {
+  &.is--connexion_lost {
     cursor: not-allowed;
     .ql-toolbar {
       background-color: var(--c-toolbar-warning-bg);
@@ -997,6 +1011,10 @@ html[lang="fr"] .ql-tooltip::before {
     padding: var(--spacing) calc(var(--spacing) * 2) 250px;
 
     transition: all 1s cubic-bezier(0.19, 1, 0.22, 1);
+
+    body[data-mode="export_planning"] & {
+      padding: 0 var(--spacing);
+    }
 
     &[contenteditable="false"] {
       > *:not(.is--focused) {
@@ -1420,6 +1438,10 @@ html[lang="fr"] .ql-tooltip::before {
   // float: none;
 }
 
+body[data-mode="export_planning"] .ql-toolbar {
+  display: none;
+}
+
 .ql-toolbar.ql-snow {
   position: relative;
   // top: 30%;
@@ -1540,7 +1562,7 @@ html[lang="fr"] .ql-tooltip::before {
   fill: #0a997f;
 }
 
-.ql-editor {
+body:not([data-mode="export_planning"]).ql-editor {
   counter-reset: listCounter;
 
   & > * {

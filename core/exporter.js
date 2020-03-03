@@ -545,9 +545,7 @@ module.exports = (function() {
                   medias_list
                 })
                 .then(publi_medias => {
-                  publi_and_medias[slugFolderName].medias =
-                    publi_medias[slugFolderName].medias;
-                  pageData.planningData = publi_and_medias;
+                  resolve(publi_medias[slugFolderName].medias);
 
                   // // we need to get the list of original medias in the publi
                   // var list_of_linked_medias = [];
