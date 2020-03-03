@@ -29,24 +29,12 @@
 
       <div class="m_topbar--separator">/</div>
 
-      <template
-        v-if="$root.state.mode === 'live' && !$root.state.authentificated"
-      >
-        <div
-          class="m_inputSessionPassword"
-          v-if="$root.show_session_password_prompt"
-        >
+      <template v-if="$root.state.mode === 'live' && !$root.state.authentificated">
+        <div class="m_inputSessionPassword" v-if="$root.show_session_password_prompt">
           <form @submit.prevent="submitPassword">
             <label for="inp" class="inp">
               <span class="label">Connexion&nbsp;password</span>
-              <input
-                type="password"
-                v-model="pwd"
-                required
-                autofocus
-                autoselect
-                placeholder
-              />
+              <input type="password" v-model="pwd" required autofocus autoselect placeholder />
               <span class="border"></span>
             </label>
             <span class="switch switch-xs margin-bottom-small">
@@ -55,9 +43,7 @@
                 type="checkbox"
                 v-model="remember_password_on_this_device"
               />
-              <label for="remember_password_on_this_device"
-                >remember password on this device</label
-              >
+              <label for="remember_password_on_this_device">remember password on this device</label>
             </span>
 
             <input type="submit" value="submit" />
@@ -65,12 +51,7 @@
         </div>
       </template>
       <template v-else>
-        <transition-group
-          class="m_topbar--list"
-          tag="div"
-          name="list-complete"
-          :duration="300"
-        >
+        <transition-group class="m_topbar--list" tag="div" name="list-complete" :duration="300">
           <button
             type="button"
             v-if="$root.do_navigation.view === 'List'"
@@ -104,8 +85,7 @@
             :key="`projectname`"
             @click="$root.navigation_back()"
             style="  font-weight: 700;"
-            >{{ $root.currentProject.name }}</span
-          >
+          >{{ $root.currentProject.name }}</span>
           <!-- <button
           type="button"
           v-if="$root.do_navigation.view === 'Project'"
@@ -142,14 +122,19 @@
       </template>
       <Clients />
 
-      <PaneList
-        class="m_topbar--paneList"
-        v-if="$root.do_navigation.view === 'Project'"
-      />
+      <button
+        type="button"
+        class="buttonLink"
+        :disabled="zip_export_started"
+        @click="downloadProjectArchive"
+      >{{ $t("télécharger") }}</button>
+
+      <PaneList class="m_topbar--paneList" v-if="$root.do_navigation.view === 'Project'" />
     </div>
-    <div class="m_topbar--status" v-if="!$root.state.connected">
-      {{ $t("notifications.connection_lost") }}
-    </div>
+    <div
+      class="m_topbar--status"
+      v-if="!$root.state.connected"
+    >{{ $t("notifications.connection_lost") }}</div>
     <Clients v-if="$root.settings.is_slave" />
   </div>
 </template>
@@ -164,7 +149,9 @@ export default {
     Clients
   },
   data() {
-    return {};
+    return {
+      zip_export_started: false
+    };
   },
   created() {},
   mounted() {},
@@ -188,6 +175,30 @@ export default {
 
       this.$socketio.connect(this.pwd);
       this.$emit("close");
+    },
+    downloadProjectArchive() {
+      if (this.$root.state.dev_mode === "debug") {
+        console.log(`Topbar • METHODS: downloadProjectArchive`);
+      }
+
+      this.zip_export_started = true;
+      setTimeout(() => {
+        this.zip_export_started = false;
+      }, 2000);
+
+      // const pwd = this.$auth.hashCode(this.project_password);
+      const query_url =
+        window.location.origin +
+        "/_archives/projects/" +
+        this.$root.currentProject.slugFolderName;
+      // + `?pwd=${pwd}`;
+
+      if (this.$root.state.dev_mode === "debug")
+        console.log(
+          `Topbar • METHODS: downloadProjectArchive with query ${query_url}`
+        );
+
+      window.location.replace(query_url);
     },
     removeProject() {
       this.$alertify

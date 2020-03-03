@@ -281,11 +281,9 @@ export default {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   grid-auto-rows: max-content;
-  padding: 0 calc(var(--spacing) * 2);
+  padding: calc(10vh + 2.55em) calc(var(--spacing) * 2) 50px;
   flex-basis: 50%;
 
-  padding-top: calc(10vh + 2.55em);
-  padding-bottom: 50px;
   overflow-y: auto;
 
   > * {
@@ -298,9 +296,8 @@ export default {
 
 .m_bar {
   order: 2;
-  padding: 0 calc(var(--spacing) * 2);
+  padding: calc(10vh + 2.55em) calc(var(--spacing) * 2) 50px;
   flex-basis: 50%;
-  padding-top: 150px;
 
   > button {
     border: 2px solid black;
