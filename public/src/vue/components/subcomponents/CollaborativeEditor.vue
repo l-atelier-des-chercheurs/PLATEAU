@@ -423,12 +423,7 @@ export default {
           var el = document.createElement("html");
           el.innerHTML = content;
           el.querySelectorAll("[src]").forEach(function(item) {
-            item.setAttribute(
-              "src",
-              item
-                .getAttribute("src")
-                .substring(1, item.getAttribute("src").length)
-            );
+            item.setAttribute("src", "./" + item.getAttribute("src"));
           });
           content = el.innerHTML;
         }
