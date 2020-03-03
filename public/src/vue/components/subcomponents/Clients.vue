@@ -17,7 +17,6 @@
       <input type="checkbox" v-model="$root.settings.is_slave" />
       esclave
     </label>
-
     <button
       type="button"
       v-if="
@@ -26,22 +25,12 @@
           $root.do_navigation.view === 'Project'
       "
       @click="sendCurrentPanesToSlaves"
-    >
-      Envoyer la disposition aux esclaves
-    </button>
+    >Envoyer la disposition aux esclaves</button>
 
     <div class="m_clientsList--list" v-if="showClientList">
-      <button
-        type="button"
-        class="m_clientsList--list--close"
-        @click="showClientList = false"
-      >
-        ×
-      </button>
+      <button type="button" class="m_clientsList--list--close" @click="showClientList = false">×</button>
 
-      <template v-if="uniqueClientsExceptSelf.length === 0">
-        Aucune autres appareils connectés
-      </template>
+      <template v-if="uniqueClientsExceptSelf.length === 0">Aucune autres appareils connectés</template>
 
       <template v-else>
         <label>{{ $t("autres appareils connectés") }}</label>
@@ -57,9 +46,7 @@
               v-if="
                 client.data.hasOwnProperty('is_slave') && client.data.is_slave
               "
-            >
-              (esclave)
-            </template>
+            >(esclave)</template>
           </li>
         </ul>
       </template>
@@ -218,6 +205,11 @@ export default {
     left: 50%;
     transform: translateX(-50%);
     margin: calc(var(--spacing)) 0;
+
+    .m_clientsList--list {
+      bottom: 100%;
+      top: auto;
+    }
   }
 
   > * {
@@ -228,7 +220,7 @@ export default {
 .m_clientsList--list {
   position: absolute;
   top: 100%;
-  margin-top: calc(var(--spacing) / 4);
+  margin: calc(var(--spacing) / 4) 0;
   padding: 0 calc(var(--spacing) / 4);
 
   left: 0%;

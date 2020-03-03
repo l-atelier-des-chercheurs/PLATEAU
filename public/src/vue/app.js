@@ -341,7 +341,8 @@ let vm = new Vue({
         this.unsetAuthor();
       }
     },
-    "$root.settings.is_slave": function() {
+    "settings.is_slave": function() {
+      debugger;
       this.$socketio.socket.emit("updateClientInfo", {
         is_slave: this.$root.settings.is_slave
       });

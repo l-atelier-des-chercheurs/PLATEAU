@@ -5,9 +5,9 @@
       <div class="m_panes--leftPane--versionNumber">
         <small>{{ $root.state.appVersion }}</small>
       </div>
-      <div class="m_panes--leftPane--text">
-        Plateau est un outil de documentation pour les workshops participatifs.
-      </div>
+      <div
+        class="m_panes--leftPane--text"
+      >Plateau est un outil de documentation pour les workshops participatifs.</div>
     </div>
     <div class="m_panes--rightPane">
       <div class="m_bar">
@@ -41,12 +41,7 @@
         </button>
       </div>
 
-      <transition-group
-        class="m_list"
-        name="list-complete"
-        :duration="300"
-        tag="div"
-      >
+      <transition-group class="m_list" name="list-complete" :duration="300" tag="div">
         <div :key="`create_project`" v-if="$root.show_create_project_modal">
           <form @submit.prevent="createProject">
             <label>{{ $t("name") }}</label>
@@ -289,7 +284,7 @@ export default {
   padding: 0 calc(var(--spacing) * 2);
   flex-basis: 50%;
 
-  padding-top: 150px;
+  padding-top: calc(10vh + 2.55em);
   padding-bottom: 50px;
   overflow-y: auto;
 
