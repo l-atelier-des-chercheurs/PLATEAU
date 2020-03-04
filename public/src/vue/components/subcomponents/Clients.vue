@@ -41,7 +41,7 @@
             :key="client.id"
             v-for="client in uniqueClientsExceptSelf"
           >
-            {{ getDeviceName(client.data.device) }}
+            {{ getDeviceName(client) }}
             <template
               v-if="
                 client.data.hasOwnProperty('is_slave') && client.data.is_slave
@@ -182,8 +182,16 @@ export default {
         );
       });
     },
-    getDeviceName(device) {
+    getDeviceName(client) {
+      if (
+        !client ||
+        !client.hasOwnProperty("data") ||
+        !client.data.hasOwnProperty("device")
+      )
+        return ".";
+
       let str = "";
+      const device = client.data.device;
 
       if (device.hasOwnProperty("client"))
         str += device.client.name + " " + device.client.version;
