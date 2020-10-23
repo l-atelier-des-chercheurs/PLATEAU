@@ -1,106 +1,107 @@
 <template>
   <div class="m_planning">
-    <SlickList v-model="sorted_planning_medias" axis="y" :useDragHandle="true">
-      <!-- @sort-end="sortEnded" -->
-      <SlickItem
-        v-for="(item, index) in sorted_planning_medias"
-        :index="index"
-        :key="item.key"
-      >
-        <div class="m_planning--slickItem">
-          <div v-handle class="m_planning--slickItem--handle handle" />
-          <PlanningItem
-            class="m_planning--slickItem--item"
-            :key="item.metaFileName"
-            :media="item"
-            :class="{
-              'is--active':
-                item.metaFileName ===
-                $root.settings.current_planning_media_metaFileName,
-              'has--timer': planning_item_with_timer === item.metaFileName
-            }"
-            :slugFolderName="slugFolderName"
-            @toggleOpen="toggleOpenItem"
-            @removePlanningMedia="removePlanningMedia"
-          />
-        </div>
-      </SlickItem>
-    </SlickList>
-
-    <div
-      class="m_planning--container"
-      @click.self="$root.settings.current_planning_media_metaFileName = false"
-    >
-      <form
-        @submit.prevent="createPlanningMedia"
-        :key="'create'"
-        class="m_planning--container--create"
-      >
-        <div v-if="!show_planning_section">
-          <td colspan="4">
-            <button
-              type="button"
-              class="_create_button"
-              @click="show_planning_section = !show_planning_section"
-            >
-              {{ $t("create") }}
-            </button>
-          </td>
-        </div>
-
-        <div v-else>
-          <td colspan="2">
-            <input type="text" class ref="nameInput" />
-          </td>
-          <td colspan="2">
-            <button
-              type="submit"
-              class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
-            >
-              {{ $t("create") }}
-            </button>
-          </td>
-        </div>
-      </form>
-
-      <a
-        class="button js--openInBrowser"
-        :href="`projects/${slugFolderName}/full_planning`"
-        target="_blank"
-        >Exporter au format HTML</a
-      >
-
-      <div class="m_planningPanes">
-        <div
-          v-for="media in sorted_planning_medias"
-          :key="media.metaFileName + '_pane'"
-          @click.self="
-            $root.settings.current_planning_media_metaFileName = false
-          "
-          class="m_planningPanes--pane"
-          :class="{
-            'is--open':
-              $root.settings.current_planning_media_metaFileName ===
-              media.metaFileName
-          }"
+    <div       class="m_planning--container">
+      <SlickList v-model="sorted_planning_medias" axis="y" :useDragHandle="true">
+        <!-- @sort-end="sortEnded" -->
+        <SlickItem
+          v-for="(item, index) in sorted_planning_medias"
+          :index="index"
+          :key="item.key"
         >
-          <transition name="slideright">
-            <div
-              class="m_planningPanes--pane--content"
-              v-if="
+          <div class="m_planning--slickItem">
+            <div v-handle class="m_planning--slickItem--handle handle" />
+            <PlanningItem
+              class="m_planning--slickItem--item"
+              :key="item.metaFileName"
+              :media="item"
+              :class="{
+                'is--active':
+                  item.metaFileName ===
+                  $root.settings.current_planning_media_metaFileName,
+                'has--timer': planning_item_with_timer === item.metaFileName
+              }"
+              :slugFolderName="slugFolderName"
+              @toggleOpen="toggleOpenItem"
+              @removePlanningMedia="removePlanningMedia"
+            />
+          </div>
+        </SlickItem>
+      </SlickList>
+
+      <div
+        @click.self="$root.settings.current_planning_media_metaFileName = false"
+      >
+        <form
+          @submit.prevent="createPlanningMedia"
+          :key="'create'"
+          class="m_planning--container--create"
+        >
+          <div v-if="!show_planning_section">
+            <td colspan="4">
+              <button
+                type="button"
+                class="_create_button"
+                @click="show_planning_section = !show_planning_section"
+              >
+                {{ $t("create") }}
+              </button>
+            </td>
+          </div>
+
+          <div v-else>
+            <td colspan="2">
+              <input type="text" class ref="nameInput" />
+            </td>
+            <td colspan="2">
+              <button
+                type="submit"
+                class="button-small border-circled button-thin button-wide padding-verysmall margin-none bg-transparent"
+              >
+                {{ $t("create") }}
+              </button>
+            </td>
+          </div>
+        </form>
+
+        <a
+          class="button js--openInBrowser"
+          :href="`projects/${slugFolderName}/full_planning`"
+          target="_blank"
+          >Exporter au format HTML</a
+        >
+
+        <div class="m_planningPanes">
+          <div
+            v-for="media in sorted_planning_medias"
+            :key="media.metaFileName + '_pane'"
+            @click.self="
+              $root.settings.current_planning_media_metaFileName = false
+            "
+            class="m_planningPanes--pane"
+            :class="{
+              'is--open':
                 $root.settings.current_planning_media_metaFileName ===
-                  media.metaFileName
-              "
-            >
-              <PlanningItem
-                :key="media.metaFileName"
-                :media="media"
-                :slugFolderName="slugFolderName"
-                :mode="'expanded'"
-                @removePlanningMedia="removePlanningMedia"
-              />
-            </div>
-          </transition>
+                media.metaFileName
+            }"
+          >
+            <transition name="slideright">
+              <div
+                class="m_planningPanes--pane--content"
+                v-if="
+                  $root.settings.current_planning_media_metaFileName ===
+                    media.metaFileName
+                "
+              >
+                <PlanningItem
+                  :key="media.metaFileName"
+                  :media="media"
+                  :slugFolderName="slugFolderName"
+                  :mode="'expanded'"
+                  @removePlanningMedia="removePlanningMedia"
+                />
+              </div>
+            </transition>
+          </div>
         </div>
       </div>
     </div>
