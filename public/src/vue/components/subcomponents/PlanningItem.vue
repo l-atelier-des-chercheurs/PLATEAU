@@ -1,7 +1,7 @@
 <template>
   <form class="m_planningItem" :class="{ 'is--editable': edit_mode }" @submit.prevent="sendEdits">
     <div class="m_planningItem--topbar">
-      <div class="m_planningItem--editButtons">
+      <div class="m_planningItem--editButtons" v-if="!edit_mode">
         <button type="button" @click="edit_mode = !edit_mode" title="edit">
           <svg
             version="1.1"
