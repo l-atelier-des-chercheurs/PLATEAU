@@ -10,15 +10,15 @@
         $root.settings.current_writeup_media_metaFileName ||
         $root.settings.current_planning_media_metaFileName ||
         $root.settings.current_composition_media_metaFileName,
-      'is--dragged': is_dragged
+      'is--dragged': is_dragged,
     }"
     @dragstart="startMediaDrag(media, $event)"
     @dragend="endMediaDrag()"
     :draggable="
       true ||
-        $root.settings.current_writeup_media_metaFileName ||
-        $root.settings.current_planning_media_metaFileName ||
-        $root.settings.current_composition_media_metaFileName
+      $root.settings.current_writeup_media_metaFileName ||
+      $root.settings.current_planning_media_metaFileName ||
+      $root.settings.current_composition_media_metaFileName
     "
   >
     <div draggable="false">
@@ -37,9 +37,11 @@
             :element_width_for_sizes="200"
             :preview_size="preview_size"
           />
-          <figcaption class="m_media--caption" v-if="!!media.caption">
-            {{ media.caption }}
-          </figcaption>
+          <figcaption
+            class="m_media--caption"
+            v-if="!!media.caption"
+            v-text="media.caption"
+          />
           <div class="m_media--date">
             {{
               $moment(media.date_uploaded, "YYYY-MM-DD HH:mm:ss").format(
@@ -89,10 +91,10 @@ export default {
     media: Object,
     slugProjectName: String,
     metaFileName: String,
-    preview_size: Number
+    preview_size: Number,
   },
   components: {
-    MediaContent
+    MediaContent,
   },
   data() {
     return {
@@ -102,8 +104,8 @@ export default {
         image: "/images/i_icone-dodoc_image.svg",
         video: "/images/i_icone-dodoc_video.svg",
         stopmotion: "/images/i_icone-dodoc_anim.svg",
-        audio: "/images/i_icone-dodoc_audio.svg"
-      }
+        audio: "/images/i_icone-dodoc_audio.svg",
+      },
     };
   },
 
@@ -118,7 +120,7 @@ export default {
       }
       return (
         this.$root.settings.medias_present_in_writeup.findIndex(
-          s => s === this.metaFileName
+          (s) => s === this.metaFileName
         ) > -1
       );
 
@@ -151,10 +153,10 @@ export default {
       }
       return (
         this.media.authors.filter(
-          a => a.name === this.$root.settings.current_author.name
+          (a) => a.name === this.$root.settings.current_author.name
         ).length > 0
       );
-    }
+    },
   },
   methods: {
     toggleMediaModal() {
@@ -187,8 +189,8 @@ export default {
         this.is_dragged = false;
         this.$root.settings.media_being_dragged = false;
       }, 500);
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss">
@@ -299,6 +301,7 @@ export default {
 .m_media--caption {
   font-size: 70%;
   padding: 0 calc(var(--spacing) / 4);
+  white-space: pre-line;
 }
 .m_media--date {
   font-size: 70%;
