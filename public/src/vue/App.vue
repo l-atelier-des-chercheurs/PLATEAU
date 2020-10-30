@@ -3,7 +3,7 @@
     <Topbar
       v-if="
         $root.do_navigation.view !== 'List' &&
-          $root.state.mode !== 'export_planning'
+        $root.state.mode !== 'export_planning'
       "
     />
     <component
@@ -37,13 +37,13 @@ export default {
     Topbar,
     List,
     Project,
-    PlanningItem
+    PlanningItem,
   },
   props: {},
   data() {
     return {
       pwd: "",
-      remember_password_on_this_device: false
+      remember_password_on_this_device: false,
     };
   },
   watch: {},
@@ -52,11 +52,11 @@ export default {
     planning_items() {
       if (typeof this.$root.currentProject.medias !== "object") return [];
       return Object.values(this.$root.currentProject.medias).filter(
-        m => m.type === "planning"
+        (m) => m.type === "planning"
       );
-    }
+    },
   },
-  methods: {}
+  methods: {},
 };
 </script>
 
@@ -330,6 +330,44 @@ input[type="text"] {
   color: var(--active-color);
 }
 
+svg.inline-svg {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+
+  &.inline-svg-larger {
+    width: 1.4em;
+    height: 1.4em;
+  }
+
+  > * {
+    fill: currentColor;
+  }
+
+  &_larger {
+    width: 1.5em;
+    height: 1.5em;
+    margin-top: -0.25em;
+    margin-bottom: -0.25em;
+  }
+}
+
+.m_tagsAndAuthorFilters {
+  margin: ~"calc(var(--spacing) / 2)" 0;
+
+  .item {
+    :not(.is--active) {
+      opacity: 0.4;
+    }
+  }
+
+  > * {
+    max-height: 20vh;
+    overflow: auto;
+    // .custom_scrollbar(8px, 5px, 6px);
+  }
+}
+
 .plyr {
   width: 100%;
   height: 100%;
@@ -455,5 +493,206 @@ input[type="text"] {
   // opacity: 0;
   transform: translateX(100%) !important;
   transition: opacity 0.4s linear, transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.m_keywordField,
+.vue-tags-input {
+  position: relative;
+  margin-bottom: 0;
+  font-size: 75%;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: flex-start;
+  text-transform: initial;
+
+  font-family: "Fira Mono";
+
+  > .input {
+    border: none !important;
+    padding: 0 !important;
+  }
+  > .autocomplete {
+    position: relative !important;
+    background-color: transparent;
+    border: 4px solid #eee !important;
+    padding: ~"calc(var(--spacing) / 4)";
+    margin-bottom: ~"calc(var(--spacing) / 4)";
+    padding-bottom: 0;
+    flex: 1 0 100%;
+
+    // &::before {
+    //   content: "suggestion";
+    //   margin-bottom: @t-skipline / 8;
+    //   text-transform: uppercase;
+    //   .label;
+    //   display: block;
+    //   flex: 1 1 100%;
+    // }
+
+    > div {
+      display: flex;
+      flex-flow: row wrap;
+    }
+  }
+
+  .m_keywordField--show_all_keywords {
+    display: block;
+    text-transform: uppercase;
+    background-color: transparent !important;
+    border: 2px solid #eee;
+    font-size: 80% !important;
+    font-weight: bold;
+    color: #333 !important;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .item {
+    border-radius: 4px;
+    &.selected-item {
+      background-color: var(--c-bleu) !important;
+    }
+  }
+  .tags {
+    flex-flow: row wrap !important;
+  }
+
+  .new-tag-input-wrapper {
+    position: relative;
+    padding: 0 !important;
+    background-color: transparent;
+    margin-right: ~"calc(var(--spacing) / 4)" !important;
+    margin-bottom: ~"calc(var(--spacing) / 4)" !important;
+
+    display: flex !important;
+    flex-flow: row nowrap;
+    transform: all 1s cubic-bezier(0.19, 1, 0.22, 1);
+
+    input {
+      position: relative;
+      z-index: 1;
+
+      padding: ~"calc(var(--spacing) / 4)";
+
+      margin: 0 !important;
+      border-radius: 4px;
+      min-width: 15ch !important;
+      flex: 1 1 auto;
+      // .bg-gris_tresclair;
+      font-size: inherit !important;
+      line-height: 1;
+
+      height: auto !important;
+      border-bottom: 2px solid #eee !important;
+    }
+
+    button {
+      display: block;
+      // .button-small;
+      font-size: 2em;
+      background-color: #eee;
+      // .bg-bleuvert;
+      color: white;
+      flex: 0 0 1em;
+      min-height: 0;
+      width: 1em;
+      overflow: hidden;
+      padding: 0;
+      margin-left: -4px;
+      padding-left: 4px;
+      border-radius: 0 4px 4px 0;
+
+      &[disabled] {
+        background-color: #eee;
+      }
+    }
+  }
+
+  > span,
+  > button,
+  .tag,
+  .item {
+    flex-basis: auto;
+    display: flex;
+    align-items: center;
+    min-height: 0;
+    border-radius: 4px !important;
+    // background-color: @c-bleuvert_clair !important;
+    background-color: white;
+    // color: white !important;
+    color: black !important;
+    font-size: inherit !important;
+    // .padding-sides-verysmall !important;
+    // .padding-vert-verysmall !important;
+    padding: 0.2rem 0.2rem;
+
+    text-transform: initial;
+    font-weight: inherit;
+    font-weight: 400;
+
+    margin: 0 !important;
+    margin-right: ~"calc(var(--spacing) / 4)" !important;
+    margin-bottom: ~"calc(var(--spacing) / 4)" !important;
+
+    &.is--active {
+      font-weight: 700;
+      &::before {
+        color: black;
+        // background-color: black !important;
+      }
+    }
+
+    &.tagcolorid_0 {
+      // background-color: @c-bleuvert_clair !important;
+      &.is--active {
+      }
+    }
+    &.tagcolorid_1 {
+      // background-color: @c-rouge_clair !important;
+    }
+    &.tagcolorid_2 {
+      // background-color: @c-orange_clair !important;
+    }
+
+    &::before {
+      content: "•";
+      flex-shrink: 0;
+      margin: 0 ~"calc(var(--spacing) / 4)";
+      margin-left: ~"calc(var(--spacing) / 8)";
+      display: inline-block;
+      vertical-align: middle;
+      color: white;
+      font-size: 1em;
+      border-radius: 50%;
+      transform: scale(1.7);
+
+      transition: all 0.2s cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+    &.can_be_removed {
+      &::before {
+        content: "×";
+        transform: scale(1.5);
+        transition: transform 0.15s ease;
+      }
+      &:hover {
+        &::before {
+          color: #000;
+          // transform: scale(2);
+        }
+      }
+    }
+
+    .actions {
+      margin: 0 ~"calc(var(--spacing) / 2)";
+      margin-right: 0;
+    }
+  }
+
+  .item > div {
+    margin: 0;
+  }
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
-  <div class="m_tagsAndAuthorFilters flex-wrap bg-blanc rounded margin-top-small">
-    <div v-if="favFilter !== undefined" class="padding-sides-small">
+  <div class="m_tagsAndAuthorFilters flex-wrap bg-blanc rounded">
+    <div v-if="has_fav_toggle" class="padding-small">
       <span class="switch switch-xs">
         <input
           type="checkbox"
@@ -11,7 +11,7 @@
           :readonly="read_only"
         />
         <label for="favFilter">
-          {{ $t('fav') }}
+          {{ $t("fav") }}
           <svg
             version="1.1"
             class="inline-svg"
@@ -23,7 +23,7 @@
             width="78.5px"
             height="106.4px"
             viewBox="0 0 78.5 106.4"
-            style="enable-background:new 0 0 78.5 106.4;"
+            style="enable-background: new 0 0 78.5 106.4"
             xml:space="preserve"
           >
             <polygon
@@ -35,42 +35,83 @@
         </label>
       </span>
     </div>
-    <div v-if="allKeywords.length > 0" class="padding-sides-small">
-      <label>{{ $t('keywords') }}</label>
+    <div v-if="allTypes.length > 0" class="padding-sides-small">
+      <label>{{ $t("type") }}</label>
+      <div class="m_typeField margin-bottom-none font-large">
+        <label :for="`type-${type}`" class v-for="type in allTypes" :key="type">
+          <input
+            type="checkbox"
+            :id="`type-${type}`"
+            :value="type"
+            v-model="enabled_types"
+            @change="$emit('setTypeFilter', enabled_types)"
+            :readonly="read_only"
+          />
+          <span>&nbsp;{{ $t(type) }}</span>
+        </label>
+      </div>
+    </div>
+    <div
+      v-if="allKeywords && allKeywords.length > 0"
+      class="padding-sides-small"
+    >
+      <label>{{ $t("keywords") }}</label>
       <div class="m_keywordField margin-bottom-none font-large">
         <button
           v-for="keyword in allKeywords"
           :key="keyword.text"
-          :class="[keyword.classes, { 'is--active' : keywordFilter === keyword.text }]"
-          @click="$emit('setKeywordFilter',keyword.text)"
-        >{{ keyword.text }}</button>
+          :class="[
+            keyword.classes,
+            { 'is--active': keywordFilter === keyword.text },
+          ]"
+          @click="$emit('setKeywordFilter', keyword.text)"
+        >
+          {{ keyword.text }}
+        </button>
       </div>
     </div>
-    <div v-if="allAuthors.length > 0" class="padding-sides-small">
-      <label>{{ $t('authors') }}</label>
+    <div v-if="allAuthors && allAuthors.length > 0" class="padding-sides-small">
+      <label>{{ $t("authors") }}</label>
       <div class="m_authorField margin-bottom-none">
         <button
-          v-for="author in allAuthors"
-          :key="author.name"
-          :class="{ 'is--active' : authorFilter === author.name }"
-          @click="$emit('setAuthorFilter',author.name)"
-        >{{ author.name }}</button>
+          v-for="{ slugFolderName: author_slug } in allAuthors"
+          v-if="$root.getAuthor(author_slug)"
+          :key="author_slug"
+          :class="{
+            'is--active': authorFilter === author_slug,
+            'is--loggedInAuthor':
+              $root.current_author &&
+              $root.current_author.slugFolderName === author_slug,
+          }"
+          @click="$emit('setAuthorFilter', author_slug)"
+        >
+          {{ $root.getAuthor(author_slug).name }}
+        </button>
       </div>
     </div>
   </div>
 </template>
 <script>
 export default {
-  props: [
-    "keywordFilter",
-    "authorFilter",
-    "favFilter",
-    "allKeywords",
-    "allAuthors"
-  ],
+  props: {
+    keywordFilter: String,
+    authorFilter: String,
+    favFilter: {
+      type: Boolean,
+      default: false,
+    },
+    allKeywords: Array,
+    allAuthors: Array,
+    allTypes: {
+      type: Array,
+      default: () => [],
+    },
+  },
   components: {},
   data() {
-    return {};
+    return {
+      enabled_types: [],
+    };
   },
 
   created() {},
@@ -78,9 +119,12 @@ export default {
   beforeDestroy() {},
 
   watch: {},
-  computed: {},
-  methods: {}
+  computed: {
+    has_fav_toggle() {
+      return this.$listeners && this.$listeners.setFavFilter;
+    },
+  },
+  methods: {},
 };
 </script>
-<style>
-</style>
+<style></style>

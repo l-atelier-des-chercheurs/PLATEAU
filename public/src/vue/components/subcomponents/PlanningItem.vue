@@ -1,5 +1,9 @@
 <template>
-  <form class="m_planningItem" :class="{ 'is--editable': edit_mode }" @submit.prevent="sendEdits">
+  <form
+    class="m_planningItem"
+    :class="{ 'is--editable': edit_mode }"
+    @submit.prevent="sendEdits"
+  >
     <div class="m_planningItem--topbar">
       <div class="m_planningItem--editButtons" v-if="!edit_mode">
         <button type="button" @click="edit_mode = !edit_mode" title="edit">
@@ -13,7 +17,7 @@
             width="100.7px"
             height="101px"
             viewBox="0 0 100.7 101"
-            style="enable-background:new 0 0 100.7 101;"
+            style="enable-background: new 0 0 100.7 101"
             xml:space="preserve"
           >
             <path
@@ -34,7 +38,7 @@
             width="91.6px"
             height="95px"
             viewBox="0 0 91.6 95"
-            style="enable-background:new 0 0 91.6 95;"
+            style="enable-background: new 0 0 91.6 95"
             xml:space="preserve"
           >
             <path
@@ -63,9 +67,9 @@
       <div class="m_planningItem--date--start">
         <span v-if="!edit_mode && media.planning_info_start">
           {{
-          $root.format_date_to_human(media.planning_info_start) +
-          " " +
-          $moment(media.planning_info_start).format("HH:mm:ss")
+            $root.format_date_to_human(media.planning_info_start) +
+            " " +
+            $moment(media.planning_info_start).format("HH:mm:ss")
           }}
         </span>
         <!-- <DateTime
@@ -87,12 +91,17 @@
             @click.stop="
               $eventHub.$emit('countdown.start_timer', {
                 duration: media.planning_info_duration,
-                attached_to: media.metaFileName
+                attached_to: media.metaFileName,
               })
             "
-          >start timer</button>
+          >
+            start timer
+          </button>
         </span>
-        <vue-timepicker v-else-if="edit_mode" v-model="edited_media_infos.planning_info_duration"></vue-timepicker>
+        <vue-timepicker
+          v-else-if="edit_mode"
+          v-model="edited_media_infos.planning_info_duration"
+        ></vue-timepicker>
       </div>
     </div>
 
@@ -102,12 +111,16 @@
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
         @click="edit_mode = !edit_mode"
-      >{{ $t("annuler") }}</button>
+      >
+        {{ $t("annuler") }}
+      </button>
       <button
         type="submit"
         class="button-small border-circled button-thin padding-verysmall margin-none bg-transparent"
         v-if="edit_mode"
-      >{{ $t("valider") }}</button>
+      >
+        {{ $t("valider") }}
+      </button>
     </div>
 
     <div class="m_planningItem--notes" v-if="edit_notes">
@@ -123,7 +136,10 @@
         </button>
       </div>-->
 
-      <div class="m_planningItem--notes--staticNote" v-if="false && !edit_notes">
+      <div
+        class="m_planningItem--notes--staticNote"
+        v-if="false && !edit_notes"
+      >
         <div
           v-html="notes_excerpt"
           class="m_planningItem--notes--staticNote--content"
@@ -160,6 +176,7 @@
 import DateTime from "./DateTime.vue";
 import CollaborativeEditor from "./CollaborativeEditor.vue";
 import VueTimepicker from "vue2-timepicker";
+import TagsInput from "./TagsInput.vue";
 
 export default {
   props: {
@@ -167,13 +184,14 @@ export default {
     slugFolderName: String,
     mode: {
       type: String,
-      default: "collapsed"
-    }
+      default: "collapsed",
+    },
   },
   components: {
     DateTime,
     CollaborativeEditor,
-    VueTimepicker
+    VueTimepicker,
+    TagsInput,
   },
 
   data() {
@@ -181,7 +199,7 @@ export default {
       edit_mode: false,
       edit_notes: this.mode === "expanded",
       show_full_notes: false,
-      duration_picker_data: "00:00"
+      duration_picker_data: "00:00",
     };
   },
   created() {},
@@ -194,17 +212,17 @@ export default {
       this.$root.settings.current_planning_media_metaFileName = false;
   },
   watch: {
-    edit_mode: function() {
+    edit_mode: function () {
       if (this.edit_mode) {
         this.edited_media_infos = {
           name: this.media.name,
           planning_info_start: this.media.planning_info_start,
           planning_info_duration: !!this.media.planning_info_duration
             ? this.media.planning_info_duration
-            : "00:00"
+            : "00:00",
         };
       }
-    }
+    },
   },
   computed: {
     notes_excerpt() {
@@ -215,9 +233,9 @@ export default {
         return false;
       }
       return this.$root.format_duration_to_human({
-        duration: this.media.planning_info_duration
+        duration: this.media.planning_info_duration,
       });
-    }
+    },
   },
   methods: {
     sendEdits() {
@@ -240,7 +258,7 @@ export default {
 
       const checkIfValueChanged = (key, val) => val !== this.media[key];
 
-      Object.keys(this.edited_media_infos).map(k => {
+      Object.keys(this.edited_media_infos).map((k) => {
         if (checkIfValueChanged(k, this.edited_media_infos[k])) {
           data[k] = this.edited_media_infos[k];
         }
@@ -250,7 +268,7 @@ export default {
         type: "projects",
         slugFolderName: this.slugFolderName,
         slugMediaName: this.media.metaFileName,
-        data
+        data,
       });
       this.edit_mode = false;
     },
@@ -271,8 +289,8 @@ export default {
           },
           () => {}
         );
-    }
-  }
+    },
+  },
 };
 </script>
 <style

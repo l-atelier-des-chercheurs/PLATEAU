@@ -1,4 +1,4 @@
-module.exports = (function() {
+module.exports = (function () {
   // Ready translated locale messages
   const messages = {
     fr: {
@@ -26,6 +26,8 @@ module.exports = (function() {
       project: "Projet",
       copy_of: "Copie de",
       onion_skin: "Onion skin",
+      keyword: "Mot-clé",
+      keywords: "Mot-clés",
 
       photo: "photo",
       video: "vidéo",
@@ -64,8 +66,8 @@ module.exports = (function() {
         connection_active: "La connexion au serveur est active.",
         connection_lost: "La connexion au serveur a été perdue.",
         sure_to_cancel_stopmotion:
-          "Êtes-vous sur de vouloir annuler ce stopmoion ? Vous pourrez toujours le retrouver en cliquant sur Liste des stopmotions"
-      }
+          "Êtes-vous sur de vouloir annuler ce stopmoion ? Vous pourrez toujours le retrouver en cliquant sur Liste des stopmotions",
+      },
     },
     en: {
       back_to_list: "Back to list",
@@ -123,9 +125,9 @@ module.exports = (function() {
         using_saved_password:
           "Connecting to plateau using the password that was saved",
         connection_active: "The connection to the server is active.",
-        connection_lost: "The connection to the server was lost."
-      }
-    }
+        connection_lost: "The connection to the server was lost.",
+      },
+    },
   };
 
   return messages;

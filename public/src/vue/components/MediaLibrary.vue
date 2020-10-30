@@ -316,7 +316,7 @@ export default {
           }
         }
 
-        if (this.$root.isMediaShown(media)) {
+        if (this.$root.filterMedia(media)) {
           sortable.push({ slugMediaName: media.metaFileName, orderBy });
         }
       });

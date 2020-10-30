@@ -1,7 +1,11 @@
 <template>
   <div class="m_planning">
-    <div       class="m_planning--container">
-      <SlickList v-model="sorted_planning_medias" axis="y" :useDragHandle="true">
+    <div class="m_planning--container">
+      <SlickList
+        v-model="sorted_planning_medias"
+        axis="y"
+        :useDragHandle="true"
+      >
         <!-- @sort-end="sortEnded" -->
         <SlickItem
           v-for="(item, index) in sorted_planning_medias"
@@ -18,7 +22,7 @@
                 'is--active':
                   item.metaFileName ===
                   $root.settings.current_planning_media_metaFileName,
-                'has--timer': planning_item_with_timer === item.metaFileName
+                'has--timer': planning_item_with_timer === item.metaFileName,
               }"
               :slugFolderName="slugFolderName"
               @toggleOpen="toggleOpenItem"
@@ -81,7 +85,7 @@
             :class="{
               'is--open':
                 $root.settings.current_planning_media_metaFileName ===
-                media.metaFileName
+                media.metaFileName,
             }"
           >
             <transition name="slideright">
@@ -89,7 +93,7 @@
                 class="m_planningPanes--pane--content"
                 v-if="
                   $root.settings.current_planning_media_metaFileName ===
-                    media.metaFileName
+                  media.metaFileName
                 "
               >
                 <PlanningItem
@@ -117,21 +121,21 @@ export default {
   props: {
     slugFolderName: String,
     project: Object,
-    planning_medias: Array
+    planning_medias: Array,
   },
   components: {
     PlanningItem,
     SlickItem,
     SlickList,
     Splitpanes,
-    Pane
+    Pane,
   },
   directives: { handle: HandleDirective },
   data() {
     return {
       show_planning_section: false,
 
-      planning_slugs_in_order: []
+      planning_slugs_in_order: [],
     };
   },
 
@@ -146,7 +150,7 @@ export default {
   beforeDestroy() {},
 
   watch: {
-    "project.planning_slugs_in_order": function() {
+    "project.planning_slugs_in_order": function () {
       if (this.$root.state.dev_mode === "debug") {
         console.log(`WATCH • Publication: publication.medias_slugs`);
       }
@@ -155,7 +159,7 @@ export default {
       )
         ? this.project.planning_slugs_in_order
         : [];
-    }
+    },
   },
 
   computed: {
@@ -163,17 +167,17 @@ export default {
       get() {
         return this.planning_slugs_in_order.reduce((acc, { metaFileName }) => {
           const _planning_media = this.planning_medias.find(
-            pm => pm.metaFileName === metaFileName
+            (pm) => pm.metaFileName === metaFileName
           );
-          if (_planning_media) {
+          if (_planning_media && this.$root.filterMedia(_planning_media)) {
             acc.push(_planning_media);
           }
           return acc;
         }, []);
       },
       set(v) {
-        const planning_slugs_in_order = v.map(m => ({
-          metaFileName: m.metaFileName
+        const planning_slugs_in_order = v.map((m) => ({
+          metaFileName: m.metaFileName,
         }));
 
         this.planning_slugs_in_order = planning_slugs_in_order;
@@ -182,10 +186,10 @@ export default {
           type: "projects",
           slugFolderName: this.slugFolderName,
           data: {
-            planning_slugs_in_order
-          }
+            planning_slugs_in_order,
+          },
         });
-      }
+      },
       // return this.planning_medias.sort((a, b) =>
       //   a.hasOwnProperty("planning_info_start") && a.planning_info_start
       //     ? a.planning_info_start.localeCompare(b.planning_info_start)
@@ -199,7 +203,7 @@ export default {
         return false;
 
       return this.project.countdown_options[0].attached_to;
-    }
+    },
   },
   methods: {
     textChange(delta, oldDelta, source) {
@@ -223,7 +227,7 @@ export default {
         name = this.$t("untitled_document");
       }
 
-      if (this.planning_medias.filter(w => w.name === name).length > 0) {
+      if (this.planning_medias.filter((w) => w.name === name).length > 0) {
         this.$alertify
           .closeLogOnClick(true)
           .delay(4000)
@@ -233,7 +237,7 @@ export default {
 
       this.show_planning_section = false;
 
-      this.$eventHub.$on("socketio.media_created_or_updated", d => {
+      this.$eventHub.$on("socketio.media_created_or_updated", (d) => {
         this.$eventHub.$off("socketio.media_created_or_updated");
 
         let planning_slugs_in_order = JSON.parse(
@@ -241,15 +245,15 @@ export default {
         );
 
         planning_slugs_in_order.push({
-          metaFileName: d.metaFileName
+          metaFileName: d.metaFileName,
         });
 
         this.$root.editFolder({
           type: "projects",
           slugFolderName: this.slugFolderName,
           data: {
-            planning_slugs_in_order
-          }
+            planning_slugs_in_order,
+          },
         });
       });
 
@@ -258,8 +262,8 @@ export default {
         slugFolderName: this.slugFolderName,
         additionalMeta: {
           name,
-          type: "planning"
-        }
+          type: "planning",
+        },
       });
     },
     removePlanningMedia(metaFileName) {
@@ -273,7 +277,7 @@ export default {
       this.$root.removeMedia({
         type: "projects",
         slugFolderName: this.slugFolderName,
-        slugMediaName: metaFileName
+        slugMediaName: metaFileName,
       });
 
       let planning_slugs_in_order = JSON.parse(
@@ -281,22 +285,22 @@ export default {
       );
 
       planning_slugs_in_order = planning_slugs_in_order.filter(
-        m => m.metaFileName !== metaFileName
+        (m) => m.metaFileName !== metaFileName
       );
 
       this.$root.editFolder({
         type: "projects",
         slugFolderName: this.slugFolderName,
         data: {
-          planning_slugs_in_order
-        }
+          planning_slugs_in_order,
+        },
       });
     },
     sortEnded({ event, newIndex, oldIndex, collection }) {
       if (newIndex !== oldIndex) {
       }
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss">

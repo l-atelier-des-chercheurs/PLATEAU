@@ -45,11 +45,11 @@ Vue.use(VCalendar);
 
 let lang_settings = {
   available: {
-    fr: "Français"
+    fr: "Français",
   },
   default: "fr",
   current: "fr",
-  init: function() {}
+  init: function () {},
 };
 lang_settings.init();
 
@@ -68,7 +68,7 @@ html.setAttribute("lang", lang_settings.current);
 // Create VueI18n instance with options
 let i18n = new VueI18n({
   locale: lang_settings.current, // set locale
-  messages: locale_strings // set locale messages
+  messages: locale_strings, // set locale messages
 });
 
 /** *********
@@ -101,7 +101,7 @@ let vm = new Vue({
 
     do_navigation: {
       view: "List",
-      current_slugProjectName: false
+      current_slugProjectName: false,
     },
     show_session_password_prompt: false,
 
@@ -119,20 +119,20 @@ let vm = new Vue({
       default_project_panes: [
         {
           key: "Planning",
-          enabled: true
+          enabled: true,
         },
         {
           key: "MediaLibrary",
-          enabled: true
+          enabled: true,
         },
         {
           key: "Composition",
-          enabled: false
+          enabled: false,
         },
         {
           key: "Capture",
-          enabled: false
-        }
+          enabled: false,
+        },
         // {
         //   key: "WriteUp",
         //   enabled: true
@@ -145,12 +145,12 @@ let vm = new Vue({
         selected_devicesId: {
           audioinput: "",
           videoinput: "",
-          audiooutput: ""
+          audiooutput: "",
         },
         ideal_camera_resolution: {
           name: "",
           width: "",
-          height: ""
+          height: "",
         },
 
         distant_flux: {
@@ -158,8 +158,8 @@ let vm = new Vue({
           username: `plateau-${(
             Math.random().toString(36) + "00000000000000000"
           ).slice(2, 3 + 2)}`,
-          callee_username: ""
-        }
+          callee_username: "",
+        },
       },
 
       medias_present_in_writeup: [],
@@ -174,18 +174,18 @@ let vm = new Vue({
       project_filter: {
         keyword: "",
         author: "",
-        name: ""
+        name: "",
       },
       media_filter: {
-        keyword: false,
-        author: false,
-        fav: false
-      }
+        keyword: "",
+        author: "",
+        fav: "",
+      },
     },
     lang: {
       available: lang_settings.available,
-      current: lang_settings.current
-    }
+      current: lang_settings.current,
+    },
   },
   created() {
     if (window.state.dev_mode === "debug") {
@@ -256,16 +256,16 @@ let vm = new Vue({
       if (this.do_navigation.current_slugProjectName) {
         this.$socketio.listFolder({
           type: "projects",
-          slugFolderName: this.do_navigation.current_slugProjectName
+          slugFolderName: this.do_navigation.current_slugProjectName,
         });
         this.$socketio.listMedias({
           type: "projects",
-          slugFolderName: this.do_navigation.current_slugProjectName
+          slugFolderName: this.do_navigation.current_slugProjectName,
         });
       }
     });
 
-    window.onpopstate = event => {
+    window.onpopstate = (event) => {
       console.log(
         `ROOT EVENT: popstate with event.state.slugProjectName = ${event.state.slugProjectName}`
       );
@@ -327,7 +327,7 @@ let vm = new Vue({
   },
   beforeDestroy() {},
   watch: {
-    "store.authors": function() {
+    "store.authors": function () {
       if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: var has changed: store.authors`);
       }
@@ -342,9 +342,9 @@ let vm = new Vue({
         this.unsetAuthor();
       }
     },
-    "settings.is_slave": function() {
+    "settings.is_slave": function () {
       this.$socketio.socket.emit("updateClientInfo", {
-        is_slave: this.settings.is_slave
+        is_slave: this.settings.is_slave,
       });
     },
     "settings.project_panes_in_order": {
@@ -371,11 +371,11 @@ let vm = new Vue({
           this.settings.project_panes_in_order
         );
       },
-      deep: true
-    }
+      deep: true,
+    },
   },
   computed: {
-    currentProject: function() {
+    currentProject: function () {
       if (
         !this.store.hasOwnProperty("projects") ||
         Object.keys(this.store.projects).length === 0
@@ -395,7 +395,7 @@ let vm = new Vue({
         return {};
       }
     },
-    current_planning_media: function() {
+    current_planning_media: function () {
       if (
         !this.settings.current_planning_media_metaFileName ||
         Object.keys(this.currentProject).length === 0
@@ -403,13 +403,13 @@ let vm = new Vue({
         return false;
 
       return Object.values(this.currentProject.medias).find(
-        m =>
+        (m) =>
           m.metaFileName === this.settings.current_planning_media_metaFileName
       );
     },
     projects_that_are_accessible() {
       const type = "projects";
-      return Object.values(this.store[type]).filter(p =>
+      return Object.values(this.store[type]).filter((p) =>
         this.canAccessFolder({ type, slugFolderName: p.slugFolderName })
       );
     },
@@ -419,7 +419,7 @@ let vm = new Vue({
         let authorName = this.store.authors[slugAuthorName];
         allAuthors.push(authorName);
       }
-      allAuthors = allAuthors.filter(function(item, pos) {
+      allAuthors = allAuthors.filter(function (item, pos) {
         return allAuthors.indexOf(item) == pos;
       });
       return allAuthors;
@@ -433,7 +433,7 @@ let vm = new Vue({
         const project = this.store.projects[slugProjectName];
         let projectKeywords = project.keywords;
         if (!!projectKeywords) {
-          projectKeywords.map(val => {
+          projectKeywords.map((val) => {
             allKeywords.push(val.title);
           });
 
@@ -441,44 +441,46 @@ let vm = new Vue({
             project.hasOwnProperty("medias") &&
             Object.keys(project.medias).length > 0
           ) {
-            Object.values(project.medias).map(m => {
+            Object.values(project.medias).map((m) => {
               if (m.hasOwnProperty("keywords") && m.keywords.length > 0) {
-                allKeywords = allKeywords.concat(m.keywords.map(k => k.title));
+                allKeywords = allKeywords.concat(
+                  m.keywords.map((k) => k.title)
+                );
               }
             });
           }
         }
       }
-      allKeywords = allKeywords.filter(function(item, pos) {
+      allKeywords = allKeywords.filter(function (item, pos) {
         return allKeywords.indexOf(item) == pos;
       });
 
-      return allKeywords.map(kw => {
+      return allKeywords.map((kw) => {
         return {
           text: kw,
-          classes: "tagcolorid_" + (parseInt(kw, 36) % 2)
+          classes: "tagcolorid_" + (parseInt(kw, 36) % 2),
         };
       });
-    }
+    },
   },
   methods: {
     getAllAuthorsFrom(base) {
       let uniqueAuthors = [];
-      Object.values(base).map(meta => {
+      Object.values(base).map((meta) => {
         if (!meta["authors"]) return;
         if (typeof meta.authors === "string") {
           meta.authors = [{ name: meta.authors }];
         }
-        meta.authors.map(k => {
+        meta.authors.map((k) => {
           if (uniqueAuthors.indexOf(k.name) == -1) uniqueAuthors.push(k.name);
         });
       });
-      uniqueAuthors = uniqueAuthors.sort(function(a, b) {
+      uniqueAuthors = uniqueAuthors.sort(function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
       });
-      return uniqueAuthors.map(kw => {
+      return uniqueAuthors.map((kw) => {
         return {
-          name: kw
+          name: kw,
         };
       });
     },
@@ -490,7 +492,7 @@ let vm = new Vue({
           nextDay: "[demain]",
           lastWeek: "dddd [dernier]",
           nextWeek: "dddd [prochain]",
-          sameElse: "dddd D MMMM Y"
+          sameElse: "dddd D MMMM Y",
         });
       } else if (this.$root.lang.current === "en") {
         return this.$moment(d).calendar(null, {
@@ -499,7 +501,7 @@ let vm = new Vue({
           nextDay: "[tomorrow]",
           lastWeek: "[last] dddd",
           nextWeek: "[next] dddd",
-          sameElse: "dddd, MMMM D Y"
+          sameElse: "dddd, MMMM D Y",
         });
       }
     },
@@ -519,7 +521,7 @@ let vm = new Vue({
 
       return _duration.format("H [heures] [et] m [minutes]");
     },
-    createFolder: function(fdata) {
+    createFolder: function (fdata) {
       if (window.state.dev_mode === "debug") {
         console.log(
           `ROOT EVENT: createfolder: ${JSON.stringify(fdata, null, 4)}`
@@ -527,16 +529,12 @@ let vm = new Vue({
       }
 
       this.justCreatedFolderID = fdata.id =
-        Math.random()
-          .toString(36)
-          .substring(2, 15) +
-        Math.random()
-          .toString(36)
-          .substring(2, 15);
+        Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15);
 
       this.$socketio.createFolder(fdata);
     },
-    editFolder: function(fdata) {
+    editFolder: function (fdata) {
       if (window.state.dev_mode === "debug") {
         console.log(
           `ROOT EVENT: editFolder: ${JSON.stringify(fdata, null, 4)}`
@@ -544,7 +542,7 @@ let vm = new Vue({
       }
       this.$socketio.editFolder(fdata);
     },
-    removeFolder: function({ type, slugFolderName }) {
+    removeFolder: function ({ type, slugFolderName }) {
       if (window.state.dev_mode === "debug") {
         console.log(
           `ROOT EVENT: removeFolder: slugFolderName = ${slugFolderName} of type = ${type}`
@@ -552,24 +550,20 @@ let vm = new Vue({
       }
       this.$socketio.removeFolder({ type, slugFolderName });
     },
-    createMedia: function(mdata) {
+    createMedia: function (mdata) {
       if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: createMedia`);
       }
       this.justCreatedMediaID = mdata.id =
-        Math.random()
-          .toString(36)
-          .substring(2, 15) +
-        Math.random()
-          .toString(36)
-          .substring(2, 15);
+        Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15);
 
       if (this.settings.current_author.hasOwnProperty("name")) {
         if (!mdata.hasOwnProperty("additionalMeta")) {
           mdata.additionalMeta = {};
         }
         mdata.additionalMeta.authors = [
-          { name: this.settings.current_author.name }
+          { name: this.settings.current_author.name },
         ];
       }
 
@@ -577,7 +571,7 @@ let vm = new Vue({
         this.$socketio.createMedia(mdata);
       });
     },
-    removeMedia: function(mdata) {
+    removeMedia: function (mdata) {
       if (window.state.dev_mode === "debug") {
         console.log(
           `ROOT EVENT: removeMedia: ${JSON.stringify(mdata, null, 4)}`
@@ -585,13 +579,13 @@ let vm = new Vue({
       }
       this.$socketio.removeMedia(mdata);
     },
-    editMedia: function(mdata) {
+    editMedia: function (mdata) {
       if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: editMedia: ${JSON.stringify(mdata, null, 4)}`);
       }
       this.$socketio.editMedia(mdata);
     },
-    canAccessFolder: function({ type, slugFolderName }) {
+    canAccessFolder: function ({ type, slugFolderName }) {
       if (!this.store[type].hasOwnProperty(slugFolderName)) return false;
 
       // if folder doesn’t have a password set
@@ -600,7 +594,7 @@ let vm = new Vue({
       }
 
       const has_reference_to_folder = this.state.list_authorized_folders.filter(
-        i => {
+        (i) => {
           if (
             !!i &&
             i.hasOwnProperty("type") &&
@@ -618,7 +612,7 @@ let vm = new Vue({
       }
       return false;
     },
-    openProject: function(slugProjectName) {
+    openProject: function (slugProjectName) {
       if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: openProject: ${slugProjectName}`);
       }
@@ -626,7 +620,7 @@ let vm = new Vue({
         !this.store.projects.hasOwnProperty(slugProjectName) ||
         !this.canAccessFolder({
           type: "projects",
-          slugFolderName: slugProjectName
+          slugFolderName: slugProjectName,
         })
       ) {
         console.log("Missing folder key on the page, aborting.");
@@ -651,7 +645,7 @@ let vm = new Vue({
 
         // find in panes_config_for_project those that are missing
         let missing_panes = this.settings.project_panes_in_order.filter(
-          p => !panes_config_for_project.map(_p => _p.key).includes(p.key)
+          (p) => !panes_config_for_project.map((_p) => _p.key).includes(p.key)
         );
 
         this.settings.project_panes_in_order = panes_config_for_project.concat(
@@ -661,7 +655,7 @@ let vm = new Vue({
 
       this.$socketio.listMedias({
         type: "projects",
-        slugFolderName: slugProjectName
+        slugFolderName: slugProjectName,
       });
 
       history.pushState(
@@ -670,7 +664,7 @@ let vm = new Vue({
         "/" + slugProjectName
       );
     },
-    closeProject: function() {
+    closeProject: function () {
       if (window.state.dev_mode === "debug") {
         console.log("ROOT EVENT: closeProject");
       }
@@ -680,75 +674,50 @@ let vm = new Vue({
 
       history.pushState({ slugProjectName: "" }, "", "/");
     },
-    isMediaShown(media) {
-      if (this.settings.media_filter.fav === true) {
-        if (!media.fav) {
-          return false;
-        }
-      }
+    filterMedia(media) {
+      const checkIfMediaIsFav = (media) => {
+        return (
+          media.hasOwnProperty("fav") &&
+          typeof media.fav === "boolean" &&
+          media.fav === this.settings.media_filter.fav
+        );
+      };
 
-      if (
-        this.settings.media_filter.keyword === false &&
-        this.settings.media_filter.author === false
-      ) {
-        return true;
-      }
-
-      if (
-        this.settings.media_filter.keyword !== false &&
-        this.settings.media_filter.author !== false
-      ) {
-        // only add to sorted array if project has this keyword
-        if (
+      const checkIfMediaHasKeyword = (media) => {
+        return (
           media.hasOwnProperty("keywords") &&
           typeof media.keywords === "object" &&
           media.keywords.filter(
-            k => k.title === this.settings.media_filter.keyword
+            (k) => k.title === this.settings.media_filter.keyword
           ).length > 0
-        ) {
-          if (
-            media.hasOwnProperty("authors") &&
-            typeof media.authors === "object" &&
-            media.authors.filter(
-              k => k.name === this.settings.media_filter.author
-            ).length > 0
-          ) {
-            return true;
-          }
-        }
-        return false;
-      }
-      // if a project keyword filter is set
-      if (this.settings.media_filter.keyword !== false) {
-        // only add to sorted array if project has this keyword
-        if (
-          media.hasOwnProperty("keywords") &&
-          typeof media.keywords === "object" &&
-          media.keywords.filter(
-            k => k.title === this.settings.media_filter.keyword
-          ).length > 0
-        ) {
-          return true;
-        }
-        return false;
-      }
-
-      if (this.settings.media_filter.author !== false) {
-        // only add to sorted array if project has this keyword
-        if (
+        );
+      };
+      const checkIfMediaHasAuthor = (media) => {
+        return (
           media.hasOwnProperty("authors") &&
           typeof media.authors === "object" &&
           media.authors.filter(
-            k => k.name === this.settings.media_filter.author
+            (k) => k.slugFolderName === this.settings.media_filter.author
           ).length > 0
-        ) {
-          return true;
-        }
-        return false;
-      }
-      // END MEDIA FILTER LOGIC
+        );
+      };
+      const checkIfMediaHasType = (media) => {
+        return (
+          media.hasOwnProperty("type") &&
+          typeof media.type === "string" &&
+          this.settings.media_filter.type.includes(media.type)
+        );
+      };
+
+      return (
+        (!this.settings.media_filter.fav || checkIfMediaIsFav(media)) &&
+        (!this.settings.media_filter.keyword ||
+          checkIfMediaHasKeyword(media)) &&
+        (!this.settings.media_filter.author || checkIfMediaHasAuthor(media)) &&
+        (!this.settings.media_filter.type || checkIfMediaHasType(media))
+      );
     },
-    updateLocalLang: function(newLangCode) {
+    updateLocalLang: function (newLangCode) {
       if (window.state.dev_mode === "debug") {
         console.log("ROOT EVENT: updateLocalLang");
       }
@@ -761,11 +730,11 @@ let vm = new Vue({
 
       localstore.set("language", newLangCode);
     },
-    setAuthor: function(author) {
+    setAuthor: function (author) {
       this.settings.current_author = author;
       this.$socketio.socket.emit("updateClientInfo", { author });
     },
-    unsetAuthor: function() {
+    unsetAuthor: function () {
       this.settings.current_author = false;
     },
     openMedia({ slugProjectName, metaFileName }) {
@@ -780,7 +749,7 @@ let vm = new Vue({
       this.media_modal.current_slugProjectName = slugProjectName;
       this.media_modal.current_metaFileName = metaFileName;
     },
-    closeMedia: function() {
+    closeMedia: function () {
       if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: closeMedia`);
       }
@@ -793,7 +762,62 @@ let vm = new Vue({
         console.log(`ROOT EVENT: downloadPubliPDF: ${slugPubliName}`);
       }
       this.$socketio.downloadPubliPDF({
-        slugPubliName
+        slugPubliName,
+      });
+    },
+    allKeywords({ type = "projects" }) {
+      let allTypeKeywords = [];
+      for (let slugProjectName in this.store[type]) {
+        const folder = this.store[type][slugProjectName];
+        let folderKeywords = folder.keywords;
+        if (!!folderKeywords) {
+          folderKeywords.map((val) => {
+            allTypeKeywords.push(val.title);
+          });
+        }
+
+        if (
+          folder.hasOwnProperty("medias") &&
+          Object.keys(folder.medias).length > 0
+        ) {
+          Object.values(folder.medias).map((m) => {
+            if (m.hasOwnProperty("keywords") && m.keywords.length > 0) {
+              allTypeKeywords = allTypeKeywords.concat(
+                m.keywords.map((k) => k.title)
+              );
+            }
+          });
+        }
+      }
+      allTypeKeywords = allTypeKeywords.filter(function (item, pos) {
+        return allTypeKeywords.indexOf(item) == pos;
+      });
+
+      return allTypeKeywords.map((kw) => {
+        return {
+          text: kw,
+          classes: "tagcolorid_" + (parseInt(kw, 36) % 2),
+        };
+      });
+    },
+    getAllKeywordsFrom(base) {
+      let uniqueKeywords = [];
+      Object.values(base).map((meta) => {
+        if (!meta["keywords"]) return;
+        meta.keywords.map((k) => {
+          if (uniqueKeywords.indexOf(k.title) == -1)
+            uniqueKeywords.push(k.title);
+        });
+      });
+      uniqueKeywords = uniqueKeywords.sort(function (a, b) {
+        return a.toLowerCase().localeCompare(b.toLowerCase());
+      });
+
+      return uniqueKeywords.map((kw) => {
+        return {
+          text: kw,
+          classes: "tagcolorid_" + (parseInt(kw, 36) % 2),
+        };
       });
     },
     listSpecificMedias(mdata) {
@@ -830,6 +854,16 @@ let vm = new Vue({
       } else if (this.do_navigation.view === "Project") {
         this.closeProject();
       }
-    }
-  }
+    },
+    setMediaKeywordFilter(newKeywordFilter) {
+      if (this.settings.media_filter.keyword !== newKeywordFilter) {
+        this.settings.media_filter.keyword = newKeywordFilter;
+      } else {
+        this.settings.media_filter.keyword = "";
+      }
+    },
+    setFavFilter() {
+      this.settings.media_filter.fav = !this.settings.media_filter.fav;
+    },
+  },
 });

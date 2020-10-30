@@ -16,7 +16,8 @@
       :media="media"
     />
 
-    <div>
+    <div class="margin-bottom-small">
+      <label>{{ $t("caption") }}</label>
       <MediaField
         :value="media.caption"
         :show_edit_button="true"
@@ -25,6 +26,16 @@
         :read_only="false"
         :plain_text="true"
         @updateField="(value) => updateMediaPubliMeta({ caption: value })"
+      />
+    </div>
+
+    <div class="margin-bottom-small">
+      <label>{{ $t("keywords") }}</label>
+      <TagsInput
+        :keywords="media.keywords"
+        :read_only="false"
+        :type="'medias'"
+        @tagsChanged="(newTags) => updateMediaPubliMeta({ keywords: newTags })"
       />
     </div>
 
@@ -50,6 +61,7 @@
 <script>
 import MediaContent from "./MediaContent.vue";
 import MediaField from "./MediaField.vue";
+import TagsInput from "./TagsInput.vue";
 
 export default {
   props: {
@@ -60,6 +72,7 @@ export default {
   components: {
     MediaContent,
     MediaField,
+    TagsInput,
   },
   data() {
     return {
