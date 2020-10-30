@@ -18,14 +18,14 @@
               <label
                 v-if="
                   project.password === 'has_pass' ||
-                    project.password !== 'has_pass'
+                  project.password !== 'has_pass'
                 "
                 :key="`add_${field.key}`"
                 class
                 v-for="field in input_file_fields"
                 :disabled="read_only"
                 :for="`add_${field.key}`"
-                style="text-decoration: underline; cursor: pointer;"
+                style="text-decoration: underline; cursor: pointer"
               >
                 <span v-html="field.label" />
                 <input
@@ -36,7 +36,13 @@
                   @change="updateInputFiles($event)"
                   :accept="field.accept"
                   :capture="field.capture"
-                  style="width: 1px; height: 1px; overflow: hidden; position: absolute; opacity: 0;"
+                  style="
+                    width: 1px;
+                    height: 1px;
+                    overflow: hidden;
+                    position: absolute;
+                    opacity: 0;
+                  "
                 />
               </label>
 
@@ -79,7 +85,11 @@
             </div>
           </div>
 
-          <transition-group tag="div" class="m_library--chronology" name="list-complete">
+          <transition-group
+            tag="div"
+            class="m_library--chronology"
+            name="list-complete"
+          >
             <!-- <MediaCard
               v-for="media in sortedMedias"
               :key="media.slugMediaName"
@@ -100,7 +110,7 @@
                   <MediaCard
                     :class="{
                       'is--inMediaFocus':
-                        media.slugMediaName === show_media_detail_for
+                        media.slugMediaName === show_media_detail_for,
                     }"
                     :key="media.slugMediaName"
                     :media="media"
@@ -121,38 +131,15 @@
         min-size="20"
         max-size="70"
         size="50"
-        style="position: relative;"
+        style="position: relative"
       >
-        <div
-          class="m_library--mediaFocus"
-          @dragstart="startMediaDrag(mediaShownInFocus, $event)"
-          @dragend="endMediaDrag()"
-          :draggable="
-            true ||
-              !!$root.settings.current_writeup_media_metaFileName ||
-              !!$root.settings.current_planning_media_metaFileName ||
-              $root.settings.current_composition_media_metaFileName
-          "
-        >
-          <MediaContent
-            :context="'full'"
-            :slugFolderName="slugProjectName"
-            :media="mediaShownInFocus"
-            :preview_size="preview_size"
-          />
-          <div class="m_library--mediaFocus--buttons">
-            <a
-              class="button"
-              :download="mediaShownInFocus.media_filename"
-              :href="mediaFocusDownloadURL"
-              target="_blank"
-            >{{ $t("télécharger") }}</a>
-            <button type="button" @click="removeMedia(show_media_detail_for)">{{ $t("supprimer") }}</button>
-            <button type="button" @click="toggleMedia()">{{ $t("fermer") }}</button>
-            <button type="button" @click="prevMedia">←</button>
-            <button type="button" @click="nextMedia">→</button>
-          </div>
-        </div>
+        <MediaFocus
+          :show_media_detail_for="show_media_detail_for"
+          :slugProjectName="slugProjectName"
+          :media="focused_media"
+          @prevMedia="prevMedia"
+          @nextMedia="nextMedia"
+        />
       </pane>
 
       <pane
@@ -161,7 +148,7 @@
         min-size="1"
         max-size="30"
         size="10"
-        style="position: relative;"
+        style="position: relative"
       >
         <UploadFile
           class="m_uploadFilePane"
@@ -178,8 +165,8 @@
       <div
         v-if="
           !read_only &&
-            show_drop_container &&
-            !$root.settings.media_being_dragged
+          show_drop_container &&
+          !$root.settings.media_being_dragged
         "
         @drop="ondrop($event)"
         class="_drop_indicator"
@@ -195,8 +182,8 @@
 <script>
 import UploadFile from "./modals/UploadFile.vue";
 import MediaCard from "./subcomponents/MediaCard.vue";
-import MediaContent from "./subcomponents/MediaContent.vue";
 import TagsAndAuthorFilters from "./subcomponents/TagsAndAuthorFilters.vue";
+import MediaFocus from "./subcomponents/MediaFocus.vue";
 import { setTimeout } from "timers";
 import debounce from "debounce";
 import { Splitpanes, Pane } from "splitpanes";
@@ -206,22 +193,22 @@ export default {
     project: Object,
     slugProjectName: String,
     library_medias: Array,
-    read_only: Boolean
+    read_only: Boolean,
   },
   components: {
     MediaCard,
-    MediaContent,
     UploadFile,
     TagsAndAuthorFilters,
+    MediaFocus,
     Splitpanes,
-    Pane
+    Pane,
   },
   data() {
     return {
       mediaSort: {
         field: "date_created",
         type: "date",
-        order: "descending"
+        order: "descending",
       },
       selected_files: [],
       is_iOS_device:
@@ -246,9 +233,9 @@ export default {
               <path d="M20.89,12v4.63a1,1,0,0,0,1,1h4.63V28h-13V12h7.4m1-1H12.5V29h15V16.62H21.88V11Z" style="fill: #fff"/>
               <line x1="27" y1="17.12" x2="21.38" y2="11.5" style="fill: none;stroke: #fff;stroke-linecap: round;stroke-linejoin: round;stroke-width: 0.9900837817656861px"/>
             </svg>
-          `
-        }
-      ]
+          `,
+        },
+      ],
     };
   },
   mounted() {
@@ -286,9 +273,6 @@ export default {
   watch: {},
 
   computed: {
-    mediaShownInFocus() {
-      return this.project.medias[this.show_media_detail_for];
-    },
     numberOfMedias() {
       return this.library_medias.length;
     },
@@ -299,11 +283,9 @@ export default {
     mediaAuthors() {
       return this.$root.getAllAuthorsFrom(this.library_medias);
     },
-
-    mediaFocusDownloadURL() {
-      return `/${this.slugProjectName}/${this.mediaShownInFocus.media_filename}`;
+    focused_media() {
+      return this.project.medias[this.show_media_detail_for];
     },
-
     sortedMedias() {
       var sortable = [];
 
@@ -311,7 +293,7 @@ export default {
         return sortable;
       }
 
-      this.library_medias.map(media => {
+      this.library_medias.map((media) => {
         let orderBy;
 
         if (this.mediaSort.type === "date") {
@@ -334,12 +316,12 @@ export default {
           }
         }
 
-        if (this.$root.isMediaShown(media)) {
+        if (this.$root.filterMedia(media)) {
           sortable.push({ slugMediaName: media.metaFileName, orderBy });
         }
       });
 
-      let sortedSortable = sortable.sort(function(a, b) {
+      let sortedSortable = sortable.sort(function (a, b) {
         let valA = a.orderBy;
         let valB = b.orderBy;
         if (typeof a.orderBy === "string" && typeof b.orderBy === "string") {
@@ -363,7 +345,7 @@ export default {
       // that’s why we use an array here
       let sortedMedias = sortedSortable.reduce((accumulator, d) => {
         let sortedMediaObj = this.library_medias.find(
-          m => m.metaFileName === d.slugMediaName
+          (m) => m.metaFileName === d.slugMediaName
         );
         sortedMediaObj.slugMediaName = d.slugMediaName;
         accumulator.push(sortedMediaObj);
@@ -372,8 +354,8 @@ export default {
 
       return sortedMedias;
     },
-    groupedMedias: function() {
-      let mediaGroup = this.$_.groupBy(this.sortedMedias, media => {
+    groupedMedias: function () {
+      let mediaGroup = this.$_.groupBy(this.sortedMedias, (media) => {
         let _date;
 
         if (media.hasOwnProperty("date_created") && !!media.date_created) {
@@ -394,7 +376,7 @@ export default {
       mediaGroup = this.$_.sortBy(mediaGroup);
       mediaGroup = mediaGroup.reverse();
       return mediaGroup;
-    }
+    },
   },
   methods: {
     prevMedia() {
@@ -405,7 +387,7 @@ export default {
     },
     mediaNav(relative_index) {
       const current_media_index = this.sortedMedias.findIndex(
-        m => m.metaFileName === this.show_media_detail_for
+        (m) => m.metaFileName === this.show_media_detail_for
       );
       const new_media = this.sortedMedias[current_media_index + relative_index];
 
@@ -422,21 +404,21 @@ export default {
 
     getAllKeywordsFrom(base) {
       let uniqueKeywords = [];
-      Object.values(base).map(meta => {
+      Object.values(base).map((meta) => {
         if (!meta["keywords"]) return;
-        meta.keywords.map(k => {
+        meta.keywords.map((k) => {
           if (uniqueKeywords.indexOf(k.title) == -1)
             uniqueKeywords.push(k.title);
         });
       });
-      uniqueKeywords = uniqueKeywords.sort(function(a, b) {
+      uniqueKeywords = uniqueKeywords.sort(function (a, b) {
         return a.toLowerCase().localeCompare(b.toLowerCase());
       });
 
-      return uniqueKeywords.map(kw => {
+      return uniqueKeywords.map((kw) => {
         return {
           text: kw,
-          classes: "tagcolorid_" + (parseInt(kw, 36) % 2)
+          classes: "tagcolorid_" + (parseInt(kw, 36) % 2),
         };
       });
     },
@@ -466,31 +448,9 @@ export default {
         slugFolderName: this.slugProjectName,
         type: "projects",
         additionalMeta: {
-          type: "text"
-        }
+          type: "text",
+        },
       });
-    },
-    removeMedia(metaFileName) {
-      if (window.state.dev_mode === "debug") {
-        console.log(`METHODS • WriteUp: removeMedia / ${metaFileName}`);
-      }
-
-      this.$alertify
-        .okBtn(this.$t("yes"))
-        .cancelBtn(this.$t("cancel"))
-        .confirm(
-          this.$t("sureToRemoveMedia"),
-          () => {
-            this.show_media_detail_for = false;
-
-            this.$root.removeMedia({
-              type: "projects",
-              slugFolderName: this.slugProjectName,
-              slugMediaName: metaFileName
-            });
-          },
-          () => {}
-        );
     },
     // newTextMediaCreated(mdata) {
     //   if (this.$root.justCreatedMediaID === mdata.id) {
@@ -565,24 +525,7 @@ export default {
         }
       }
     },
-    startMediaDrag(media, $event) {
-      console.log(`METHODS • MediaLibrary / startMediaDrag`);
-
-      $event.dataTransfer.setData("text/plain", JSON.stringify(media));
-      $event.dataTransfer.effectAllowed = "move";
-
-      // this.media_focus_is_dragged = true;
-
-      this.$root.settings.media_being_dragged = media.metaFileName;
-    },
-    endMediaDrag() {
-      console.log(`METHODS • MediaLibrary / endMediaDrag`);
-      setTimeout(() => {
-        // this.media_focus_is_dragged = false;
-        this.$root.settings.media_being_dragged = false;
-      }, 500);
-    }
-  }
+  },
 };
 </script>
 <style lang="scss">

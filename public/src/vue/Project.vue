@@ -1,93 +1,117 @@
 <template>
   <div class="m_project">
-    <splitpanes
-      watch-slots
-      @resized="resized()"
-      :key="
-        JSON.stringify($root.settings.project_panes_in_order.map(p => p.key))
-      "
-    >
-      <template
-        v-if="
-          $root.settings.project_panes_in_order.filter(p => p.enabled)
-            .length === 0
+    <div class="" style="">
+      <button
+        type="button"
+        class="button-nostyle text-uc button-triangle"
+        :class="{ 'is--active': show_filters }"
+        @click="show_filters = !show_filters"
+      >
+        {{ $t("filters") }}
+      </button>
+
+      <TagsAndAuthorFilters
+        v-if="show_filters"
+        :allKeywords="mediaKeywords"
+        :keywordFilter="$root.settings.media_filter.keyword"
+        :favFilter="$root.settings.media_filter.fav"
+        @setKeywordFilter="(a) => $root.setMediaKeywordFilter(a)"
+        @setFavFilter="(a) => $root.setFavFilter(a)"
+      />
+    </div>
+
+    <div class="m_project--splitpanes">
+      <splitpanes
+        watch-slots
+        @resized="resized()"
+        :key="
+          JSON.stringify(
+            $root.settings.project_panes_in_order.map((p) => p.key)
+          )
         "
       >
-        <div class="m_project--noPane">
-          <i>Aucune panneau n’est actif</i>
-        </div>
-      </template>
-      <template v-else v-for="pane in $root.settings.project_panes_in_order">
-        <pane
-          v-if="pane.key === 'WriteUp' && pane.enabled"
-          :key="pane.key"
-          min-size="5"
-          ref="WriteUp"
+        <template
+          v-if="
+            $root.settings.project_panes_in_order.filter((p) => p.enabled)
+              .length === 0
+          "
         >
-          <WriteUp
-            :slugFolderName="slugProjectName"
-            :writeup_medias="writeup_medias"
-            :read_only="read_only"
-          />
-        </pane>
+          <div class="m_project--noPane">
+            <i>Aucune panneau n’est actif</i>
+          </div>
+        </template>
+        <template v-else v-for="pane in $root.settings.project_panes_in_order">
+          <pane
+            v-if="pane.key === 'WriteUp' && pane.enabled"
+            :key="pane.key"
+            min-size="5"
+            ref="WriteUp"
+          >
+            <WriteUp
+              :slugFolderName="slugProjectName"
+              :writeup_medias="writeup_medias"
+              :read_only="read_only"
+            />
+          </pane>
 
-        <pane
-          v-else-if="pane.key === 'MediaLibrary' && pane.enabled"
-          :key="pane.key"
-          min-size="5"
-          ref="MediaLibrary"
-        >
-          <MediaLibrary
-            :slugProjectName="slugProjectName"
-            :project="project"
-            :library_medias="library_medias"
-            :read_only="false"
-          />
-        </pane>
+          <pane
+            v-else-if="pane.key === 'MediaLibrary' && pane.enabled"
+            :key="pane.key"
+            min-size="5"
+            ref="MediaLibrary"
+          >
+            <MediaLibrary
+              :slugProjectName="slugProjectName"
+              :project="project"
+              :library_medias="library_medias"
+              :read_only="false"
+            />
+          </pane>
 
-        <pane
-          v-else-if="pane.key === 'Composition' && pane.enabled"
-          :key="pane.key"
-          min-size="5"
-          ref="Composition"
-        >
-          <Composition
-            :slugFolderName="slugProjectName"
-            :composition_medias="composition_medias"
-            :read_only="read_only"
-          />
-        </pane>
+          <pane
+            v-else-if="pane.key === 'Composition' && pane.enabled"
+            :key="pane.key"
+            min-size="5"
+            ref="Composition"
+          >
+            <Composition
+              :slugFolderName="slugProjectName"
+              :composition_medias="composition_medias"
+              :read_only="read_only"
+            />
+          </pane>
 
-        <pane
-          v-else-if="pane.key === 'Capture' && pane.enabled"
-          :key="pane.key"
-          min-size="5"
-          ref="Capture"
-        >
-          <Capture
-            :slugProjectName="slugProjectName"
-            :project="project"
-            :read_only="!$root.state.connected"
-            :validation_before_upload="false"
-            data-id="Capture"
-          />
-        </pane>
+          <pane
+            v-else-if="pane.key === 'Capture' && pane.enabled"
+            :key="pane.key"
+            min-size="5"
+            ref="Capture"
+          >
+            <Capture
+              :slugProjectName="slugProjectName"
+              :project="project"
+              :read_only="!$root.state.connected"
+              :validation_before_upload="false"
+              data-id="Capture"
+            />
+          </pane>
 
-        <pane
-          v-if="pane.key === 'Planning' && pane.enabled"
-          :key="pane.key"
-          min-size="5"
-          ref="Planning"
-        >
-          <Planning
-            :slugFolderName="slugProjectName"
-            :project="project"
-            :planning_medias="planning_medias"
-            :read_only="read_only"
-          />
-        </pane>
-      </template>
-    </splitpanes>
+          <pane
+            v-if="pane.key === 'Planning' && pane.enabled"
+            :key="pane.key"
+            min-size="5"
+            ref="Planning"
+          >
+            <Planning
+              :slugFolderName="slugProjectName"
+              :project="project"
+              :planning_medias="planning_medias"
+              :read_only="read_only"
+            />
+          </pane>
+        </template>
+      </splitpanes>
+    </div>
     <Countdown :slugFolderName="slugProjectName" :project="project" />
   </div>
 </template>
@@ -99,11 +123,12 @@ import Composition from "./components/Composition.vue";
 import Planning from "./components/Planning.vue";
 import { Splitpanes, Pane } from "splitpanes";
 import Countdown from "./components/subcomponents/Countdown.vue";
+import TagsAndAuthorFilters from "./components/subcomponents/TagsAndAuthorFilters.vue";
 
 export default {
   props: {
     project: Object,
-    slugProjectName: String
+    slugProjectName: String,
   },
   components: {
     MediaLibrary,
@@ -113,14 +138,17 @@ export default {
     Planning,
     Splitpanes,
     Pane,
-    Countdown
+    Countdown,
+    TagsAndAuthorFilters,
   },
   data() {
     return {
       paged_content: [[]],
       flowed_content: [],
       modules_height: [],
-      max_height_per_page: 0
+      max_height_per_page: 0,
+
+      show_filters: false,
     };
   },
   created() {},
@@ -139,23 +167,34 @@ export default {
           this.$forceUpdate();
         }, 500);
       },
-      deep: true
-    }
+      deep: true,
+    },
+    show_filters: function () {
+      if (!this.show_filters) {
+        this.$root.settings.media_filter.keyword = "";
+        this.$root.settings.media_filter.author = "";
+        this.$root.settings.media_filter.fav = false;
+        this.$root.settings.media_filter.type = false;
+      }
+    },
   },
   computed: {
     writeup_medias() {
       return Object.values(this.project.medias).filter(
-        m => m.hasOwnProperty("type") && m.type === "writeup"
+        (m) => m.hasOwnProperty("type") && m.type === "writeup"
       );
+    },
+    mediaKeywords() {
+      return this.$root.getAllKeywordsFrom(this.project.medias);
     },
     composition_medias() {
       return Object.values(this.project.medias).filter(
-        m => m.hasOwnProperty("type") && m.type === "composition"
+        (m) => m.hasOwnProperty("type") && m.type === "composition"
       );
     },
     planning_medias() {
       return Object.values(this.project.medias).filter(
-        m => m.hasOwnProperty("type") && m.type === "planning"
+        (m) => m.hasOwnProperty("type") && m.type === "planning"
       );
     },
     library_medias() {
@@ -167,11 +206,11 @@ export default {
       }
 
       return Object.values(this.project.medias).filter(
-        m =>
+        (m) =>
           m.hasOwnProperty("type") &&
           !["writeup", "composition", "planning"].includes(m.type)
       );
-    }
+    },
   },
   methods: {
     resized() {
@@ -191,7 +230,7 @@ export default {
 
       Object.entries(this.$refs).map(([key, $el]) => {
         this.$root.settings.project_panes_in_order = this.$root.settings.project_panes_in_order.map(
-          p => {
+          (p) => {
             if (p.key === key && !!$el[0] && $el[0].hasOwnProperty("$el")) {
               const _width = parseInt($el[0].$el.style.width);
               if (p.width !== _width) {
@@ -204,7 +243,7 @@ export default {
       });
     },
     setPaneSize(panes_in_order) {
-      panes_in_order.map(p => {
+      panes_in_order.map((p) => {
         if (p.enabled && this.$refs.hasOwnProperty(p.key)) {
           console.log(`setPaneSize • setting ${p.key} to ${p.width}`);
           this.$refs[p.key][0].$el.style.width = p.width;
@@ -214,24 +253,31 @@ export default {
       setTimeout(() => {
         this.$eventHub.$emit(`activity_panels_resized`);
       }, 500);
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss">
 .m_project {
   position: relative;
   height: 100%;
-  display: flex;
-  flex-flow: row nowrap;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   background-color: #eee;
+
+  display: flex;
+  flex-flow: column nowrap;
+
   // background-color: #ecf0ed;
   // background-color: hsl(135, 12%, 96%);
 
-  > * {
+  .m_project--splitpanes {
     height: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    > * {
+      height: 100%;
+    }
   }
 }
 

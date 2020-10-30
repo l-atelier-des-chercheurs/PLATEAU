@@ -121,6 +121,9 @@
           "caption": {
             "type": "string"
           },
+          "keywords": {
+            "type": "array"
+          },
           "planning_info_start": {
             "type": "date"
           },

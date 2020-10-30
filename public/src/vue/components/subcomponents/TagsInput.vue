@@ -1,121 +1,188 @@
 <template>
-  <transition-group name="list-complete" tag="div"
-    class="m_keywordField"
-  >
-    <button type="button"
-      v-for="tag in tags"
-      :key="tag.text"
-      @click="removeTag(tag.text)"
-      class="can_be_removed"
-      :class="['tagcolorid_' + parseInt(tag.text, 36)%2 ]"
-    >
-      {{ tag.text }}
-    </button>
+  <div>
+    <transition-group name="list-complete" tag="div" class="m_keywordField">
+      <button
+        type="button"
+        v-for="tag in tags"
+        :key="tag.text"
+        @click="removeTag(tag.text)"
+        :disabled="read_only"
+        class="can_be_removed"
+        :class="['tagcolorid_' + (parseInt(tag.text, 36) % 2)]"
+      >
+        {{ tag.text }}
+      </button>
+      <div
+        class="new-tag-input-wrapper"
+        :key="'new-tag-input'"
+        v-if="!read_only"
+      >
+        <input
+          type="text"
+          class="new-tag-input"
+          v-model.trim="tag"
+          :placeholder="$t('add_keyword')"
+          @keydown.enter.prevent="createTag"
+        />
+        <button
+          type="button"
+          @click="createTag"
+          :disabled="disableAddButton"
+          v-if="tag.length > 0"
+        >
+          +
+        </button>
+      </div>
 
-    <div class="new-tag-input-wrapper" :key="'new-tag-input'">
-      <input type="text" class="new-tag-input" v-model.trim="tag" 
-        :placeholder="$t('add_keyword')"
-        @keydown.enter.prevent="createTag"
-      />
-      <button type="button" @click="createTag" :disabled="disableAddButton"
-        v-if="tag.length > 0"
+      <div
+        v-if="matchingKeywords.length > 0"
+        class="autocomplete"
+        :key="'autocomplete'"
       >
-        +
-      </button>
-    </div>
-    <div v-if="matchingKeywords.length > 0" class="autocomplete"
-      :key="'autocomplete'"  
-    >
-      <button type="button"
-        v-for="keyword in matchingKeywords"
-        :key="keyword.text"
-        class="tag"
-        @click="createTagFromAutocomplete(keyword.text)"
+        <label>{{ $t("suggestion") }}</label>
+        <div>
+          <button
+            type="button"
+            v-for="keyword in matchingKeywords"
+            :key="keyword.text"
+            class="tag"
+            @click="createTagFromAutocomplete(keyword.text)"
+          >
+            {{ keyword.text }}
+          </button>
+        </div>
+      </div>
+    </transition-group>
+
+    <div class="m_keywordField" v-if="!read_only">
+      <button
+        type="button"
+        key="show_all_keywords"
+        v-if="allKeywordsExceptCurrent.length > 0"
+        @click="show_all_keywords = !show_all_keywords"
+        class="m_keywordField--show_all_keywords"
       >
-        {{ keyword.text }}
+        <template v-if="!show_all_keywords">
+          {{ $t("show_all_keywords") }}
+        </template>
+        <template v-else>{{ $t("hide_all_keywords") }}</template>
       </button>
+
+      <div
+        v-if="allKeywordsExceptCurrent.length > 0 && show_all_keywords"
+        class="autocomplete"
+      >
+        <label>{{ $t("all_tags") }}</label>
+        <div>
+          <button
+            type="button"
+            v-for="keyword in allKeywordsExceptCurrent"
+            :key="keyword.text"
+            class="tag"
+            @click="createTagFromAutocomplete(keyword.text)"
+          >
+            {{ keyword.text }}
+          </button>
+        </div>
+      </div>
     </div>
-  </transition-group>
+  </div>
 </template>
 <script>
-import { VueTagsInput, createTags } from '@johmun/vue-tags-input';
+import { createTags } from "@johmun/vue-tags-input";
 
 export default {
-  props: ['keywords'],
-  components: {
-    VueTagsInput
+  props: {
+    keywords: Array,
+    read_only: Boolean,
+    type: {
+      default: "projects",
+      type: String,
+    },
   },
+  components: {},
   data() {
     return {
-      tags: !!this.keywords && this.keywords.length > 0 ? createTags(this.keywords.map(k => k.title)) : [],
-      tag: ''
-    }
+      tags:
+        !!this.keywords && this.keywords.length > 0
+          ? createTags(this.keywords.map((k) => k.title))
+          : [],
+      tag: "",
+      show_all_keywords: false,
+    };
   },
-  
-  created() {
-  },
+
+  created() {},
   mounted() {
-    if(this.tags.length > 0) {
+    if (this.tags.length > 0) {
       this.updateTags(this.tags);
     }
   },
-  beforeDestroy() {
-  },
-  watch: {
-  },
+  beforeDestroy() {},
+  watch: {},
   computed: {
     matchingKeywords() {
-      if(this.tag.length === 0) {
+      if (this.tag.length === 0) {
         return [];
       }
-      const fitting_keywords = this.$root.allKeywords.filter(i => new RegExp(this.tag, 'i').test(i.text) && !this.tags.find(t => t.text === i.text));
+      const fitting_keywords = this.$root
+        .allKeywords({ type: this.type })
+        .filter(
+          (i) =>
+            new RegExp(this.tag, "i").test(i.text) &&
+            !this.tags.find((t) => t.text === i.text)
+        );
       return fitting_keywords.slice(0, 2);
       // return fitting_keywords;
       // return this.$root.allKeywords.filter(i => i.text.toLowerCase().startsWith(this.tag.toLowerCase()) && !this.tags.find(t => t.text === i.text));
     },
     disableAddButton() {
-      if(this.tag.length === 0) {
+      if (this.tag.length === 0) {
         return true;
       }
-      if(this.tags.find(t => t.text === this.tag)) {
+      if (this.tags.find((t) => t.text === this.tag)) {
         return true;
       }
       return false;
-    }
+    },
+    allKeywordsExceptCurrent() {
+      return this.$root
+        .allKeywords({ type: this.type })
+        .filter((i) => !this.tags.find((t) => t.text === i.text));
+    },
   },
   methods: {
-    createTagFromAutocomplete: function(tag) {
+    createTagFromAutocomplete: function (tag) {
       this.tag = tag;
       this.createTag();
     },
-    createTag: function() {
-      if(this.tag.trim().length === 0) {
+    createTag: function () {
+      if (this.tag.trim().length === 0) {
         return;
       }
       this.tags.push({ text: this.tag });
       this.sendTags(this.tags);
-      this.tag = '';
+      this.tag = "";
     },
-    removeTag: function(tag_text) {
-      this.tags = this.tags.filter(t => t.text !== tag_text);
+    removeTag: function (tag_text) {
+      if (this.read_only) return;
+      this.tags = this.tags.filter((t) => t.text !== tag_text);
       this.sendTags(this.tags);
     },
-    updateTags: function(newTags) {
-      this.tags = newTags.map(val => {
-        val.classes = "tagcolorid_" + parseInt(val.text, 36)%2;
+    updateTags: function (newTags) {
+      this.tags = newTags.map((val) => {
+        val.classes = "tagcolorid_" + (parseInt(val.text, 36) % 2);
         return val;
       });
     },
-    sendTags: function(newTags) {
+    sendTags: function (newTags) {
       this.updateTags(newTags);
-      const tag_array = this.tags.map((val) => { 
-        return { title: val.text }
+      const tag_array = this.tags.map((val) => {
+        return { title: val.text };
       });
-      this.$emit('tagsChanged', tag_array);
-    }
-  }
-}
+      this.$emit("tagsChanged", tag_array);
+    },
+  },
+};
 </script>
-<style>
-
-</style>
+<style></style>
