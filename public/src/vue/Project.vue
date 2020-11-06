@@ -1,6 +1,6 @@
 <template>
   <div class="m_project">
-    <div class="" style="">
+    <div class="m_filters" style="">
       <button
         type="button"
         class="button-nostyle text-uc button-triangle"
@@ -258,6 +258,10 @@ export default {
 };
 </script>
 <style lang="scss">
+.m_filters {
+  background-color: white;
+  border-bottom: 1px solid black;
+}
 .m_project {
   position: relative;
   height: 100%;
