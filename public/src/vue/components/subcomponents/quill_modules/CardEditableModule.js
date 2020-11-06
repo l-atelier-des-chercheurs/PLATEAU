@@ -6,7 +6,7 @@ class CardEditableModule extends Module {
     super(quill, options);
     let is_selected = false;
 
-    let listener = e => {
+    let listener = (e) => {
       if (!document.body.contains(quill.root)) {
         return document.body.removeEventListener("click", listener);
       }
@@ -33,14 +33,14 @@ class CardEditableModule extends Module {
 
         elm.__onSelect(quill);
 
-        let handleKeyPress = e => {
+        let handleKeyPress = (e) => {
           if (e.keyCode === 27 || e.keyCode === 13) {
             window.removeEventListener("keypress", handleKeyPress);
             quill.enable(true);
             deselectCard();
           }
         };
-        let handleClick = e => {
+        let handleClick = (e) => {
           const path = e.path || (e.composedPath && e.composedPath());
           if (e.which === 1 && !path.includes(elm)) {
             window.removeEventListener("click", handleClick);
@@ -48,7 +48,7 @@ class CardEditableModule extends Module {
             deselectCard();
           }
         };
-        let handleDrag = e => {
+        let handleDrag = (e) => {
           window.removeEventListener("dragover", handleDrag);
           quill.enable(true);
           deselectCard();
