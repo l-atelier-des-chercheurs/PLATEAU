@@ -737,6 +737,14 @@ let vm = new Vue({
     unsetAuthor: function () {
       this.settings.current_author = false;
     },
+    updateClientInfo(val) {
+      if (this.$socketio.socket) {
+        if (window.state.dev_mode === "debug")
+          console.log(`ROOT EVENT: updateClientInfo`);
+
+        this.$socketio.socket.emit("updateClientInfo", val);
+      }
+    },
     openMedia({ slugProjectName, metaFileName }) {
       if (window.state.dev_mode === "debug") {
         console.log(
