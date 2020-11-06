@@ -17,7 +17,7 @@
             width="4.1px"
             height="8px"
             viewBox="0 0 4.1 8"
-            style="enable-background:new 0 0 4.1 8;"
+            style="enable-background: new 0 0 4.1 8"
             xml:space="preserve"
           >
             <path class="st0" d="M4,8H2.6L0,4.1L2.6,0h1.4L2.1,4.1L4,8z" />
@@ -29,12 +29,24 @@
 
       <div class="m_topbar--separator">/</div>
 
-      <template v-if="$root.state.mode === 'live' && !$root.state.authentificated">
-        <div class="m_inputSessionPassword" v-if="$root.show_session_password_prompt">
+      <template
+        v-if="$root.state.mode === 'live' && !$root.state.authentificated"
+      >
+        <div
+          class="m_inputSessionPassword"
+          v-if="$root.show_session_password_prompt"
+        >
           <form @submit.prevent="submitPassword">
             <label for="inp" class="inp">
               <span class="label">Connexion&nbsp;password</span>
-              <input type="password" v-model="pwd" required autofocus autoselect placeholder />
+              <input
+                type="password"
+                v-model="pwd"
+                required
+                autofocus
+                autoselect
+                placeholder
+              />
               <span class="border"></span>
             </label>
             <span class="switch switch-xs margin-bottom-small">
@@ -43,7 +55,9 @@
                 type="checkbox"
                 v-model="remember_password_on_this_device"
               />
-              <label for="remember_password_on_this_device">remember password on this device</label>
+              <label for="remember_password_on_this_device"
+                >remember password on this device</label
+              >
             </span>
 
             <input type="submit" value="submit" />
@@ -51,7 +65,12 @@
         </div>
       </template>
       <template v-else>
-        <transition-group class="m_topbar--list" tag="div" name="list-complete" :duration="300">
+        <transition-group
+          class="m_topbar--list"
+          tag="div"
+          name="list-complete"
+          :duration="300"
+        >
           <button
             type="button"
             v-if="$root.do_navigation.view === 'List'"
@@ -70,7 +89,7 @@
               width="11.4px"
               height="11.4px"
               viewBox="0 0 10 10"
-              style="enable-background:new 0 0 11.4 11.4;"
+              style="enable-background: new 0 0 11.4 11.4"
               xml:space="preserve"
             >
               <path
@@ -84,8 +103,9 @@
             v-if="$root.do_navigation.view === 'Project'"
             :key="`projectname`"
             @click="$root.navigation_back()"
-            style="  font-weight: 700;"
-          >{{ $root.currentProject.name }}</span>
+            style="font-weight: 700"
+            >{{ $root.currentProject.name }}</span
+          >
           <!-- <button
           type="button"
           v-if="$root.do_navigation.view === 'Project'"
@@ -127,14 +147,18 @@
         class="buttonLink"
         :disabled="zip_export_started"
         @click="downloadProjectArchive"
-      >{{ $t("télécharger") }}</button>
+      >
+        {{ $t("download") }}
+      </button>
 
-      <PaneList class="m_topbar--paneList" v-if="$root.do_navigation.view === 'Project'" />
+      <PaneList
+        class="m_topbar--paneList"
+        v-if="$root.do_navigation.view === 'Project'"
+      />
     </div>
-    <div
-      class="m_topbar--status"
-      v-if="!$root.state.connected"
-    >{{ $t("notifications.connection_lost") }}</div>
+    <div class="m_topbar--status" v-if="!$root.state.connected">
+      {{ $t("notifications.connection_lost") }}
+    </div>
     <Clients v-if="$root.settings.is_slave" />
   </div>
 </template>
@@ -146,11 +170,11 @@ export default {
   props: {},
   components: {
     PaneList,
-    Clients
+    Clients,
   },
   data() {
     return {
-      zip_export_started: false
+      zip_export_started: false,
     };
   },
   created() {},
@@ -165,7 +189,7 @@ export default {
         this.$root.do_navigation.current_slugProjectName +
         "/pdf"
       );
-    }
+    },
   },
   methods: {
     submitPassword() {
@@ -209,15 +233,15 @@ export default {
           () => {
             this.$root.removeFolder({
               type: "projects",
-              slugFolderName: this.$root.do_navigation.current_slugProjectName
+              slugFolderName: this.$root.do_navigation.current_slugProjectName,
             });
           },
           () => {}
         );
     },
 
-    downloadPDF() {}
-  }
+    downloadPDF() {},
+  },
 };
 </script>
 <style lang="scss" scoped>

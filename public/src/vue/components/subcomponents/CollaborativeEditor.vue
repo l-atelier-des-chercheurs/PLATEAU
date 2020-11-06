@@ -1,263 +1,62 @@
 <template>
   <div
     class="m_collaborativeEditor quillWrapper"
+    autocorrect="off"
+    autofocus="autofocus"
     :class="{
       'is--focused': is_focused,
+      'is--read_only': read_only,
       'is--receptiveToDrop': !!$root.settings.media_being_dragged,
       'is--dragover': is_being_dragover,
-      'is--disabled': editor_not_enabled
+      'is--disabled': editor_not_enabled,
+      'has--noToolbar': specific_toolbar && specific_toolbar.length === 0,
     }"
-    autofocus="autofocus"
     @dragover="ondragover($event)"
     @drop="ondrop($event)"
   >
     <!-- connection_state : {{ connection_state }}
     <br />-->
+
+    <!-- {{ other_clients_editing }} -->
+
     <div ref="editor" class="mediaTextContent" />
-    <!-- <div class="_customCaret" :style="_customCaret_style" /> -->
+    <!-- <ClientsCheckingOut
+      :type="'projects'"
+      :slugFolderName="slugFolderName"
+      :metaFileName="media.metaFileName"
+    /> -->
+
+    <transition name="fade" :duration="600">
+      <div
+        class="quillWrapper--savingIndicator"
+        v-if="enable_collaboration && (is_loading_or_saving || show_saved_icon)"
+      >
+        <transition name="fade" :duration="600">
+          <template v-if="is_loading_or_saving">
+            <span class="loader loader-small" />
+          </template>
+          <template v-else-if="show_saved_icon">
+            <span>✓</span>
+          </template>
+        </transition>
+      </div>
+    </transition>
   </div>
 </template>
 <script>
+import ClientsCheckingOut from "./ClientsCheckingOut.vue";
+
 import ReconnectingWebSocket from "reconnectingwebsocket";
 import ShareDB from "sharedb/lib/client";
 import Quill from "quill";
 import QuillCursors from "quill-cursors";
 import debounce from "debounce";
 
-let Inline = Quill.import("blots/inline");
-let Block = Quill.import("blots/block");
-let BlockEmbed = Quill.import("blots/block/embed");
-const Module = Quill.import("core/module");
+import MediaBlot from "./quill_modules/MediaBlot";
+import CardEditableModule from "./quill_modules/CardEditableModule";
 
-// inspired from https://gist.github.com/tranduongms1/584d43ec7d8ddeab458f087adbeef950
-class MediaBlot extends BlockEmbed {
-  static blotName = "media";
-  static tagName = "figure";
-  static className = "ql-mediacard";
-
-  static create({ type, src, caption, metaFileName }) {
-    let node = super.create();
-    console.log(`CollaborativeEditor • MediaBlot : create for type = ${type}`);
-
-    node.setAttribute("contenteditable", false);
-
-    let bg = window.document.createElement("div");
-    bg.setAttribute("class", "ql-mediacard--background");
-    node.appendChild(bg);
-
-    let tag;
-
-    if (!type || !metaFileName) {
-      alert(
-        `Missing type or metaFileName : type = ${type} and metaFileName = ${metaFileName}`
-      );
-      return;
-    }
-
-    if (type === "image") {
-      tag = window.document.createElement("img");
-    } else if (type === "video") {
-      tag = window.document.createElement("video");
-      tag.setAttribute("controls", true);
-    }
-
-    if (src) {
-      tag.setAttribute("src", src);
-    }
-    tag.setAttribute("draggable", false);
-    node.appendChild(tag);
-    if (caption) {
-      let caption_tag = window.document.createElement("figcaption");
-      caption_tag.innerHTML = caption;
-      node.appendChild(caption_tag);
-    }
-    node.dataset.type = type;
-    node.dataset.metaFileName = metaFileName;
-    node.setAttribute("draggable", false);
-
-    // todo for later: allow drag from cards in quill
-    // to move inside document or to composition
-    node.addEventListener("dragstart", $event => {
-      $event.dataTransfer.setData("text/plain", "media_in_quill");
-      $event.dataTransfer.effectAllowed = "move";
-      // this.is_dragged = true;
-      // this.$root.settings.media_being_dragged = media.metaFileName;
-    });
-
-    node.style.animation = "scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
-    node.addEventListener("animationend", () => {
-      node.style.animation = "";
-    });
-
-    return node;
-  }
-
-  constructor(node) {
-    super(node);
-
-    let removeButton;
-    let caption;
-    let captionInput;
-
-    node.__onSelect = () => {
-      const quill = Quill.find(node.parentElement.parentElement);
-      const _block = Quill.find(node);
-
-      // quill.setSelection(quill.getIndex(_block), 0, Quill.sources.USER);
-      node.classList.add("is--focused");
-
-      removeButton = window.document.createElement("button");
-      removeButton.innerHTML = "×";
-      removeButton.setAttribute("type", "button");
-      removeButton.classList.add("_button_removeMedia");
-      removeButton.addEventListener("click", () => {
-        node.__onDeselect();
-        quill.enable(true);
-        node.style.animation = "scale-out 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
-        node.addEventListener("animationend", () => {
-          super.remove();
-          // node.remove();
-          // supprimer du bloc proprement
-        });
-      });
-      node.appendChild(removeButton);
-
-      caption = node.querySelector("figcaption");
-      captionInput = window.document.createElement("input");
-      captionInput.setAttribute("type", "text");
-      captionInput.setAttribute("autofocus", true);
-      captionInput.placeholder = "Légende…";
-
-      if (caption) {
-        captionInput.value = caption.innerText;
-        caption.innerHTML = "";
-        caption.appendChild(captionInput);
-      } else {
-        caption = window.document.createElement("figcaption");
-        caption.appendChild(captionInput);
-        node.appendChild(caption);
-      }
-
-      setTimeout(() => {
-        captionInput.focus();
-      }, 50);
-    };
-    node.__onDeselect = () => {
-      let value = captionInput.value;
-      if (!value || value === "") {
-        caption.remove();
-      } else {
-        captionInput.remove();
-        caption.innerText = value;
-      }
-      node.classList.remove("is--focused");
-      removeButton.remove();
-    };
-  }
-
-  // deleteAt() {
-  //   console.log("deleteAt for custom mediablock: prevented");
-
-  //   return false;
-  //   // prevent removing on backspace after block
-  // }
-
-  static value(node) {
-    if (node.dataset.type === "image") {
-      let img = node.querySelector("img");
-      let figcaption = node.querySelector("figcaption");
-      if (!img) return false;
-      return {
-        alt: img.getAttribute("alt"),
-        src: img.getAttribute("src"),
-        metaFileName: node.dataset.metaFileName,
-        type: node.dataset.type,
-        caption: figcaption ? figcaption.innerText : null
-      };
-    } else if (node.dataset.type === "video") {
-      let video = node.querySelector("video");
-      let figcaption = node.querySelector("figcaption");
-      if (!video) return false;
-      return {
-        alt: video.getAttribute("alt"),
-        src: video.getAttribute("src"),
-        metaFileName: node.dataset.metaFileName,
-        type: node.dataset.type,
-        caption: figcaption ? figcaption.innerText : null
-      };
-    }
-  }
-}
-
-class CardEditableModule extends Module {
-  constructor(quill, options) {
-    super(quill, options);
-    let is_selected = false;
-
-    let listener = e => {
-      if (!document.body.contains(quill.root)) {
-        return document.body.removeEventListener("click", listener);
-      }
-      let elm = e.target.closest(".ql-mediacard");
-
-      let deselectCard = () => {
-        console.log("deselectCard");
-        is_selected = false;
-        if (elm.__onDeselect) {
-          elm.__onDeselect(quill);
-        } else {
-          quill.setSelection(
-            quill.getIndex(elm.__blot.blot) + 1,
-            0,
-            Quill.sources.USER
-          );
-        }
-      };
-      if (elm && elm.__blot && elm.__onSelect && !is_selected) {
-        // not ideal yet, can trigger repaint
-        quill.disable();
-        is_selected = true;
-        console.log("selectCard");
-
-        elm.__onSelect(quill);
-
-        let handleKeyPress = e => {
-          if (e.keyCode === 27 || e.keyCode === 13) {
-            window.removeEventListener("keypress", handleKeyPress);
-            quill.enable(true);
-            deselectCard();
-          }
-        };
-        let handleClick = e => {
-          const path = e.path || (e.composedPath && e.composedPath());
-          if (e.which === 1 && !path.includes(elm)) {
-            window.removeEventListener("click", handleClick);
-            quill.enable(true);
-            deselectCard();
-          }
-        };
-        let handleDrag = e => {
-          window.removeEventListener("dragover", handleDrag);
-          quill.enable(true);
-          deselectCard();
-        };
-        window.addEventListener("keypress", handleKeyPress);
-        window.addEventListener("click", handleClick);
-        window.addEventListener("dragover", handleDrag);
-      }
-    };
-    quill.emitter.listenDOM("click", document.body, listener);
-  }
-}
-
-Quill.register(
-  {
-    // Other formats or modules
-    "formats/media": MediaBlot,
-    "modules/cardEditable": CardEditableModule
-  },
-  true
-);
+Quill.register("formats/media", MediaBlot);
+Quill.register("modules/cardEditable", CardEditableModule);
 
 Quill.register("modules/cursors", QuillCursors);
 ShareDB.types.register(require("rich-text").type);
@@ -275,7 +74,7 @@ var quill_kb_bindings = {
   // so this will be added without overwriting anything
   backspace: {
     key: 8,
-    handler: function(range, context) {
+    handler: function (range, context) {
       if (
         range.index &&
         this.quill.getLine(range.index) &&
@@ -284,9 +83,8 @@ var quill_kb_bindings = {
       ) {
       }
       return true;
-    }
-  }
-
+    },
+  },
   // list: {
   //   key: "backspace",
   //   format: ["list"],
@@ -303,24 +101,69 @@ var quill_kb_bindings = {
   // }
 };
 
+var fonts = [
+  "",
+  "Alegreya",
+  "Roboto Mono",
+  "Roboto",
+  "Source Sans Pro",
+  "Source Serif Pro",
+  "PT Serif",
+  "Work Sans",
+  "Karla",
+  "IBM Plex Serif",
+  "Volkhov",
+  "Archivo Black",
+  "Spectral",
+];
+var FontAttributor = Quill.import("attributors/style/font");
+FontAttributor.whitelist = fonts;
+Quill.register(FontAttributor, true);
+
+var Size = Quill.import("attributors/style/size");
+Size.whitelist = ["75%", "18px", "150%", "300%"];
+Quill.register(Size, true);
+
+var BlockEmbed = Quill.import("blots/block/embed");
+
+class DividerBlot extends BlockEmbed {}
+DividerBlot.blotName = "divider";
+DividerBlot.tagName = "hr";
+Quill.register(DividerBlot);
+
 export default {
   props: {
     value: {
       type: String,
-      default: "…"
+      default: "…",
+    },
+    type: {
+      type: String,
+      default: "projects",
+    },
+    slugFolderName: String,
+    media: Object,
+    specific_toolbar: Array,
+    theme: {
+      type: String,
+      default: "snow",
+    },
+    read_only: {
+      type: Boolean,
+      default: false,
     },
     enable_collaboration: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    media: Object,
-    slugFolderName: String,
-    spellcheck: {
+    show_cursors: {
       type: Boolean,
-      default: true
-    }
+      default: true,
+    },
   },
-  components: {},
+  components: {
+    ClientsCheckingOut,
+  },
   data() {
     return {
       editor: null,
@@ -330,117 +173,225 @@ export default {
         3 + 5
       ),
 
+      is_loading_or_saving: false,
+      show_saved_icon: false,
+      cursors: [],
+      local_other_clients_editing: [],
+
+      custom_toolbar: [
+        [{ font: fonts }],
+        [{ header: [false, 1, 2, 3] }],
+        [{ size: ["75%", false, "150%", "300%"] }], // [{ 'header': 1 }, { 'header': 2 }, { 'header': 3 }, { 'header': 4 }],
+        ["bold", "italic", "underline", "strike", "link", "blockquote"],
+        [
+          {
+            color: [
+              "#353535",
+              "#b9b9b9",
+              "#fff",
+              "#1d327f",
+              "#52c5b9",
+              "#ffbe32",
+              "#fc4b60",
+
+              "#ff3333",
+              "#08cc11",
+              "#1c52ee",
+              "#ff9c33",
+              "#000000",
+              "#bdb3b3",
+              "#ae1cee",
+              "#fff933",
+              "#a54a0f",
+            ],
+          },
+        ],
+        [
+          {
+            background: [
+              "transparent",
+              "#f1f1f1",
+              "#b9b9b9",
+              "#bec6e5",
+              "#a5e5da",
+              "#ffd892",
+              "#ff808c",
+
+              "#ff3333",
+              "#08cc11",
+              "#1c52ee",
+              "#ff9c33",
+              "#000000",
+              "#bdb3b3",
+              "#ae1cee",
+              "#fff933",
+              "#a54a0f",
+            ],
+          },
+        ],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [
+          { align: "" },
+          { align: "center" },
+          { align: "right" },
+          { align: "justify" },
+        ],
+        ["code-block"],
+        ["divider"],
+        ["clean"],
+      ],
+
+      formats: [
+        "bold",
+        "size",
+        "italic",
+        "underline",
+        "strike",
+        "link",
+        "header",
+        "blockquote",
+        "list",
+        "color",
+        "background",
+        "font",
+        "align",
+        "code-block",
+        "divider",
+        "video",
+        "media",
+      ],
+
       is_focused: false,
       is_being_dragover: false,
       is_being_dragover_on_blot: false,
 
       debounce_textUpdate: undefined,
-      caret_position: {
-        top: undefined,
-        left: undefined
-      },
-      focused_lines: [],
-
-      custom_toolbar: {
-        container: [
-          // [{ header: [false, 1, 2, 3] }],
-          [{ header: 1 }, { header: 2 }],
-          ["bold", "italic", "link", "blockquote"],
-          [{ list: "ordered" }, { list: "bullet" }],
-          ["clean"]
-        ]
-      },
 
       socket: null,
       connection_state: !this.enable_collaboration ? "disabled" : "connecting…",
-      requested_resource_url: undefined
+      requested_resource_url: undefined,
     };
   },
 
   created() {},
   mounted() {
+    this.is_loading_or_saving = true;
+
+    const toolbar_options = this.specific_toolbar
+      ? this.specific_toolbar
+      : this.custom_toolbar;
+
+    if (toolbar_options.length === 0) {
+      this.formats = [];
+    }
+
     this.editor = new Quill(this.$refs.editor, {
       modules: {
         cardEditable: true,
-        toolbar: this.custom_toolbar,
+        toolbar: {
+          container: toolbar_options,
+          handlers: {
+            divider: () => {
+              var range = this.editor.getSelection();
+              if (range) {
+                this.editor.insertEmbed(
+                  range.index,
+                  "divider",
+                  "null",
+                  Quill.sources.USER
+                );
+              }
+            },
+          },
+        },
         cursors: {
           template: `
-    <span class="ql-cursor-caret-container">
-    <span class="ql-cursor-selections"></span>
-      <span class="ql-cursor-caret"></span>
-    </span>
-    <div class="ql-cursor-flag">
-      <small class="ql-cursor-name"></small>
-      <span class="ql-cursor-flag-flap"></span>
-    </div>
-`,
+            <span class="ql-cursor-selections"></span>
+            <span class="ql-cursor-caret-container">
+              <span class="ql-cursor-caret"></span>
+            </span>
+            <div class="ql-cursor-flag">
+              <small class="ql-cursor-name"></small>
+            </div>
+          `,
           hideDelayMs: 5000,
           hideSpeedMs: 0,
-          selectionChangeSource: null
+          // selectionChangeSource: null,
+          transformOnTextChange: true,
         },
         keyboard: {
-          bindings: quill_kb_bindings
-        }
+          // bindings: quill_kb_bindings,
+        },
       },
       bounds: this.$refs.editor,
-
-      theme: "snow",
-      formats: [
-        "bold",
-        "italic",
-        "underline",
-        "link",
-        "header",
-        "blockquote",
-        "indent",
-        "list",
-        "media",
-        "image"
-      ],
-      placeholder: "…"
+      theme: this.theme,
+      formats: this.formats,
+      placeholder: "…",
     });
 
     this.$refs.editor.dataset.quill = this.editor;
 
     this.cancelDragOver = debounce(this.cancelDragOver, 300);
 
-    this.setSpellCheck();
+    // if (this.show_cursors)
+    this.cursors = this.editor.getModule("cursors");
 
-    if (this.$root.preview_mode) {
+    if (this.read_only || this.$root.state.mode !== "live")
       this.editor.disable();
+
+    if (!this.read_only && this.$root.state.mode === "live") {
+      const name = this.$root.current_author
+        ? this.$root.current_author.name
+        : this.$t("anonymous");
+
+      this.cursors.createCursor("_self", name, "#1d327f");
+      this.cursors.toggleFlag("_self", false);
+      if (this.show_cursors) {
+      }
     }
 
-    const cursorsOne = this.editor.getModule("cursors");
-    cursorsOne.createCursor(1, "User 1", "#0a997f");
-
     this.$nextTick(() => {
-      if (this.$root.state.mode === "live" && this.enable_collaboration) {
-        this.initWebsocketMode();
+      let content = this.value;
+
+      if (this.$root.state.mode === "export_planning") {
+        var el = document.createElement("html");
+        el.innerHTML = content;
+        el.querySelectorAll("[src]").forEach(function (item) {
+          item.setAttribute("src", "/" + item.getAttribute("src"));
+        });
+        content = el.innerHTML;
+      }
+
+      this.editor.root.innerHTML = content;
+
+      this.is_loading_or_saving = false;
+
+      if (this.$root.state.mode === "live") {
         this.editor.focus();
-      } else {
-        let content = this.value;
-        if (this.$root.state.mode === "export_planning") {
-          var el = document.createElement("html");
-          el.innerHTML = content;
-          el.querySelectorAll("[src]").forEach(function(item) {
-            item.setAttribute("src", "/" + item.getAttribute("src"));
-          });
-          content = el.innerHTML;
-        }
-        this.editor.root.innerHTML = content;
+        this.$nextTick(() => {
+          this.editor.setSelection(this.editor.getLength(), 0, "api");
+        });
+      }
+      if (
+        this.$root.state.mode === "live" &&
+        this.enable_collaboration &&
+        !this.read_only
+      ) {
+        this.initWebsocketMode();
       }
 
       this.editor.on("text-change", (delta, oldDelta, source) => {
-        this.$emit(
-          "input",
-          this.editor.getText() ? this.editor.root.innerHTML : ""
-        );
+        if (this.read_only) return;
 
-        // this.$nextTick(() => {
-        //   this.updateFocusedLines();
-        // });
+        this.$emit("input", this.sanitizeEditorHTML());
 
-        // cursorsOne.moveCursor(1, range);
+        this.$nextTick(() => {
+          this.updateFocusedLines();
+        });
+
+        // const range = this.editor.getSelection();
+        // this.cursors.moveCursor("_self", range);
+        // this.updateCaretPositionForClient(range);
       });
 
       this.editor.on("selection-change", (range, oldRange, source) => {
@@ -448,16 +399,14 @@ export default {
         if (range === null && oldRange !== null) this.is_focused = false;
         else if (range !== null && oldRange === null) this.is_focused = true;
 
-        // cursorsOne.moveCursor(1, range);
-        if (!!range && range.length == 0) {
-          console.log("User cursor is on", range.index);
-          this.updateCaretPosition();
-        }
+        if (this.enable_collaboration)
+          this.$nextTick(() => {
+            this.updateCaretPositionForClient(range);
+          });
 
-        // this.updateFocusedLines();
+        this.updateFocusedLines();
       });
     });
-
     this.$eventHub.$on("writeup.addMedia", this.addMediaAtTheEnd);
   },
   beforeDestroy() {
@@ -468,46 +417,126 @@ export default {
     this.$eventHub.$off("writeup.addMedia", this.addMediaAtTheEnd);
 
     this.$root.settings.medias_present_in_writeup = [];
+
+    if (this.enable_collaboration) {
+      this.removeCaretPosition();
+    }
   },
   watch: {
-    "$root.preview_mode": function() {
-      if (this.$root.preview_mode) {
-        this.editor.disable();
-      } else {
-        this.editor.enable();
+    read_only() {
+      if (this.read_only) this.editor.disable();
+      else this.editor.enable();
+    },
+    other_clients_editing() {
+      // compare other_clients_editing with cursors
+
+      if (this.show_cursors) {
+        const cursors = this.cursors.cursors();
+
+        this.other_clients_editing.map(({ name, index, length }) => {
+          // check if client has cursor locally
+          if (!cursors.find((cursor) => cursor.id === name)) {
+            const color = this.getColorFromName(name);
+            this.cursors.createCursor(name, name, color);
+            this.cursors.moveCursor(name, { index, length });
+            this.cursors.toggleFlag(name);
+          } else {
+            // detect changes, only update for client whose index or length changed
+            if (
+              this.local_other_clients_editing.find(
+                (local_client) =>
+                  local_client.name === name &&
+                  (local_client.index !== index ||
+                    local_client.length !== length)
+              )
+            ) {
+              this.cursors.moveCursor(name, { index, length });
+            }
+          }
+        });
+
+        cursors.map((cursor) => {
+          if (
+            cursor.id !== "_self" &&
+            !this.other_clients_editing.find(
+              (client) => client.name === cursor.id
+            )
+          ) {
+            this.cursors.removeCursor(cursor.id);
+          }
+        });
       }
+
+      this.local_other_clients_editing = JSON.parse(
+        JSON.stringify(this.other_clients_editing)
+      );
     },
-    spellcheck: function() {
-      this.setSpellCheck();
-    },
-    value: function() {
-      this.broadcastMediasPresentInWriteup();
-    },
-    editor_not_enabled: function() {
-      if (this.editor_not_enabled) {
-        this.editor.disable();
-      } else {
-        this.editor.enable();
-      }
-    }
   },
   computed: {
-    _customCaret_style() {
-      return {
-        transform: `translate3d(${this.caret_position.left}px, ${this.caret_position.top}px, 0px)`
-      };
+    reference_to_media() {
+      return `${this.type}/${this.slugFolderName}/${this.media.metaFileName}`;
     },
-    editor_not_enabled() {
-      return this.enable_collaboration && this.connection_state !== "connected";
-    }
+    other_clients_editing() {
+      if (
+        !this.type ||
+        !this.slugFolderName ||
+        !this.media ||
+        !this.media.metaFileName
+      )
+        return false;
+
+      return this.$root.unique_clients.reduce((acc, c) => {
+        if (
+          c.data &&
+          c.data.caret_information &&
+          c.data.caret_information.path === this.reference_to_media &&
+          c.data.caret_information.range.index
+        ) {
+          let name = this.$t("anonymous");
+          name += ` "${c.id}"`;
+          if (
+            c.data.author &&
+            c.data.author.slugFolderName &&
+            this.$root.getAuthor(c.data.author.slugFolderName)
+          ) {
+            name = this.$root.getAuthor(c.data.author.slugFolderName).name;
+          }
+
+          acc.push({
+            name,
+            index: c.data.caret_information.range.index,
+            length: c.data.caret_information.range.length,
+          });
+        }
+        return acc;
+      }, []);
+    },
   },
   methods: {
+    getColorFromName(name) {
+      const colors = this.custom_toolbar[4][0].color;
+
+      // if (name === this.$t("anonymous")) {
+      //   return colors[Math.floor(Math.random() * colors.length)];
+      // }
+
+      return colors[parseInt(name, 36) % colors.length];
+    },
+    sanitizeEditorHTML() {
+      // used to make sure we don’t get weird stuff such as <p style="font-family: "Avada";">plop</p>
+      if (!this.editor.getText() || this.editor.getText() === "\n") return "";
+
+      let content = this.editor.root.innerHTML;
+      content = content.replace(/&quot;/g, "'");
+
+      return content;
+    },
     initWebsocketMode() {
       console.log(`CollaborativeEditor / initWebsocketMode`);
       const params = new URLSearchParams({
-        type: "projects",
+        type: this.type,
         slugFolderName: this.slugFolderName,
-        metaFileName: this.media.metaFileName
+        metaFileName: this.media.metaFileName,
       });
 
       const requested_querystring = "?" + params.toString();
@@ -527,7 +556,7 @@ export default {
       connection.on("state", this.wsState);
 
       const doc = connection.get("textMedias", requested_querystring);
-      doc.subscribe(err => {
+      doc.subscribe((err) => {
         if (err) {
           console.error(`ON • CollaborativeEditor: err ${err}`);
         }
@@ -552,10 +581,9 @@ export default {
           this.editor.setContents(doc.data);
         }
 
-        this.$emit(
-          "input",
-          this.editor.getText() ? this.editor.root.innerHTML : ""
-        );
+        this.editor.setSelection(this.editor.getLength(), 0, "api");
+
+        this.$emit("input", this.sanitizeEditorHTML());
 
         this.editor.on("text-change", (delta, oldDelta, source) => {
           if (source == "user") {
@@ -577,39 +605,51 @@ export default {
         });
       });
 
-      doc.on("error", err => {
+      doc.on("error", (err) => {
         // soucis : les situations ou le serveur a été fermé et en le rouvrant il ne possède plus d’instance du doc dans sharedb…
-
         this.$forceUpdate();
       });
     },
-    updateCaretPosition() {
-      console.log(`CollaborativeEditor • METHODS: updateCaretPosition`);
-      var selection = this.editor.getSelection(true);
-      const caretPos = this.editor.getBounds(selection);
-      this.caret_position = { top: caretPos.top, left: caretPos.left };
+    updateCaretPositionForClient(range) {
+      if (this.read_only) return;
+
+      this.cursors.moveCursor("_self", range);
+      this.$root.updateClientInfo({
+        caret_information: {
+          path: this.reference_to_media,
+          range,
+        },
+      });
     },
-    // updateFocusedLines() {
-    //   console.log(`CollaborativeEditor • METHODS: updateFocusedLines`);
+    removeCaretPosition() {
+      this.cursors.removeCursor("_self");
+      this.$root.updateClientInfo({
+        caret_information: {},
+      });
+    },
+    updateFocusedLines() {
+      console.log(`CollaborativeEditor • METHODS: updateFocusedLines`);
 
-    //   // if (oldRange && oldRange.index) {
-    //   //   const line = this.editor.getLine(oldRange.index);
-    //   //   if (line) {
-    //   //     line[0].domNode.classList.remove("is--focused");
-    //   //   }
-    //   // }
+      // if (oldRange && oldRange.index) {
+      //   const line = this.editor.getLine(oldRange.index);
+      //   if (line) {
+      //     line[0].domNode.classList.remove("is--focused");
+      //   }
+      // }
 
-    //   this.removeFocusFromBlots();
+      this.editor
+        .getLines()
+        .map((b) => b.domNode.classList.remove("is--focused"));
 
-    //   const range = this.editor.getSelection();
+      const range = this.editor.getSelection();
 
-    //   if (range && range.index) {
-    //     const line = this.editor.getLine(range.index);
-    //     if (line) {
-    //       line[0].domNode.classList.add("is--focused");
-    //     }
-    //   }
-    // },
+      if (range && range.index) {
+        const line = this.editor.getLine(range.index);
+        if (line) {
+          line[0].domNode.classList.add("is--focused");
+        }
+      }
+    },
     wsState(state, reason) {
       console.log(
         `METHODS • CollaborativeEditor: wsState with state = ${state} and reason = ${reason}`
@@ -619,6 +659,8 @@ export default {
     },
     updateTextMedia(event) {
       if (this.debounce_textUpdate) clearTimeout(this.debounce_textUpdate);
+      this.is_loading_or_saving = true;
+
       this.debounce_textUpdate = setTimeout(() => {
         console.log(
           `CollaborativeEditor • updateTextMedia: saving new snapshop`
@@ -626,21 +668,29 @@ export default {
 
         this.broadcastMediasPresentInWriteup();
 
-        this.$root.editMedia({
-          type: "projects",
-          slugFolderName: this.slugFolderName,
-          slugMediaName: this.media.metaFileName,
-          data: {
-            content: this.editor.getText() ? this.editor.root.innerHTML : ""
-          }
-        });
+        this.$root
+          .editMedia({
+            type: this.type,
+            slugFolderName: this.slugFolderName,
+            slugMediaName: this.media.metaFileName,
+            data: {
+              content: this.sanitizeEditorHTML(),
+            },
+          })
+          .then((mdata) => {
+            this.is_loading_or_saving = false;
+            this.show_saved_icon = true;
+            setTimeout(() => {
+              this.show_saved_icon = false;
+            }, 200);
+          });
       }, 1000);
     },
+
     broadcastMediasPresentInWriteup() {
       console.log(`CollaborativeEditor • broadcastMediasPresentInWriteup`);
 
       // var t0 = performance.now();
-
       const _medias_present = this.editor.getLines().reduce((acc, _blot) => {
         if (_blot.domNode.dataset && _blot.domNode.dataset.metaFileName) {
           if (!acc.includes(_blot.domNode.dataset.metaFileName)) {
@@ -656,12 +706,6 @@ export default {
       // );
 
       this.$root.settings.medias_present_in_writeup = _medias_present;
-    },
-    setSpellCheck() {
-      console.log(
-        `CollaborativeEditor • setSpellCheck: set to ${this.spellcheck}`
-      );
-      this.editor.root.spellcheck = this.spellcheck;
     },
 
     addMediaAtTheEnd(media) {
@@ -690,7 +734,7 @@ export default {
       this.editor.blur();
 
       if (media.type === "image") {
-        const thumb = media.thumbs.find(m => m.size === 1600);
+        const thumb = media.thumbs.find((m) => m.size === 1600);
         if (!!thumb) {
           // this.editor.insertText(index, "\n", Quill.sources.USER);
           this.editor.insertEmbed(
@@ -700,7 +744,7 @@ export default {
               type: media.type,
               caption: media.caption,
               src: thumb.path,
-              metaFileName: media.metaFileName
+              metaFileName: media.metaFileName,
             },
             Quill.sources.USER
           );
@@ -715,7 +759,7 @@ export default {
             type: media.type,
             caption: media.caption,
             src: mediaURL,
-            metaFileName: media.metaFileName
+            metaFileName: media.metaFileName,
           },
           Quill.sources.USER
         );
@@ -727,6 +771,7 @@ export default {
           .error(this.$t("notifications.media_type_not_handled"));
       }
     },
+
     ondragover($event) {
       console.log(
         `METHODS • CollaborativeEditor / dragover on ${$event.currentTarget.className}`
@@ -807,8 +852,9 @@ export default {
         }
       }
     },
+
     removeDragoverFromBlots() {
-      this.editor.getLines().map(b => {
+      this.editor.getLines().map((b) => {
         while (b.parent !== b.scroll) {
           b = b.parent;
           if (b === b.scroll) {
@@ -823,7 +869,7 @@ export default {
     removeFocusFromBlots() {
       this.editor
         .getLines()
-        .map(b => b.domNode.classList.remove("is--focused"));
+        .map((b) => b.domNode.classList.remove("is--focused"));
     },
     getBlockFromElement(_target) {
       while (!_target.parentElement.classList.contains("ql-editor")) {
@@ -835,12 +881,28 @@ export default {
         return _blot;
       }
       return false;
-    }
-  }
+    },
+  },
 };
 </script>
 <style src="../../../../node_modules/quill/dist/quill.snow.css"></style>
 <style lang="scss">
+.ql-snow .ql-picker {
+  color: white;
+
+  > * {
+    // color: black;
+  }
+
+  .ql-picker-options {
+    background-color: var(--c-popup-bg);
+  }
+}
+
+.ql-snow .ql-picker.ql-header {
+  width: 128px;
+}
+
 html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
 html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
   content: "Titre 1";
@@ -1012,10 +1074,10 @@ html[lang="fr"] .ql-tooltip::before {
     }
 
     &[contenteditable="false"] {
-      > *:not(.is--focused) {
-        opacity: 0.5;
-        cursor: default;
-      }
+      // > *:not(.is--focused) {
+      //   opacity: 0.5;
+      //   cursor: default;
+      // }
     }
 
     > * {
@@ -1113,9 +1175,9 @@ html[lang="fr"] .ql-tooltip::before {
         &.is--focused {
           // outline: 0;
           // box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
-          .ql-mediacard--background {
-            opacity: 1;
-          }
+          // .ql-mediacard--background {
+          //   opacity: 1;
+          // }
         }
       }
 
@@ -1555,6 +1617,144 @@ body[data-mode="export_planning"] .ql-toolbar {
 .ql-snow.ql-toolbar .ql-picker-item.ql-selected .ql-stroke.ql-fill,
 .ql-snow .ql-toolbar .ql-picker-item.ql-selected .ql-stroke.ql-fill {
   fill: #0a997f;
+}
+
+html[lang="fr"] .ql-picker.ql-header .ql-picker-label::before,
+html[lang="fr"] .ql-picker.ql-header .ql-picker-item::before {
+  content: "Texte courant";
+}
+html .ql-picker.ql-header .ql-picker-label::before,
+html .ql-picker.ql-header .ql-picker-item::before {
+  content: "Regular text";
+}
+html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
+html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
+  content: "Titre 1";
+  font-weight: 700;
+}
+html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="2"]::before,
+html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="2"]::before {
+  content: "Titre 2";
+  font-weight: 700;
+}
+html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="3"]::before,
+html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="3"]::before {
+  content: "Titre 3";
+  font-weight: 700;
+}
+html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="4"]::before,
+html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="4"]::before {
+  content: "Titre 4";
+  font-weight: 700;
+}
+
+.ql-picker.ql-size .ql-picker-label[data-value="75%"]::before,
+.ql-picker.ql-size .ql-picker-item[data-value="75%"]::before {
+  content: "Small";
+  font-size: 70% !important;
+
+  html[lang="fr"] & {
+    content: "Petit";
+  }
+}
+.ql-picker.ql-size .ql-picker-label:not([data-value])::before,
+.ql-picker.ql-size .ql-picker-item:not([data-value])::before {
+  content: "Regular";
+  font-size: 100% !important;
+
+  html[lang="fr"] & {
+    content: "Normal";
+  }
+}
+.ql-picker.ql-size .ql-picker-label[data-value="150%"]::before,
+.ql-picker.ql-size .ql-picker-item[data-value="150%"]::before {
+  content: "Large";
+  font-size: 150% !important;
+
+  html[lang="fr"] & {
+    content: "Grand";
+  }
+}
+.ql-picker.ql-size .ql-picker-label[data-value="300%"]::before,
+.ql-picker.ql-size .ql-picker-item[data-value="300%"]::before {
+  content: "Huge";
+  font-size: 300% !important;
+
+  html[lang="fr"] & {
+    content: "Énorme";
+  }
+}
+
+.ql-picker.ql-size .ql-picker-label[data-value]::before {
+  font-size: 100% !important;
+}
+
+.ql-picker.ql-font .ql-picker-label[data-value=""]::before,
+.ql-picker.ql-font .ql-picker-item[data-value=""]::before {
+  content: "Plex Sans";
+  font-family: "Plex Sans";
+}
+
+.ql-picker.ql-font .ql-picker-label[data-value="Alegreya"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="Alegreya"]::before {
+  content: "Alegreya";
+  font-family: "Alegreya";
+}
+
+.ql-picker.ql-font .ql-picker-label[data-value="Roboto Mono"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="Roboto Mono"]::before {
+  content: "Roboto mono";
+  font-family: "Roboto Mono";
+}
+.ql-picker.ql-font .ql-picker-label[data-value="Roboto"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="Roboto"]::before {
+  content: "Roboto";
+  font-family: "Roboto";
+}
+.ql-picker.ql-font .ql-picker-label[data-value="Source Sans Pro"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="Source Sans Pro"]::before {
+  content: "Source Sans Pro";
+  font-family: "Source Sans Pro";
+}
+.ql-picker.ql-font .ql-picker-label[data-value="PT Serif"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="PT Serif"]::before {
+  content: "PT Serif";
+  font-family: "PT Serif";
+}
+.ql-picker.ql-font .ql-picker-label[data-value="Work Sans"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="Work Sans"]::before {
+  content: "Work Sans";
+  font-family: "Work Sans";
+}
+.ql-picker.ql-font .ql-picker-label[data-value="Karla"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="Karla"]::before {
+  content: "Karla";
+  font-family: "Karla";
+}
+.ql-picker.ql-font .ql-picker-label[data-value="Source Serif Pro"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="Source Serif Pro"]::before {
+  content: "Source Serif Pro";
+  font-family: "Source Serif Pro";
+}
+.ql-picker.ql-font .ql-picker-label[data-value="IBM Plex Serif"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="IBM Plex Serif"]::before {
+  content: "IBM Plex Serif";
+  font-family: "IBM Plex Serif";
+}
+.ql-picker.ql-font .ql-picker-label[data-value="Volkhov"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="Volkhov"]::before {
+  content: "Volkhov";
+  font-family: "Volkhov";
+}
+.ql-picker.ql-font .ql-picker-label[data-value="Archivo Black"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="Archivo Black"]::before {
+  content: "Archivo Black";
+  font-family: "Archivo Black";
+}
+.ql-picker.ql-font .ql-picker-label[data-value="Spectral"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="Spectral"]::before {
+  content: "Spectral";
+  font-family: "Spectral";
 }
 
 body:not([data-mode="export_planning"]).ql-editor {

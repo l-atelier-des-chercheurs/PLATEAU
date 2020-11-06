@@ -40,6 +40,7 @@ module.exports = (function () {
       other: "autre",
       with_sound: "avec le son",
       generate: "Générer",
+      download: "Télécharger",
 
       WriteUp: "Notes",
       Capture: "Capture",
@@ -105,6 +106,7 @@ module.exports = (function () {
       other: "other",
       with_sound: "with sound",
       generate: "Generate",
+      download: "Download",
 
       WriteUp: "Notes",
       Capture: "Capture",

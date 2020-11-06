@@ -45,7 +45,7 @@
         :download="media.media_filename"
         :href="mediaFocusDownloadURL"
         target="_blank"
-        >{{ $t("télécharger") }}</a
+        >{{ $t("download") }}</a
       >
       <button type="button" @click="removeMedia(show_media_detail_for)">
         {{ $t("supprimer") }}

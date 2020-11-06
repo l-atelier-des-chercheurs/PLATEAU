@@ -456,5 +456,13 @@ export default {
   .m_collaborativeEditor {
     height: 100%;
   }
+
+  .ql-toolbar {
+    z-index: 2;
+  }
+
+  .mediaTextContent {
+    z-index: 1;
+  }
 }
 </style>
