@@ -6,16 +6,18 @@
         {{ $t(selected_field_to_show) }}
         <br />
         {{
-        projectDate(project[selected_field_to_show]) +
-        " " +
-        $t("at") +
-        " " +
-        $moment(project[selected_field_to_show]).format("HH:mm")
+          projectDate(project[selected_field_to_show]) +
+          " " +
+          $t("at") +
+          " " +
+          $moment(project[selected_field_to_show]).format("HH:mm")
         }}
       </div>
     </div>
     <div class>
-      <button @click="$root.openProject(project.slugFolderName)">{{ $t("ouvrir") }}</button>
+      <button @click="$root.openProject(project.slugFolderName)">
+        {{ $t("ouvrir") }}
+      </button>
 
       <button
         type="button"
@@ -23,24 +25,35 @@
         :class="{ 'is--active': showDuplicateProjectMenu }"
         @click="showDuplicateProjectMenu = !showDuplicateProjectMenu"
         :disabled="read_only"
-      >{{ $t("dupliquer") }}</button>
+      >
+        {{ $t("dupliquer") }}
+      </button>
 
       <button
         type="button"
         class="buttonLink"
         :disabled="zip_export_started"
         @click="downloadProjectArchive"
-      >{{ $t("télécharger") }}</button>
+      >
+        {{ $t("download") }}
+      </button>
 
       <div v-if="showDuplicateProjectMenu" class="margin-bottom-small">
         <label v-html="'Nom de la copie'" />
         <form @submit.prevent="duplicateWithNewName()" class="input-group">
-          <input type="text" v-model.trim="copy_project_name" required autofocus />
+          <input
+            type="text"
+            v-model.trim="copy_project_name"
+            required
+            autofocus
+          />
           <button type="submit" v-html="$t('copier')" class="bg-bleuvert" />
         </form>
       </div>
 
-      <button @click="removeProject(project.slugFolderName)">{{ $t("remove") }}</button>
+      <button @click="removeProject(project.slugFolderName)">
+        {{ $t("remove") }}
+      </button>
     </div>
   </div>
 </template>
@@ -50,14 +63,14 @@ export default {
   props: {
     project: Object,
     selected_field_to_show: String,
-    available_fields: Array
+    available_fields: Array,
   },
   components: {},
   data() {
     return {
       showDuplicateProjectMenu: false,
       copy_project_name: this.$t("copy_of") + " " + this.project.name,
-      zip_export_started: false
+      zip_export_started: false,
     };
   },
   created() {},
@@ -75,7 +88,7 @@ export default {
           () => {
             this.$root.removeFolder({
               type: "projects",
-              slugFolderName
+              slugFolderName,
             });
 
             localstore.set(`panes.${slugFolderName}`, false);
@@ -91,7 +104,7 @@ export default {
           nextDay: "[demain]",
           lastWeek: "dddd [dernier]",
           nextWeek: "dddd [prochain]",
-          sameElse: "dddd D MMMM"
+          sameElse: "dddd D MMMM",
         });
       } else if (this.$root.lang.current === "en") {
         return this.$moment(d).calendar(null, {
@@ -100,7 +113,7 @@ export default {
           nextDay: "[tomorrow]",
           lastWeek: "[last] dddd",
           nextWeek: "[next] dddd",
-          sameElse: "dddd, MMMM D"
+          sameElse: "dddd, MMMM D",
         });
       }
     },
@@ -131,7 +144,7 @@ export default {
       this.$socketio.copyFolder({
         type: "projects",
         slugFolderName: this.project.slugFolderName,
-        new_folder_name: this.copy_project_name
+        new_folder_name: this.copy_project_name,
       });
       this.showDuplicateProjectMenu = false;
 
@@ -170,8 +183,8 @@ export default {
         );
 
       window.location.replace(query_url);
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>

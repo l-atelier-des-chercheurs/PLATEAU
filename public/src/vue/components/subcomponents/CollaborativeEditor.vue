@@ -258,6 +258,7 @@ export default {
         "code-block",
         "divider",
         "video",
+        "media",
       ],
 
       is_focused: false,
@@ -319,7 +320,7 @@ export default {
           transformOnTextChange: true,
         },
         keyboard: {
-          bindings: quill_kb_bindings,
+          // bindings: quill_kb_bindings,
         },
       },
       bounds: this.$refs.editor,
@@ -886,6 +887,22 @@ export default {
 </script>
 <style src="../../../../node_modules/quill/dist/quill.snow.css"></style>
 <style lang="scss">
+.ql-snow .ql-picker {
+  color: white;
+
+  > * {
+    // color: black;
+  }
+
+  .ql-picker-options {
+    background-color: var(--c-popup-bg);
+  }
+}
+
+.ql-snow .ql-picker.ql-header {
+  width: 128px;
+}
+
 html[lang="fr"] .ql-picker.ql-header .ql-picker-label[data-value="1"]::before,
 html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="1"]::before {
   content: "Titre 1";
@@ -1057,10 +1074,10 @@ html[lang="fr"] .ql-tooltip::before {
     }
 
     &[contenteditable="false"] {
-      > *:not(.is--focused) {
-        opacity: 0.5;
-        cursor: default;
-      }
+      // > *:not(.is--focused) {
+      //   opacity: 0.5;
+      //   cursor: default;
+      // }
     }
 
     > * {
@@ -1158,9 +1175,9 @@ html[lang="fr"] .ql-tooltip::before {
         &.is--focused {
           // outline: 0;
           // box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
-          .ql-mediacard--background {
-            opacity: 1;
-          }
+          // .ql-mediacard--background {
+          //   opacity: 1;
+          // }
         }
       }
 
