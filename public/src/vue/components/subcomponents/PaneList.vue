@@ -18,7 +18,11 @@
         :disabled="!item.enabled"
         :style="`--color-active: var(--color-${item.key});`"
       >
-        <input type="checkbox" :id="`enable_pane_for_${item.key}`" v-model="item.enabled" />
+        <input
+          type="checkbox"
+          :id="`enable_pane_for_${item.key}`"
+          v-model="item.enabled"
+        />
         <div>
           <div v-handle v-if="item.enabled" class="handle" />
           <span>{{ $t(item.key) }}</span>
@@ -34,7 +38,7 @@ export default {
   props: {},
   components: {
     SlickItem,
-    SlickList
+    SlickList,
   },
   directives: { handle: HandleDirective },
   data() {
@@ -50,8 +54,8 @@ export default {
       if (newIndex !== oldIndex) {
         this.$eventHub.$emit("project.refresh_panes_order");
       }
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss">
