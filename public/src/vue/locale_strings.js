@@ -46,7 +46,9 @@ module.exports = (function () {
       Capture: "Capture",
       MediaLibrary: "Bibliothèque",
       Composition: "Compositions",
-      Planning: "Planning",
+      Planning: "Journal",
+      other_devices_connected: "autre appareils connectés",
+      back: "Retour",
 
       bytes: "octets",
       kb: "ko",
