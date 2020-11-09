@@ -49,6 +49,9 @@
           </svg>
         </button>
       </div>
+      <button type="button" v-if="mode === 'expanded'" @click="closePlanning">
+        {{ $t("back") }}
+      </button>
       <div class="m_planningItem--name">
         <span
           v-if="!edit_mode"
@@ -151,7 +154,10 @@
         </button>
       </div>
 
-      <div class="m_planningItem--notes--editNotes" v-if="edit_notes">
+      <div
+        class="m_planningItem--notes--editNotes custom_scrollbar"
+        v-if="edit_notes"
+      >
         <CollaborativeEditor
           v-model="media.content"
           :slugFolderName="slugFolderName"
@@ -273,11 +279,10 @@ export default {
       this.edit_mode = false;
     },
     removePlanningMedia() {
-      if (window.state.dev_mode === "debug") {
+      if (window.state.dev_mode === "debug")
         console.log(
           `METHODS • PlanningItem: removePlanningMedia / ${this.media.metaFileName}`
         );
-      }
 
       this.$alertify
         .okBtn(this.$t("yes"))
@@ -289,6 +294,13 @@ export default {
           },
           () => {}
         );
+    },
+    closePlanning() {
+      if (window.state.dev_mode === "debug")
+        console.log(
+          `METHODS • PlanningItem: closePlanning / ${this.media.metaFileName}`
+        );
+      this.$root.settings.current_planning_media_metaFileName = false;
     },
   },
 };
