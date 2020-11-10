@@ -11,7 +11,7 @@ const sockets = require("./core/sockets"),
   importer = require("./core/importer"),
   remote_api = require("./core/remote_api");
 
-module.exports = function(app) {
+module.exports = function (app) {
   /**
    * routing event
    */
@@ -30,7 +30,7 @@ module.exports = function(app) {
   function collaborativeEditing(ws, req) {
     console.log("WebSocket sharedb event");
 
-    ws.on("message", msg => {
+    ws.on("message", (msg) => {
       console.log("WebSocket was closed");
       ws.send(msg);
     });
@@ -44,7 +44,7 @@ module.exports = function(app) {
    * routing functions
    */
   function generatePageData(req) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
       let fullUrl = req.protocol + "://" + req.get("host") + req.originalUrl;
       dev.log(`••• the following page has been requested: ${fullUrl} •••`);
 
@@ -57,7 +57,6 @@ module.exports = function(app) {
       pageData.url = req.path;
       pageData.protocol = req.protocol;
       pageData.structure = global.settings.structure;
-      pageData.authorsFolder = global.settings.structure.authors.path;
       pageData.isDebug = dev.isDebug();
 
       pageData.store = Object.keys(global.settings.structure).reduce(
@@ -77,14 +76,14 @@ module.exports = function(app) {
   // GET
   function showIndex(req, res) {
     generatePageData(req).then(
-      pageData => {
+      (pageData) => {
         // dev.logpackets(
         //   `Rendering index with data `,
         //   JSON.stringify(pageData, null, 4)
         // );
         res.render("index", pageData);
       },
-      err => {
+      (err) => {
         dev.error(`Err while getting index data: ${err}`);
       }
     );
@@ -95,12 +94,12 @@ module.exports = function(app) {
     const type = "projects";
 
     generatePageData(req).then(
-      pageData => {
+      (pageData) => {
         // let’s make sure that folder exists first and return some meta
         file
           .getFolder({ type, slugFolderName })
           .then(
-            foldersData => {
+            (foldersData) => {
               pageData.slugFolderName = slugFolderName;
               pageData.store[slugFolderName] = foldersData;
               return res.render("index", pageData);
@@ -111,11 +110,11 @@ module.exports = function(app) {
               res.render("index", pageData);
             }
           )
-          .catch(err => {
+          .catch((err) => {
             dev.error("No folder found");
           });
       },
-      err => {
+      (err) => {
         dev.error(`Err while getting index data: ${err}`);
       }
     );
@@ -125,17 +124,19 @@ module.exports = function(app) {
     const type = req.param("type");
     const slugFolderName = req.param("slugFolderName");
 
-    generatePageData(req).then(pageData => {
+    generatePageData(req).then((pageData) => {
       dev.logverbose(`Generated slugFolderName pageData`);
       dev.logverbose(
         `Now getting data for type = ${type} and slugFolderName = ${slugFolderName}`
       );
 
-      exporter.loadFolder({ type, slugFolderName, pageData }).then(pageData => {
-        pageData.slugFolderName = slugFolderName;
-        pageData.mode = "print_folder";
-        res.render("index", pageData);
-      });
+      exporter
+        .loadFolder({ type, slugFolderName, pageData })
+        .then((pageData) => {
+          pageData.slugFolderName = slugFolderName;
+          pageData.mode = "print_folder";
+          res.render("index", pageData);
+        });
     });
   }
 
@@ -147,7 +148,7 @@ module.exports = function(app) {
     exporter
       .makePDFForPubli({ type, slugFolderName })
       .then(({ pdfName, pdfPath }) => {
-        res.download(pdfPath, pdfName, function(err) {
+        res.download(pdfPath, pdfName, function (err) {
           if (err) {
           } else {
           }
@@ -161,13 +162,13 @@ module.exports = function(app) {
     const type = req.param("type");
     const slugFolderName = req.param("slugFolderName");
 
-    generatePageData(req).then(pageData => {
+    generatePageData(req).then((pageData) => {
       dev.logverbose(`Generated slugFolderName pageData`);
       dev.logverbose(
         `Now getting data for type = ${type} and slugFolderName = ${slugFolderName}`
       );
 
-      exporter.loadFolder({ type, slugFolderName, pageData }).then(medias => {
+      exporter.loadFolder({ type, slugFolderName, pageData }).then((medias) => {
         pageData.slugFolderName = slugFolderName;
         pageData.store.projects[slugFolderName] = { medias };
         pageData.mode = "export_planning";
@@ -183,7 +184,7 @@ module.exports = function(app) {
     // check if folder is protected
     file
       .getFolder({ type: type, slugFolderName })
-      .then(foldersData => {
+      .then((foldersData) => {
         const folder_meta = Object.values(foldersData)[0];
         if (!folder_meta.hasOwnProperty("password") || !folder_meta.password) {
           return;
@@ -207,15 +208,15 @@ module.exports = function(app) {
 
         // checks passed
         var archive = archiver("zip", {
-          zlib: { level: 0 } //
+          zlib: { level: 0 }, //
         });
 
-        archive.on("error", function(err) {
+        archive.on("error", function (err) {
           res.status(500).send({ error: err.message });
         });
 
         //on stream closed we can end the request
-        archive.on("end", function() {
+        archive.on("end", function () {
           dev.log("Archive wrote %d bytes", archive.pointer());
         });
 
@@ -233,7 +234,7 @@ module.exports = function(app) {
 
         archive.finalize();
       })
-      .catch(err => {
+      .catch((err) => {
         dev.error(`Error! ${err}`);
         res.status(500).send({ error: err });
       });

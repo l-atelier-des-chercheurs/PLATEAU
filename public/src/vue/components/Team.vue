@@ -12,6 +12,8 @@
     </div>
 
     <div v-if="current_tab === 'users'">
+      <AuthorsList :authors="$root.store.authors" />
+
       <label
         >Liste des personnes sur Plateau
         <ul>
@@ -34,11 +36,13 @@
 </template>
 <script>
 // import Clients from "./subcomponents/Clients.vue";
+import AuthorsList from "./subcomponents/AuthorsList.vue";
 
 export default {
   props: {},
   components: {
     // Clients,
+    AuthorsList,
   },
   data() {
     return {
