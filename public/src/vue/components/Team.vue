@@ -1,5 +1,5 @@
 <template>
-  <div class="m_team" :class="{}">
+  <div class="m_team">
     <div class="_sidebyside_radio">
       <label for="users">
         <input type="radio" id="users" value="users" v-model="current_tab" />
@@ -11,9 +11,11 @@
       </label>
     </div>
 
-    <div v-if="current_tab === 'users'">
-      <AuthorsList :authors="$root.store.authors" />
-    </div>
+    <AuthorsList
+      v-if="current_tab === 'users'"
+      class="m_team--authorsList"
+      :authors="$root.store.authors"
+    />
 
     <div v-if="current_tab === 'chats'">
       <label> discussions en lien avec ce projet </label>
@@ -79,7 +81,7 @@ export default {
 <style lang="scss" scoped>
 .m_team {
   background-color: var(--color-Team);
-  // padding: var(--spacing);
+  // padding: 0 var(--spacing);
   height: 100%;
 
   display: flex;
@@ -87,5 +89,9 @@ export default {
 }
 
 ._sidebyside_radio {
+}
+
+.m_team--authorsList {
+  padding: calc(var(--spacing) / 2) var(--spacing);
 }
 </style>

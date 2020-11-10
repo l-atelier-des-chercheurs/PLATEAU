@@ -185,7 +185,11 @@ export default {
     }
 
     > form {
-      width: 265px;
+      width: 100%;
+
+      label {
+        display: block;
+      }
     }
   }
 }

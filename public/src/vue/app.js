@@ -34,6 +34,15 @@ Vue.use(VueI18n);
 import VuePlyr from "vue-plyr";
 Vue.use(VuePlyr);
 
+Vue.component("Loader", {
+  name: "Loader",
+  template: `
+    <div class="_loader">
+      <span class="loader" />
+    </div>
+  `,
+});
+
 import VueTippy from "../../node_modules/vue-tippy/dist/vue-tippy.min.js";
 Vue.use(VueTippy, {});
 
@@ -421,6 +430,9 @@ let vm = new Vue({
         return false;
       return this.store.authors[this.settings.current_author_slug];
     },
+    all_authors() {
+      return Object.values(this.store.authors);
+    },
     current_author_is_admin() {
       return this.current_author && this.current_author.role === "admin";
     },
@@ -585,25 +597,82 @@ let vm = new Vue({
       return _duration.format("H [heures] [et] m [minutes]");
     },
     createFolder: function (fdata) {
-      if (window.state.dev_mode === "debug") {
-        console.log(
-          `ROOT EVENT: createfolder: ${JSON.stringify(fdata, null, 4)}`
+      return new Promise((resolve, reject) => {
+        if (window.state.dev_mode === "debug") {
+          console.log(
+            `ROOT EVENT: createfolder: ${JSON.stringify(fdata, null, 4)}`
+          );
+        }
+
+        const type = fdata.type;
+
+        fdata.id =
+          Math.random().toString(36).substring(2, 15) +
+          Math.random().toString(36).substring(2, 15);
+
+        this.$socketio.createFolder(fdata);
+
+        const catchFolderCreation = (d) => {
+          if (fdata.id === d.id) {
+            if (d.password === "has_pass") {
+              this.$auth.updateFoldersPasswords({
+                [type]: {
+                  [d.slugFolderName]: fdata.data.password,
+                },
+              });
+
+              this.$socketio.sendAuth();
+              this.$eventHub.$once("socketio.authentificated", () => {
+                return resolve(d);
+              });
+            } else {
+              this.$nextTick(() => {
+                return resolve(d);
+              });
+            }
+          } else {
+            this.$eventHub.$once(
+              `socketio.folder_created_or_updated`,
+              catchFolderCreation
+            );
+          }
+        };
+        this.$eventHub.$once(
+          `socketio.folder_created_or_updated`,
+          catchFolderCreation
         );
-      }
-
-      this.justCreatedFolderID = fdata.id =
-        Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15);
-
-      this.$socketio.createFolder(fdata);
+      });
     },
+
     editFolder: function (fdata) {
-      if (window.state.dev_mode === "debug") {
-        console.log(
-          `ROOT EVENT: editFolder: ${JSON.stringify(fdata, null, 4)}`
+      return new Promise((resolve, reject) => {
+        if (window.state.dev_mode === "debug") {
+          console.log(
+            `ROOT EVENT: editFolder: ${JSON.stringify(fdata, null, 4)}`
+          );
+        }
+
+        fdata.id =
+          Math.random().toString(36).substring(2, 15) +
+          Math.random().toString(36).substring(2, 15);
+
+        this.$socketio.editFolder(fdata);
+
+        const catchFolderEdition = function (d) {
+          if (fdata.id === d.id) {
+            return resolve(d);
+          } else {
+            this.$eventHub.$once(
+              `socketio.folder_created_or_updated`,
+              catchFolderEdition
+            );
+          }
+        };
+        this.$eventHub.$once(
+          "socketio.folder_created_or_updated",
+          catchFolderEdition
         );
-      }
-      this.$socketio.editFolder(fdata);
+      });
     },
     removeFolder: function ({ type, slugFolderName }) {
       if (window.state.dev_mode === "debug") {

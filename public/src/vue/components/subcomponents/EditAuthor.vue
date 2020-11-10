@@ -115,7 +115,7 @@
     </div>
 
     <!-- NFC tag(s) -->
-    <div class="margin-bottom-small">
+    <!-- <div class="margin-bottom-small">
       <label>
         <button
           type="button"
@@ -130,7 +130,7 @@
       <template v-if="show_nfc">
         <input type="text" v-model="authordata.nfc_tag" />
       </template>
-    </div>
+    </div> -->
 
     <button type="button" class="button-small" @click="$emit('close')">
       {{ $t("cancel") }}
