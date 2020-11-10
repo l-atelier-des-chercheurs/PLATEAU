@@ -1715,8 +1715,8 @@ html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="4"]::before {
 
 .ql-picker.ql-font .ql-picker-label[data-value=""]::before,
 .ql-picker.ql-font .ql-picker-item[data-value=""]::before {
-  content: "Plex Sans";
-  font-family: "Plex Sans";
+  content: "IBM Plex Sans";
+  font-family: "IBM Plex Sans";
 }
 
 .ql-picker.ql-font .ql-picker-label[data-value="Alegreya"]::before,
