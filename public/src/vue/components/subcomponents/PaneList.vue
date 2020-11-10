@@ -1,6 +1,6 @@
 <template>
   <SlickList
-    class="m_slicklist"
+    class="m_panelist"
     axis="x"
     v-model="$root.settings.project_panes_in_order"
     :useDragHandle="true"
@@ -13,7 +13,7 @@
     >
       <label
         :for="`enable_pane_for_${item.key}`"
-        class="m_slicklist--button button"
+        class="m_panelist--button button"
         :data-correspondingpane="item.key"
         :disabled="!item.enabled"
         :style="`--color-active: var(--color-${item.key});`"
@@ -59,7 +59,7 @@ export default {
 };
 </script>
 <style lang="scss">
-.m_slicklist {
+.m_panelist {
   width: 500px;
   height: auto;
   display: flex;
@@ -88,13 +88,14 @@ export default {
   }
 }
 
-.m_slicklist--button {
+.m_panelist--button {
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
   text-decoration: none;
   cursor: pointer;
   padding: 0;
+  text-decoration: none;
   // overrided by pane type color
   --color-active: #ccc;
   --height-panebutton: 32px;
