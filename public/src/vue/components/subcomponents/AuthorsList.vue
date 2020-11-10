@@ -12,6 +12,7 @@
 
     <template slot="preview"> -->
   <div class>
+    <label>{{ $t("users_connected") }}</label>
     <div class="margin-sides-medium margin-vert-small">
       <div
         v-if="$root.state.local_options.force_login && !$root.current_author"
@@ -63,6 +64,17 @@
         </template>
       </template>
     </transition-group>
+
+    <label
+      >Liste des personnes sur Plateau
+      <ul>
+        <li>en premier, celles qui sont dans ce projet</li>
+        <li>
+          indiquer les panneaux et contenus ouverts, au clic = copie exact de
+          leur disposition
+        </li>
+      </ul>
+    </label>
   </div>
   <!-- </template>
   </Modal> -->
@@ -130,4 +142,51 @@ export default {
   methods: {},
 };
 </script>
-<style></style>
+<style lang="scss" scoped>
+.m_authorsList {
+  // display: flex;
+  // flex-flow: row wrap;
+  // align-items: flex-start;
+  // justify-content: flex-start;
+  // margin: calc(var(--spacing) / 2);
+
+  > * {
+    // .margin-sides-small;
+    // .margin-small;
+    // flex: 0 0 240px;
+    // min-height: 200px;
+    // max-width: 160px;
+  }
+
+  .m_authorsList--createAuthor,
+  .m_authorsList--editAuthor {
+    margin: calc(var(--spacing)) 0;
+    padding: calc(var(--spacing) / 2);
+
+    position: relative;
+    border: 4px dashed rgba(0, 0, 0, 0.3);
+    // background-color: #fff;
+    // border: 4px solid @c-gris_clair;
+    border-radius: 4px;
+    font-size: 0.8em;
+
+    display: flex;
+    flex-flow: none;
+    align-items: center;
+    justify-content: center;
+    max-width: none;
+
+    .m_authorsList--createAuthor--createButton {
+      max-height: none;
+      display: block;
+      border: none;
+
+      // .bg-gris_tresclair;
+    }
+
+    > form {
+      width: 265px;
+    }
+  }
+}
+</style>

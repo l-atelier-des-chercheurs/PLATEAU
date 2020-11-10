@@ -181,9 +181,6 @@
         "description": {
           "type": "string"
         },
-        "nfc_tag": {
-          "type": "string"
-        },
         "last_messages_read_in_channels": {
           "type": "array"
         }

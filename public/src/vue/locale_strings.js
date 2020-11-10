@@ -57,6 +57,8 @@ module.exports = (function () {
       gb: "Go",
       duration: "Durée",
       send: "Envoyer",
+      cancel: "Annuler",
+      create_an_author: "Créer un auteur",
 
       stopmotion_list: "Liste des stopmotions",
 

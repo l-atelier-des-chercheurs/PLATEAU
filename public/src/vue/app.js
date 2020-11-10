@@ -174,7 +174,7 @@ let vm = new Vue({
       current_composition_media_metaFileName: false,
       media_being_dragged: false,
 
-      current_author: false,
+      current_author_slug: false,
       project_filter: {
         keyword: "",
         author: "",
@@ -335,17 +335,32 @@ let vm = new Vue({
       if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: var has changed: store.authors`);
       }
-      // check if, when store.authors refresh, the current_author is still there
+      // check if, when store.authors refresh, the current_author_slug is still there
       // delog if not
       if (
-        this.settings.current_author &&
-        !this.store.authors.hasOwnProperty(
-          this.settings.current_author.slugFolderName
-        )
+        this.settings.current_author_slug !== false &&
+        !this.store.authors.hasOwnProperty(this.settings.current_author_slug)
       ) {
         this.unsetAuthor();
       }
     },
+    "state.list_authorized_folders": {
+      handler() {
+        const authors = this.state.list_authorized_folders.find(
+          (f) => f.type === "authors"
+        );
+        if (authors) {
+          const allowed_slugFolderNames = authors.allowed_slugFolderNames;
+          if (allowed_slugFolderNames.length > 0) {
+            this.setAuthor(allowed_slugFolderNames[0]);
+            return;
+          }
+        }
+        this.unsetAuthor();
+      },
+      deep: true,
+    },
+
     "settings.is_slave": function () {
       this.$socketio.socket.emit("updateClientInfo", {
         is_slave: this.settings.is_slave,
@@ -399,6 +414,17 @@ let vm = new Vue({
         return {};
       }
     },
+    current_author() {
+      debugger;
+      if (!this.settings.current_author_slug) return false;
+      if (!this.store.authors.hasOwnProperty(this.settings.current_author_slug))
+        return false;
+      return this.store.authors[this.settings.current_author_slug];
+    },
+    current_author_is_admin() {
+      return this.current_author && this.current_author.role === "admin";
+    },
+
     current_planning_media: function () {
       if (
         !this.settings.current_planning_media_metaFileName ||
@@ -487,6 +513,39 @@ let vm = new Vue({
           name: kw,
         };
       });
+    },
+    setAuthor: function (author_slug) {
+      if (this.settings.current_author_slug === author_slug) return;
+
+      if (this.state.dev_mode === "debug") console.log(`ROOT EVENT: setAuthor`);
+
+      const author = Object.values(this.store.authors).find(
+        (a) => a.slugFolderName === author_slug
+      );
+
+      if (!author) return;
+
+      this.settings.current_author_slug = author_slug;
+
+      this.$socketio.socket.emit("updateClientInfo", {
+        author: { slugFolderName: author.slugFolderName },
+      });
+      this.$socketio.listFolders({ type: "authors" });
+      this.$eventHub.$emit("authors.newAuthorSet");
+    },
+    unsetAuthor: function () {
+      if (!this.settings.current_author_slug) return;
+
+      if (this.state.dev_mode === "debug")
+        console.log(`ROOT EVENT: unsetAuthor`);
+
+      this.$auth.removeAllFoldersPassword({
+        type: "authors",
+      });
+      this.$socketio.sendAuth();
+
+      this.settings.current_author_slug = false;
+      this.$socketio.socket.emit("updateClientInfo", { author: {} });
     },
     format_date_to_human(d) {
       if (this.$root.lang.current === "fr") {
@@ -733,13 +792,6 @@ let vm = new Vue({
       html.setAttribute("lang", newLangCode);
 
       localstore.set("language", newLangCode);
-    },
-    setAuthor: function (author) {
-      this.settings.current_author = author;
-      this.$socketio.socket.emit("updateClientInfo", { author });
-    },
-    unsetAuthor: function () {
-      this.settings.current_author = false;
     },
     updateClientInfo(val) {
       if (this.$socketio.socket) {

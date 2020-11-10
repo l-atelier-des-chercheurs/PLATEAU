@@ -78,7 +78,7 @@ export default {
   --c-bleu: #2c75c5;
   --c-noir: #333;
   --c-gris: #eff2f3;
-  --c-vert: #00f43b;
+  --c-vert: hsl(143, 69%, 55%);
 
   --active-color: var(--c-orange);
   // --active-color: #aaa;

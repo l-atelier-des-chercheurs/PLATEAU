@@ -9,6 +9,11 @@
         Plateau est un outil de documentation pour les projets et workshops
         participatifs.
       </div>
+
+      <AuthorsList
+        class="m_panes--leftPane--authors"
+        :authors="$root.store.authors"
+      />
     </div>
     <div class="m_panes--rightPane">
       <div class="m_bar">
@@ -67,6 +72,7 @@
 </template>
 <script>
 import ProjectThumb from "./components/subcomponents/ProjectThumb.vue";
+import AuthorsList from "./components/subcomponents/AuthorsList.vue";
 
 export default {
   props: {
@@ -74,6 +80,7 @@ export default {
   },
   components: {
     ProjectThumb,
+    AuthorsList,
   },
   data() {
     return {
@@ -247,7 +254,7 @@ export default {
 .m_panes--leftPane {
   padding: 10vh 0 10vh 4%;
   flex: 1 1 33%;
-  background-color: #48d07d;
+  background-color: var(--c-vert);
 }
 .m_panes--leftPane--title {
   text-transform: uppercase;
@@ -266,6 +273,10 @@ export default {
   font-family: "Fira Code";
 }
 .m_panes--leftPane--text {
+  margin-top: 50px;
+  padding-right: 20%;
+}
+.m_panes--leftPane--authors {
   margin-top: 50px;
   padding-right: 20%;
 }

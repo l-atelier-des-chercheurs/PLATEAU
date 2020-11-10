@@ -16,68 +16,6 @@
         'is--editMode': edit_author_mode,
       }"
     >
-      <button
-        v-if="
-          (can_login_as_author && is_logged_in_as_author) ||
-          $root.current_author_is_admin
-        "
-        type="button"
-        class="buttonLink m_author--editButton"
-        @click.stop="edit_author_mode = !edit_author_mode"
-      >
-        <svg
-          version="1.1"
-          class="inline-svg"
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-          x="0px"
-          y="0px"
-          width="100.7px"
-          height="101px"
-          viewBox="0 0 100.7 101"
-          style="enable-background: new 0 0 100.7 101"
-          xml:space="preserve"
-        >
-          <path
-            class="st0"
-            d="M100.7,23.2L77.5,0l-66,66.2l0,0L0,101l34.7-11.6l0,0L100.7,23.2z M19.1,91.5l-9.4-9.7l4-12.4l18,17.8
-                L19.1,91.5z"
-          />
-        </svg>
-        <span class style="display: none">{{ $t("edit") }}</span>
-      </button>
-
-      <button
-        v-if="
-          (can_login_as_author && is_logged_in_as_author) ||
-          $root.current_author_is_admin
-        "
-        type="button"
-        class="buttonLink m_author--removeButton"
-        @click.stop="removeAuthor(author)"
-      >
-        <svg
-          version="1.1"
-          class="inline-svg"
-          xmlns="http://www.w3.org/2000/svg"
-          xmlns:xlink="http://www.w3.org/1999/xlink"
-          x="0px"
-          y="0px"
-          width="91.6px"
-          height="95px"
-          viewBox="0 0 91.6 95"
-          style="enable-background: new 0 0 91.6 95"
-          xml:space="preserve"
-        >
-          <path
-            class="st0"
-            d="M91.6,17H62.9V0H28.7v17H0v9.4h11.3V95h69V26.4h11.3V17z M64.4,69.4L57.8,76l-12-12l-12,12l-6.6-6.6l12-12
-                    l-12-12l6.6-6.6l12,12l12-12l6.6,6.6l-12,12L64.4,69.4z M38.1,9.4h15.3V17H38.1V9.4z"
-          />
-        </svg>
-        <span class style="display: none">{{ $t("remove") }}</span>
-      </button>
-
       <div class="m_author--card">
         <img
           v-if="!!author.preview"
@@ -328,6 +266,30 @@
             {{ $t("send") }}
           </button>
         </div>
+      </div>
+      <div>
+        <button
+          v-if="
+            (can_login_as_author && is_logged_in_as_author) ||
+            $root.current_author_is_admin
+          "
+          type="button"
+          class="buttonLink m_author--editButton"
+          @click.stop="edit_author_mode = !edit_author_mode"
+        >
+          <span class style="">{{ $t("edit") }}</span>
+        </button>
+        <button
+          v-if="
+            (can_login_as_author && is_logged_in_as_author) ||
+            $root.current_author_is_admin
+          "
+          type="button"
+          class="buttonLink m_author--removeButton"
+          @click.stop="removeAuthor(author)"
+        >
+          <span class style="">{{ $t("remove") }}</span>
+        </button>
 
         <button
           type="button"
@@ -584,5 +546,114 @@ export default {
 ._open_pwd_input {
   position: relative;
   z-index: 1;
+}
+
+.m_author {
+  position: relative;
+  padding: calc(var(--spacing) / 2);
+  margin: calc(var(--spacing) / 2) 0;
+  // min-height: 200px;
+  line-height: 1.3;
+
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.1);
+
+  // text-align: center;
+  text-transform: initial;
+
+  input {
+    background-color: white;
+  }
+
+  .m_author--card {
+    // text-transform: initial;
+    // font-weight: normal;
+    // background-color: transparent;
+    // padding-left: calc(var(--spacing) / 2);
+    // padding-right: calc(var(--spacing) / 2);
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    align-items: center;
+
+    > * {
+      margin-right: calc(var(--spacing) / 2);
+      margin-bottom: calc(var(--spacing) / 2);
+    }
+  }
+
+  &.is--selected {
+    // background-color: var(--c-bleu);
+    // background-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+
+    hr {
+      border-color: currentColor;
+    }
+    .buttonLink {
+      color: currentColor;
+    }
+  }
+
+  .m_author--name {
+    font-size: 1.2em;
+    // font-weight: 200;
+    max-width: 15ch;
+    letter-spacing: -0.01em;
+  }
+
+  .m_author--email {
+    font-size: 0.8em;
+  }
+
+  .m_author--removeButton {
+    // position: absolute;
+    // top: 0;
+    // right: 0;
+  }
+  .m_author--editButton {
+    // position: absolute;
+    // top: 0;
+    // left: 0;
+  }
+
+  .m_author--connected {
+    background-color: var(--c-bleu);
+    border-radius: 4px;
+    padding: calc(var(--spacing) / 4);
+
+    > label {
+      margin-bottom: 0;
+      display: block;
+    }
+
+    .m_metaField:last-child {
+      margin-bottom: 0;
+    }
+    .m_metaField {
+      button {
+        padding: 2px 4px;
+      }
+    }
+  }
+
+  img {
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 calc(var(--spacing) / 4);
+  }
+
+  hr {
+    margin: 0;
+    border-color: var(--c-bleu);
+  }
+
+  button {
+    margin: 0;
+  }
 }
 </style>

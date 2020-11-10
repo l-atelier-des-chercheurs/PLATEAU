@@ -13,19 +13,6 @@
 
     <div v-if="current_tab === 'users'">
       <AuthorsList :authors="$root.store.authors" />
-
-      <label
-        >Liste des personnes sur Plateau
-        <ul>
-          <li>en premier, celles qui sont dans ce projet</li>
-          <li>
-            indiquer les panneaux et contenus ouverts, au clic = copie exact de
-            leur disposition
-          </li>
-        </ul>
-      </label>
-
-      <label> self </label>
     </div>
 
     <div v-if="current_tab === 'chats'">
@@ -75,7 +62,18 @@ export default {
       return slaves;
     },
   },
-  methods: {},
+  methods: {
+    urlToPortrait(preview) {
+      if (!preview) return "";
+      let pathToSmallestThumb = preview.find((m) => m.size === 180).path;
+
+      let url =
+        this.$root.state.mode === "export_publication"
+          ? `./${pathToSmallestThumb}`
+          : `/${pathToSmallestThumb}`;
+      return url;
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>
