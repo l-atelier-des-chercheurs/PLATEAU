@@ -109,6 +109,20 @@
               :read_only="read_only"
             />
           </pane>
+
+          <pane
+            v-else-if="pane.key === 'Team' && pane.enabled"
+            :key="pane.key"
+            min-size="5"
+            ref="Team"
+          >
+            <Team
+              :slugFolderName="slugProjectName"
+              :project="project"
+              :read_only="!$root.state.connected"
+              data-id="Capture"
+            />
+          </pane>
         </template>
       </splitpanes>
     </div>
@@ -119,6 +133,7 @@
 import MediaLibrary from "./components/MediaLibrary.vue";
 import WriteUp from "./components/WriteUp.vue";
 import Capture from "./components/Capture.vue";
+import Team from "./components/Team.vue";
 import Composition from "./components/Composition.vue";
 import Planning from "./components/Planning.vue";
 import { Splitpanes, Pane } from "splitpanes";
@@ -134,6 +149,7 @@ export default {
     MediaLibrary,
     WriteUp,
     Capture,
+    Team,
     Composition,
     Planning,
     Splitpanes,

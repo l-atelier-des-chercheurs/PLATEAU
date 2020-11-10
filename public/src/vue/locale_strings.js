@@ -47,6 +47,7 @@ module.exports = (function () {
       MediaLibrary: "Bibliothèque",
       Composition: "Compositions",
       Planning: "Journal",
+      Team: "Équipe",
       other_devices_connected: "autre appareils connectés",
       back: "Retour",
 

@@ -78,6 +78,7 @@ export default {
   --c-bleu: #2c75c5;
   --c-noir: #333;
   --c-gris: #eff2f3;
+  --c-vert: #00f43b;
 
   --active-color: var(--c-orange);
   // --active-color: #aaa;
@@ -86,6 +87,7 @@ export default {
   --color-Composition: var(--c-bleu);
   --color-Capture: var(--c-rouge);
   --color-Planning: var(--c-gris);
+  --color-Team: var(--c-vert);
 
   --scrollbar-height: 1px;
   --scrollbar-padding: 3px;
@@ -431,6 +433,24 @@ svg.inline-svg {
   .plyr__control:hover,
   .plyr__control[aria-expanded="true"] {
     background-color: var(--c-orange);
+  }
+}
+
+._sidebyside_radio {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: stretch;
+  text-align: center;
+
+  > * {
+    flex: 1 1 0;
+    padding: ~"calc(var(--spacing) / 1)" ~"calc(var(--spacing) / 2)";
+    cursor: pointer;
+    line-height: 1;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
   }
 }
 

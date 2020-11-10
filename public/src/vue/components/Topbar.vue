@@ -140,7 +140,6 @@
           </button>-->
         </transition-group>
       </template>
-      <Clients />
 
       <button
         type="button"
@@ -165,13 +164,11 @@
 </template>
 <script>
 import PaneList from "./subcomponents/PaneList.vue";
-import Clients from "./subcomponents/Clients.vue";
 
 export default {
   props: {},
   components: {
     PaneList,
-    Clients,
   },
   data() {
     return {

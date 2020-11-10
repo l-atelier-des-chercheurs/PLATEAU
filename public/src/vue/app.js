@@ -133,6 +133,10 @@ let vm = new Vue({
           key: "Capture",
           enabled: false,
         },
+        {
+          key: "Team",
+          enabled: false,
+        },
         // {
         //   key: "WriteUp",
         //   enabled: true
