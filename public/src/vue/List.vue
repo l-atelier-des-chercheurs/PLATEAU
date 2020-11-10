@@ -5,9 +5,15 @@
       <div class="m_panes--leftPane--versionNumber">
         <small>{{ $root.state.appVersion }}</small>
       </div>
-      <div
-        class="m_panes--leftPane--text"
-      >Plateau est un outil de documentation pour les workshops participatifs.</div>
+      <div class="m_panes--leftPane--text">
+        Plateau est un outil de documentation pour les projets et workshops
+        participatifs.
+      </div>
+
+      <AuthorsList
+        class="m_panes--leftPane--authors"
+        :authors="$root.store.authors"
+      />
     </div>
     <div class="m_panes--rightPane">
       <div class="m_bar">
@@ -29,7 +35,7 @@
             width="11.4px"
             height="11.4px"
             viewBox="0 0 10 10"
-            style="enable-background:new 0 0 11.4 11.4;"
+            style="enable-background: new 0 0 11.4 11.4"
             xml:space="preserve"
           >
             <path
@@ -41,7 +47,12 @@
         </button>
       </div>
 
-      <transition-group class="m_list" name="list-complete" :duration="300" tag="div">
+      <transition-group
+        class="m_list"
+        name="list-complete"
+        :duration="300"
+        tag="div"
+      >
         <div :key="`create_project`" v-if="$root.show_create_project_modal">
           <form @submit.prevent="createProject">
             <label>{{ $t("name") }}</label>
@@ -61,34 +72,36 @@
 </template>
 <script>
 import ProjectThumb from "./components/subcomponents/ProjectThumb.vue";
+import AuthorsList from "./components/subcomponents/AuthorsList.vue";
 
 export default {
   props: {
-    projects: Object
+    projects: Object,
   },
   components: {
-    ProjectThumb
+    ProjectThumb,
+    AuthorsList,
   },
   data() {
     return {
       selected_field_to_show: "date_created",
       available_fields: [
         {
-          key: "date_created"
+          key: "date_created",
         },
         {
-          key: "date_modified"
-        }
+          key: "date_modified",
+        },
       ],
 
       currentSort: {
         field: "date_created",
         type: "date",
-        order: "descending"
+        order: "descending",
       },
 
       show_filters: false,
-      show_search: false
+      show_search: false,
     };
   },
   created() {},
@@ -96,7 +109,7 @@ export default {
   beforeDestroy() {},
   watch: {},
   computed: {
-    sortedProjects: function() {
+    sortedProjects: function () {
       var sortable = [];
 
       if (!this.projects || this.projects.length === 0) {
@@ -141,14 +154,14 @@ export default {
             this.projects[slugProjectName].hasOwnProperty("keywords") &&
             typeof this.projects[slugProjectName].keywords === "object" &&
             this.projects[slugProjectName].keywords.filter(
-              k => k.title === this.$root.settings.project_filter.keyword
+              (k) => k.title === this.$root.settings.project_filter.keyword
             ).length > 0
           ) {
             if (
               this.projects[slugProjectName].hasOwnProperty("authors") &&
               typeof this.projects[slugProjectName].authors === "object" &&
               this.projects[slugProjectName].authors.filter(
-                k => k.name === this.$root.settings.project_filter.author
+                (k) => k.name === this.$root.settings.project_filter.author
               ).length > 0
             ) {
               sortable.push({ slugProjectName, orderBy });
@@ -163,7 +176,7 @@ export default {
             this.projects[slugProjectName].hasOwnProperty("keywords") &&
             typeof this.projects[slugProjectName].keywords === "object" &&
             this.projects[slugProjectName].keywords.filter(
-              k => k.title === this.$root.settings.project_filter.keyword
+              (k) => k.title === this.$root.settings.project_filter.keyword
             ).length > 0
           ) {
             sortable.push({ slugProjectName, orderBy });
@@ -177,7 +190,7 @@ export default {
             this.projects[slugProjectName].hasOwnProperty("authors") &&
             typeof this.projects[slugProjectName].authors === "object" &&
             this.projects[slugProjectName].authors.filter(
-              k => k.name === this.$root.settings.project_filter.author
+              (k) => k.name === this.$root.settings.project_filter.author
             ).length > 0
           ) {
             sortable.push({ slugProjectName, orderBy });
@@ -195,7 +208,7 @@ export default {
         });
       }
 
-      let sortedSortable = sortable.sort(function(a, b) {
+      let sortedSortable = sortable.sort(function (a, b) {
         let valA = a.orderBy;
         let valB = b.orderBy;
         if (typeof a.orderBy === "string" && typeof b.orderBy === "string") {
@@ -216,19 +229,19 @@ export default {
       }
 
       return sortedSortable;
-    }
+    },
   },
   methods: {
     createProject(event) {
       console.log(`METHODS • ListView: createProject`);
 
       let new_project_data = {
-        name: event.target.name.value
+        name: event.target.name.value,
       };
       this.$root.createFolder({ type: "projects", data: new_project_data });
       this.$root.show_create_project_modal = false;
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>
@@ -241,7 +254,7 @@ export default {
 .m_panes--leftPane {
   padding: 10vh 0 10vh 4%;
   flex: 1 1 33%;
-  background-color: #48d07d;
+  background-color: var(--c-vert);
 }
 .m_panes--leftPane--title {
   text-transform: uppercase;
@@ -260,6 +273,10 @@ export default {
   font-family: "Fira Code";
 }
 .m_panes--leftPane--text {
+  margin-top: 50px;
+  padding-right: 20%;
+}
+.m_panes--leftPane--authors {
   margin-top: 50px;
   padding-right: 20%;
 }

@@ -4,10 +4,10 @@
       type="button"
       class="m_clientsList--indicator"
       @click="showClientList = !showClientList"
-      :content="$t('autre appareils connectés')"
+      :content="$t('other_devices_connected')"
       v-tippy="{
         placement: 'bottom',
-        delay: [600, 0]
+        delay: [600, 0],
       }"
     >
       <span>{{ uniqueClientsExceptSelf.length }}</span>
@@ -21,16 +21,26 @@
       type="button"
       v-if="
         !$root.settings.is_slave &&
-          connectedSlaves.length > 0 &&
-          $root.do_navigation.view === 'Project'
+        connectedSlaves.length > 0 &&
+        $root.do_navigation.view === 'Project'
       "
       @click="sendCurrentPanesToSlaves"
-    >Envoyer la disposition aux esclaves</button>
+    >
+      Envoyer la disposition aux esclaves
+    </button>
 
     <div class="m_clientsList--list" v-if="showClientList">
-      <button type="button" class="m_clientsList--list--close" @click="showClientList = false">×</button>
+      <button
+        type="button"
+        class="m_clientsList--list--close"
+        @click="showClientList = false"
+      >
+        ×
+      </button>
 
-      <template v-if="uniqueClientsExceptSelf.length === 0">Aucune autres appareils connectés</template>
+      <template v-if="uniqueClientsExceptSelf.length === 0"
+        >Aucune autres appareils connectés</template
+      >
 
       <template v-else>
         <label>{{ $t("autres appareils connectés") }}</label>
@@ -46,7 +56,8 @@
               v-if="
                 client.data.hasOwnProperty('is_slave') && client.data.is_slave
               "
-            >(esclave)</template>
+              >(esclave)</template
+            >
           </li>
         </ul>
       </template>
@@ -61,7 +72,7 @@ export default {
   components: {},
   data() {
     return {
-      showClientList: false
+      showClientList: false,
     };
   },
   created() {},
@@ -99,18 +110,20 @@ export default {
     },
     uniqueClientsExceptSelf() {
       return this.uniqueClients.filter(
-        c => c.id !== this.$root.$socketio.socket.id
+        (c) => c.id !== this.$root.$socketio.socket.id
       );
     },
     connectedSlaves() {
-      const slaves = this.uniqueClientsExceptSelf.filter(c => c.data.is_slave);
+      const slaves = this.uniqueClientsExceptSelf.filter(
+        (c) => c.data.is_slave
+      );
       this.$root.settings.has_slave_connected = slaves.length > 0;
       return slaves;
-    }
+    },
   },
   methods: {
     sendCurrentPanesToSlaves() {
-      this.connectedSlaves.map(c => {
+      this.connectedSlaves.map((c) => {
         this.$socketio.socket.emit("sendDataToSpecificClient", {
           socketid: c.id,
           data: {
@@ -120,18 +133,18 @@ export default {
             current_composition_media_metaFileName: this.$root.settings
               .current_composition_media_metaFileName,
             openProject: this.$root.do_navigation.current_slugProjectName,
-            selected_mode: this.$root.settings.capture_options.selected_mode
-          }
+            selected_mode: this.$root.settings.capture_options.selected_mode,
+          },
         });
       });
     },
     sendCaptureEventToSlaves() {
-      this.connectedSlaves.map(c => {
+      this.connectedSlaves.map((c) => {
         this.$socketio.socket.emit("sendDataToSpecificClient", {
           socketid: c.id,
           data: {
-            event: "start_capture"
-          }
+            event: "start_capture",
+          },
         });
       });
     },
@@ -198,8 +211,8 @@ export default {
       if (device.hasOwnProperty("os")) str += " sur " + device.os.name;
 
       return str;
-    }
-  }
+    },
+  },
 };
 </script>
 <style scoped lang="scss">

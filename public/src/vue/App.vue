@@ -78,6 +78,7 @@ export default {
   --c-bleu: #2c75c5;
   --c-noir: #333;
   --c-gris: #eff2f3;
+  --c-vert: hsl(143, 69%, 55%);
 
   --active-color: var(--c-orange);
   // --active-color: #aaa;
@@ -86,6 +87,13 @@ export default {
   --color-Composition: var(--c-bleu);
   --color-Capture: var(--c-rouge);
   --color-Planning: var(--c-gris);
+  --color-Team: var(--c-vert);
+
+  --scrollbar-height: 1px;
+  --scrollbar-padding: 3px;
+  --scrollbar-border: 2px;
+  --c-barbgcolor: rgba(255, 255, 255, 0);
+  --c-thumbcolor: black;
 }
 
 ::-moz-selection {
@@ -428,6 +436,24 @@ svg.inline-svg {
   }
 }
 
+._sidebyside_radio {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: stretch;
+  text-align: center;
+
+  > * {
+    flex: 1 1 0;
+    padding: ~"calc(var(--spacing) / 1)" ~"calc(var(--spacing) / 2)";
+    cursor: pointer;
+    line-height: 1;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+  }
+}
+
 .list-complete-move {
   position: relative;
   transition: transform 1s cubic-bezier(0.19, 1, 0.22, 1);
@@ -475,24 +501,27 @@ svg.inline-svg {
 .slideup-enter-active,
 .slideup-leave-active {
   transform: translateY(0);
-  transition: opacity 0.4s linear, transform 0.8s ease-out;
+  transition: opacity 0.2s cubic-bezier(0.19, 1, 0.22, 1),
+    transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 }
 .slideup-enter,
 .slideup-leave-to {
-  // opacity: 0;
-  transform: translateY(100%);
-  transition: opacity 0.4s linear, transform 0.8s ease-out;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.2s cubic-bezier(0.19, 1, 0.22, 1),
+    transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
 }
+
 .slideright-enter-active,
 .slideright-leave-active {
   transform: translateX(0) !important;
-  transition: opacity 0.4s linear, transform 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: opacity 0.4s linear, transform 0.7s ease-out;
 }
 .slideright-enter,
 .slideright-leave-to {
   // opacity: 0;
   transform: translateX(100%) !important;
-  transition: opacity 0.4s linear, transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+  transition: opacity 0.4s linear, transform 0.8s ease-out;
 }
 
 .m_keywordField,
@@ -693,6 +722,36 @@ svg.inline-svg {
 
   .item > div {
     margin: 0;
+  }
+}
+</style>
+<style lang="scss">
+body {
+  &::-webkit-scrollbar {
+    height: calc((var(--scrollbar-padding) * 2) + var(--scrollbar-height));
+    width: calc((var(--scrollbar-padding) * 2) + var(--scrollbar-height));
+    background-color: var(--c-barbgcolor);
+  }
+
+  &::-webkit-scrollbar-track,
+  &::-webkit-scrollbar-thumb {
+    border: var(--scrollbar-border) solid rgba(255, 255, 255, 0);
+    border-radius: calc(var(--scrollbar-border) * 4);
+    background-clip: padding-box;
+
+    transition: all 0.4s;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--c-thumbcolor);
+    &:hover {
+      background-color: #111;
+      border: var(--scrollbar-border) solid rgba(255, 255, 255, 0);
+    }
   }
 }
 </style>

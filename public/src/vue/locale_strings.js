@@ -46,7 +46,10 @@ module.exports = (function () {
       Capture: "Capture",
       MediaLibrary: "Bibliothèque",
       Composition: "Compositions",
-      Planning: "Planning",
+      Planning: "Journal",
+      Team: "Équipe",
+      other_devices_connected: "autre appareils connectés",
+      back: "Retour",
 
       bytes: "octets",
       kb: "ko",
@@ -54,6 +57,8 @@ module.exports = (function () {
       gb: "Go",
       duration: "Durée",
       send: "Envoyer",
+      cancel: "Annuler",
+      create_an_author: "Créer un auteur",
 
       stopmotion_list: "Liste des stopmotions",
 

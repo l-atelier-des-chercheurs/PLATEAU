@@ -34,7 +34,7 @@
       >
         <div
           class="m_inputSessionPassword"
-          v-if="$root.show_session_password_prompt"
+          v-if="$root.state.local_options.show_session_password_prompt"
         >
           <form @submit.prevent="submitPassword">
             <label for="inp" class="inp">
@@ -140,11 +140,11 @@
           </button>-->
         </transition-group>
       </template>
-      <Clients />
 
       <button
         type="button"
         class="buttonLink"
+        v-if="$root.do_navigation.view === 'List'"
         :disabled="zip_export_started"
         @click="downloadProjectArchive"
       >
@@ -164,13 +164,11 @@
 </template>
 <script>
 import PaneList from "./subcomponents/PaneList.vue";
-import Clients from "./subcomponents/Clients.vue";
 
 export default {
   props: {},
   components: {
     PaneList,
-    Clients,
   },
   data() {
     return {

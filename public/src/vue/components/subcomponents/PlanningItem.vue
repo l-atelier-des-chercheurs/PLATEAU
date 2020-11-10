@@ -49,6 +49,9 @@
           </svg>
         </button>
       </div>
+      <button type="button" v-if="mode === 'expanded'" @click="closePlanning">
+        {{ $t("back") }}
+      </button>
       <div class="m_planningItem--name">
         <span
           v-if="!edit_mode"
@@ -273,11 +276,10 @@ export default {
       this.edit_mode = false;
     },
     removePlanningMedia() {
-      if (window.state.dev_mode === "debug") {
+      if (window.state.dev_mode === "debug")
         console.log(
           `METHODS • PlanningItem: removePlanningMedia / ${this.media.metaFileName}`
         );
-      }
 
       this.$alertify
         .okBtn(this.$t("yes"))
@@ -289,6 +291,13 @@ export default {
           },
           () => {}
         );
+    },
+    closePlanning() {
+      if (window.state.dev_mode === "debug")
+        console.log(
+          `METHODS • PlanningItem: closePlanning / ${this.media.metaFileName}`
+        );
+      this.$root.settings.current_planning_media_metaFileName = false;
     },
   },
 };
@@ -305,16 +314,11 @@ export default {
 
 .m_planningItem {
   position: relative;
-  padding: calc(var(--spacing) / 1) 0;
   background-color: #fff;
 
   display: flex;
   flex-flow: column nowrap;
-
-  > * {
-    flex: 1 0 auto;
-    padding: 0 var(--spacing);
-  }
+  // align-items: stretch;
 
   &.is--active {
     color: #999;
@@ -322,10 +326,13 @@ export default {
 }
 
 .m_planningItem--topbar {
+  flex: 0 0 auto;
+
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
   line-height: 1;
+  margin: calc(var(--spacing) / 1) 0;
 }
 
 .m_planningItem--editButtons {
@@ -398,12 +405,13 @@ export default {
 }
 
 .m_planningItem--notes {
-  // border: 1px solid var(--c-noir);
+  position: relative;
   border-radius: 1px;
   flex: 1 1 auto !important;
-  height: 100%;
-  margin-top: calc(var(--spacing) / 1);
+  // height: 100%;
+  // margin-top: calc(var(--spacing) / 1);
   padding: 0;
+  overflow: hidden;
   // margin: 5px;
 }
 
@@ -419,16 +427,6 @@ export default {
   text-indent: 1800px;
 }
 
-.m_planningItem--notes--topbar {
-  display: flex;
-  align-items: center;
-  margin-top: 1em;
-  justify-content: space-between;
-  h4 {
-    margin: 0;
-  }
-}
-
 .m_planningItem--notes--staticNote--content {
   overflow: hidden;
   &.is--excerpt {
@@ -441,11 +439,11 @@ export default {
 }
 
 .m_planningItem--notes--editNotes {
-  // position: absolute;
-  // top: 0;
-  // bottom: 0;
-  // left: 0;
-  // right: 0;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 1;
   height: 100%;
   // overflow: scroll;

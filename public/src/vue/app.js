@@ -34,6 +34,15 @@ Vue.use(VueI18n);
 import VuePlyr from "vue-plyr";
 Vue.use(VuePlyr);
 
+Vue.component("Loader", {
+  name: "Loader",
+  template: `
+    <div class="_loader">
+      <span class="loader" />
+    </div>
+  `,
+});
+
 import VueTippy from "../../node_modules/vue-tippy/dist/vue-tippy.min.js";
 Vue.use(VueTippy, {});
 
@@ -133,6 +142,10 @@ let vm = new Vue({
           key: "Capture",
           enabled: false,
         },
+        {
+          key: "Team",
+          enabled: false,
+        },
         // {
         //   key: "WriteUp",
         //   enabled: true
@@ -170,7 +183,7 @@ let vm = new Vue({
       current_composition_media_metaFileName: false,
       media_being_dragged: false,
 
-      current_author: false,
+      current_author_slug: false,
       project_filter: {
         keyword: "",
         author: "",
@@ -331,17 +344,32 @@ let vm = new Vue({
       if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: var has changed: store.authors`);
       }
-      // check if, when store.authors refresh, the current_author is still there
+      // check if, when store.authors refresh, the current_author_slug is still there
       // delog if not
       if (
-        this.settings.current_author &&
-        !this.store.authors.hasOwnProperty(
-          this.settings.current_author.slugFolderName
-        )
+        this.settings.current_author_slug !== false &&
+        !this.store.authors.hasOwnProperty(this.settings.current_author_slug)
       ) {
         this.unsetAuthor();
       }
     },
+    "state.list_authorized_folders": {
+      handler() {
+        const authors = this.state.list_authorized_folders.find(
+          (f) => f.type === "authors"
+        );
+        if (authors) {
+          const allowed_slugFolderNames = authors.allowed_slugFolderNames;
+          if (allowed_slugFolderNames.length > 0) {
+            this.setAuthor(allowed_slugFolderNames[0]);
+            return;
+          }
+        }
+        this.unsetAuthor();
+      },
+      deep: true,
+    },
+
     "settings.is_slave": function () {
       this.$socketio.socket.emit("updateClientInfo", {
         is_slave: this.settings.is_slave,
@@ -395,6 +423,20 @@ let vm = new Vue({
         return {};
       }
     },
+    current_author() {
+      debugger;
+      if (!this.settings.current_author_slug) return false;
+      if (!this.store.authors.hasOwnProperty(this.settings.current_author_slug))
+        return false;
+      return this.store.authors[this.settings.current_author_slug];
+    },
+    all_authors() {
+      return Object.values(this.store.authors);
+    },
+    current_author_is_admin() {
+      return this.current_author && this.current_author.role === "admin";
+    },
+
     current_planning_media: function () {
       if (
         !this.settings.current_planning_media_metaFileName ||
@@ -484,6 +526,39 @@ let vm = new Vue({
         };
       });
     },
+    setAuthor: function (author_slug) {
+      if (this.settings.current_author_slug === author_slug) return;
+
+      if (this.state.dev_mode === "debug") console.log(`ROOT EVENT: setAuthor`);
+
+      const author = Object.values(this.store.authors).find(
+        (a) => a.slugFolderName === author_slug
+      );
+
+      if (!author) return;
+
+      this.settings.current_author_slug = author_slug;
+
+      this.$socketio.socket.emit("updateClientInfo", {
+        author: { slugFolderName: author.slugFolderName },
+      });
+      this.$socketio.listFolders({ type: "authors" });
+      this.$eventHub.$emit("authors.newAuthorSet");
+    },
+    unsetAuthor: function () {
+      if (!this.settings.current_author_slug) return;
+
+      if (this.state.dev_mode === "debug")
+        console.log(`ROOT EVENT: unsetAuthor`);
+
+      this.$auth.removeAllFoldersPassword({
+        type: "authors",
+      });
+      this.$socketio.sendAuth();
+
+      this.settings.current_author_slug = false;
+      this.$socketio.socket.emit("updateClientInfo", { author: {} });
+    },
     format_date_to_human(d) {
       if (this.$root.lang.current === "fr") {
         return this.$moment(d).calendar(null, {
@@ -522,25 +597,82 @@ let vm = new Vue({
       return _duration.format("H [heures] [et] m [minutes]");
     },
     createFolder: function (fdata) {
-      if (window.state.dev_mode === "debug") {
-        console.log(
-          `ROOT EVENT: createfolder: ${JSON.stringify(fdata, null, 4)}`
+      return new Promise((resolve, reject) => {
+        if (window.state.dev_mode === "debug") {
+          console.log(
+            `ROOT EVENT: createfolder: ${JSON.stringify(fdata, null, 4)}`
+          );
+        }
+
+        const type = fdata.type;
+
+        fdata.id =
+          Math.random().toString(36).substring(2, 15) +
+          Math.random().toString(36).substring(2, 15);
+
+        this.$socketio.createFolder(fdata);
+
+        const catchFolderCreation = (d) => {
+          if (fdata.id === d.id) {
+            if (d.password === "has_pass") {
+              this.$auth.updateFoldersPasswords({
+                [type]: {
+                  [d.slugFolderName]: fdata.data.password,
+                },
+              });
+
+              this.$socketio.sendAuth();
+              this.$eventHub.$once("socketio.authentificated", () => {
+                return resolve(d);
+              });
+            } else {
+              this.$nextTick(() => {
+                return resolve(d);
+              });
+            }
+          } else {
+            this.$eventHub.$once(
+              `socketio.folder_created_or_updated`,
+              catchFolderCreation
+            );
+          }
+        };
+        this.$eventHub.$once(
+          `socketio.folder_created_or_updated`,
+          catchFolderCreation
         );
-      }
-
-      this.justCreatedFolderID = fdata.id =
-        Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15);
-
-      this.$socketio.createFolder(fdata);
+      });
     },
+
     editFolder: function (fdata) {
-      if (window.state.dev_mode === "debug") {
-        console.log(
-          `ROOT EVENT: editFolder: ${JSON.stringify(fdata, null, 4)}`
+      return new Promise((resolve, reject) => {
+        if (window.state.dev_mode === "debug") {
+          console.log(
+            `ROOT EVENT: editFolder: ${JSON.stringify(fdata, null, 4)}`
+          );
+        }
+
+        fdata.id =
+          Math.random().toString(36).substring(2, 15) +
+          Math.random().toString(36).substring(2, 15);
+
+        this.$socketio.editFolder(fdata);
+
+        const catchFolderEdition = function (d) {
+          if (fdata.id === d.id) {
+            return resolve(d);
+          } else {
+            this.$eventHub.$once(
+              `socketio.folder_created_or_updated`,
+              catchFolderEdition
+            );
+          }
+        };
+        this.$eventHub.$once(
+          "socketio.folder_created_or_updated",
+          catchFolderEdition
         );
-      }
-      this.$socketio.editFolder(fdata);
+      });
     },
     removeFolder: function ({ type, slugFolderName }) {
       if (window.state.dev_mode === "debug") {
@@ -729,13 +861,6 @@ let vm = new Vue({
       html.setAttribute("lang", newLangCode);
 
       localstore.set("language", newLangCode);
-    },
-    setAuthor: function (author) {
-      this.settings.current_author = author;
-      this.$socketio.socket.emit("updateClientInfo", { author });
-    },
-    unsetAuthor: function () {
-      this.settings.current_author = false;
     },
     updateClientInfo(val) {
       if (this.$socketio.socket) {

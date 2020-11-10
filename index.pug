@@ -70,8 +70,6 @@ html
           display: "!{display}"
         },
         appVersion: "!{global.appInfos.version}",
-        session_password: "!{global.session_password ? 'has_pass' : ''}",
-        authorsFolder: "!{authorsFolder}",
         protocol: "!{protocol}",
         connected: false,
         authentificated: false,
@@ -83,7 +81,15 @@ html
         is_darwin: !!(window && window.process && window.process.platform === 'darwin'),
         clients: [],
         list_authorized_folders: [],
+        local_options: {
+          session_password: "!{global.session_password ? 'has_pass' : ''}",
+          force_login: !{global.force_login},
+          simple_login: !{global.simple_login},
+          require_email: !{global.require_email},
+          force_author_password: !{global.force_author_password},
+        },
       };
+
 
     //-
       structure: !{JSON.stringify(structure, null, 4)},

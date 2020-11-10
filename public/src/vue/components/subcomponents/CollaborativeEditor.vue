@@ -947,6 +947,30 @@ html[lang="fr"] .ql-tooltip::before {
 
   margin-left: 0;
 
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  justify-content: stretch;
+
+  .ql-toolbar {
+    flex: 0 0 auto;
+  }
+  .ql-container {
+    flex: 1 1 0;
+    width: 100%;
+    height: auto;
+    overflow: auto;
+
+    .ql-editor {
+      // height: auto;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+  }
+
   &.is--focussed {
     background-color: blue;
   }
@@ -1691,8 +1715,8 @@ html[lang="fr"] .ql-picker.ql-header .ql-picker-item[data-value="4"]::before {
 
 .ql-picker.ql-font .ql-picker-label[data-value=""]::before,
 .ql-picker.ql-font .ql-picker-item[data-value=""]::before {
-  content: "Plex Sans";
-  font-family: "Plex Sans";
+  content: "IBM Plex Sans";
+  font-family: "IBM Plex Sans";
 }
 
 .ql-picker.ql-font .ql-picker-label[data-value="Alegreya"]::before,
