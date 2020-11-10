@@ -145,6 +145,7 @@
       <button
         type="button"
         class="buttonLink"
+        v-if="$root.do_navigation.view === 'List'"
         :disabled="zip_export_started"
         @click="downloadProjectArchive"
       >

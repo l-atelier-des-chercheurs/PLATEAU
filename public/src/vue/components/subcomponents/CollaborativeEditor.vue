@@ -947,6 +947,30 @@ html[lang="fr"] .ql-tooltip::before {
 
   margin-left: 0;
 
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  justify-content: stretch;
+
+  .ql-toolbar {
+    flex: 0 0 auto;
+  }
+  .ql-container {
+    flex: 1 1 0;
+    width: 100%;
+    height: auto;
+    overflow: auto;
+
+    .ql-editor {
+      // height: auto;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+  }
+
   &.is--focussed {
     background-color: blue;
   }
