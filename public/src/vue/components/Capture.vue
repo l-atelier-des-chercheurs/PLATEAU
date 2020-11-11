@@ -890,7 +890,10 @@ export default {
       return this.$_.groupBy(this.available_devices, "kind");
     },
     uriToUploadMedia: function () {
-      return `file-upload/projects/${this.slugProjectName}`;
+      return (
+        window.location.origin +
+        `/_file-upload/projects/${this.slugProjectName}/?socketid=${this.$root.$socketio.socket.id}`
+      );
     },
     recording_duration: function () {
       if (this.timer_recording) {
@@ -1473,19 +1476,13 @@ export default {
 
         let formData = new FormData();
         formData.append("files", rawData, filename);
-
-        let meta = {
+        const meta = {
           fileCreationDate: modified,
           fav,
-          authors: this.$root.settings.current_author.hasOwnProperty("name")
-            ? [{ name: this.$root.settings.current_author.name }]
+          authors: this.$root.current_author
+            ? [{ slugFolderName: this.$root.current_author.slugFolderName }]
             : "",
         };
-
-        if (this.send_automatically_to_planning_media) {
-          meta.caption = "Le " + this.$moment().format("LLL");
-        }
-
         formData.append(filename, JSON.stringify(meta));
 
         const socketid = this.$socketio.socket.id;
@@ -1501,15 +1498,6 @@ export default {
 
         this.media_is_being_sent = true;
         this.media_being_sent_percent = 0;
-
-        if (this.send_automatically_to_planning_media) {
-          this.$eventHub.$once("socketio.projects.listMedia", (m) => {
-            try {
-              const media = Object.values(m[this.slugProjectName].medias)[0];
-              this.$eventHub.$emit("writeup.addMedia", media);
-            } catch (e) {}
-          });
-        }
 
         // TODO : possibilité de cancel
         axios
@@ -1542,6 +1530,19 @@ export default {
             this.media_is_being_sent = false;
             this.media_to_validate = false;
 
+            if (this.send_automatically_to_planning_media) {
+              this.$eventHub.$once("socketio.projects.listMedia", (m) => {
+                try {
+                  const media = Object.values(
+                    m[this.slugProjectName].medias
+                  )[0];
+                  this.$eventHub.$emit("writeup.addMedia", media);
+                } catch (e) {}
+              });
+            }
+
+            this.$emit("insertMedias", [x.metaFileNames[0]]);
+
             // this.selected_files_meta[filename].status = 'success';
             // this.selected_files_meta[filename].upload_percentages = 100;
             resolve();
@@ -1566,6 +1567,7 @@ export default {
           });
       });
     },
+
     cancelValidation() {
       this.media_to_validate = false;
       this.$root.settings.capture_mode_cant_be_changed = false;

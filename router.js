@@ -2,13 +2,14 @@ const path = require("path"),
   fs = require("fs-extra"),
   archiver = require("archiver");
 
-const sockets = require("./core/sockets"),
+const auth = require("./core/auth"),
   dev = require("./core/dev-log"),
   cache = require("./core/cache"),
   api = require("./core/api"),
   file = require("./core/file"),
   exporter = require("./core/exporter"),
   importer = require("./core/importer"),
+  sockets = require("./core/sockets"),
   remote_api = require("./core/remote_api");
 
 module.exports = function (app) {
@@ -21,7 +22,7 @@ module.exports = function (app) {
   app.get("/:type/:slugFolderName/pdf", createAndDownloadPDF);
   app.get("/:type/:slugFolderName/full_planning", getFullPlanning);
   app.get("/_archives/:type/:slugFolderName", downloadArchive);
-  app.post("/file-upload/:type/:slugFolderName", postFile2);
+  app.post("/_file-upload/:type/:slugFolderName", postFile);
 
   remote_api.init(app);
 
@@ -240,9 +241,73 @@ module.exports = function (app) {
       });
   }
 
-  function postFile2(req, res) {
-    let type = req.param("type");
-    let slugFolderName = req.param("slugFolderName");
-    importer.handleForm({ req, res, type, slugFolderName });
+  async function postFile(req, res) {
+    let type = req.params.type;
+    let slugFolderName = req.params.slugFolderName;
+
+    const isSocketAllowed = await isSocketIDAuthorized({
+      socketid: req.query.socketid,
+      type,
+      slugFolderName,
+    }).catch((err) => {
+      sockets.notify({
+        socketid: req.query.socketid,
+        localized_string: `action_not_allowed`,
+        not_localized_string: err.message,
+        type: "error",
+      });
+    });
+    if (!isSocketAllowed) return false;
+
+    importer
+      .handleForm({ req, type, slugFolderName })
+      .then(({ msg }) => {
+        sockets.notify({
+          socketid: req.query.socketid,
+          localized_string: `imported_files_successfully`,
+          type: "success",
+        });
+        res.end(JSON.stringify(msg));
+      })
+      .catch(({ err }) => {
+        sockets.notify({
+          socketid: req.query.socketid,
+          localized_string: `action_not_allowed`,
+          not_localized_string: err.message,
+          type: "error",
+        });
+        res.end();
+      });
+  }
+
+  async function isSocketIDAuthorized({ socketid, type, slugFolderName }) {
+    if (!socketid) throw "Missing socketid in URL";
+
+    const connected_sockets = sockets.io().sockets.connected;
+
+    if (!connected_sockets || !connected_sockets.hasOwnProperty(socketid)) {
+      throw "Missing sockets server-side.";
+    }
+
+    const socket = connected_sockets[socketid];
+
+    const foldersData = await file.getFolder({ type, slugFolderName });
+    if (
+      !(await auth
+        .canEditFolder(socket, foldersData[slugFolderName], type)
+        .catch((err) => {
+          dev.error(`Failed to edit folder: ${err}`);
+          notify({
+            socket,
+            socketid: socket.id,
+            localized_string: `action_not_allowed`,
+            not_localized_string: `Error: folder can’t be edited ${slugFolderName} ${err}`,
+            type: "error",
+          });
+        }))
+    )
+      throw "User can’t edit folder";
+
+    return true;
   }
 };

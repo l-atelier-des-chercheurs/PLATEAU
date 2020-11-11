@@ -424,7 +424,6 @@ let vm = new Vue({
       }
     },
     current_author() {
-      debugger;
       if (!this.settings.current_author_slug) return false;
       if (!this.store.authors.hasOwnProperty(this.settings.current_author_slug))
         return false;
@@ -705,24 +704,41 @@ let vm = new Vue({
       this.$socketio.removeFolder({ type, slugFolderName });
     },
     createMedia: function (mdata) {
-      if (window.state.dev_mode === "debug") {
-        console.log(`ROOT EVENT: createMedia`);
-      }
-      this.justCreatedMediaID = mdata.id =
-        Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15);
-
-      if (this.settings.current_author.hasOwnProperty("name")) {
-        if (!mdata.hasOwnProperty("additionalMeta")) {
-          mdata.additionalMeta = {};
+      return new Promise((resolve, reject) => {
+        if (window.state.dev_mode === "debug") {
+          console.log(`ROOT EVENT: createMedia`);
         }
-        mdata.additionalMeta.authors = [
-          { name: this.settings.current_author.name },
-        ];
-      }
+        mdata.id =
+          Math.random().toString(36).substring(2, 15) +
+          Math.random().toString(36).substring(2, 15);
 
-      this.$nextTick(() => {
+        if (this.current_author) {
+          if (!mdata.hasOwnProperty("additionalMeta")) {
+            mdata.additionalMeta = {};
+          }
+          mdata.additionalMeta.authors = [
+            { slugFolderName: this.current_author.slugFolderName },
+          ];
+        }
+
         this.$socketio.createMedia(mdata);
+
+        const catchMediaCreation = (d) => {
+          if (mdata.id === d.id) {
+            this.$nextTick(() => {
+              return resolve(d);
+            });
+          } else {
+            this.$eventHub.$once(
+              `socketio.media_created_or_updated`,
+              catchMediaCreation
+            );
+          }
+        };
+        this.$eventHub.$once(
+          `socketio.media_created_or_updated`,
+          catchMediaCreation
+        );
       });
     },
     removeMedia: function (mdata) {
