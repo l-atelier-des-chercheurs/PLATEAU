@@ -21,6 +21,8 @@ module.exports = (function () {
       open: "Ouvrir",
       back: "Retour",
       at: "à",
+      edit: "Modifier",
+
       settings: "Règlages",
       new_project: "Nouveau Projet",
       project: "Projet",
@@ -28,6 +30,14 @@ module.exports = (function () {
       onion_skin: "Onion skin",
       keyword: "Mot-clé",
       keywords: "Mot-clés",
+      more_informations: "Plus d’informations",
+      users_connected: "Utilisateurs connectes",
+      channels: "Sujets",
+      users: "Utilisateurs",
+      login: "S’identifier",
+      logout: "Se déconnecter",
+      contributor: "Contributeur.trice",
+      admin: "Adminstrateur.trice",
 
       photo: "photo",
       video: "vidéo",
