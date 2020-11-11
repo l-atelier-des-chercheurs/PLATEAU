@@ -265,6 +265,7 @@ let vm = new Vue({
     this.$eventHub.$on("socketio.reconnect", () => {
       this.$socketio.listFolders({ type: "authors" });
       this.$socketio.listFolders({ type: "projects" });
+      this.$socketio.listFolders({ type: "chats" });
 
       if (this.do_navigation.current_slugProjectName) {
         this.$socketio.listFolder({
@@ -335,6 +336,34 @@ let vm = new Vue({
       this.$eventHub.$once("socketio.authentificated", () => {
         this.$socketio.listFolders({ type: "authors" });
         this.$socketio.listFolders({ type: "projects" });
+        this.$socketio.listFolders({ type: "chats" });
+
+        const authorized_authors = this.state.list_authorized_folders.find(
+          (f) => f.type === "authors" && f.allowed_slugFolderNames.length > 0
+        );
+
+        if (authorized_authors) {
+          this.$eventHub.$once("socketio.authors.folders_listed", () => {
+            if (Object.values(this.store.authors).length === 0) return;
+
+            const first_author_slug =
+              authorized_authors.allowed_slugFolderNames[0];
+            const author = Object.values(this.store.authors).find(
+              (a) => a.slugFolderName === first_author_slug
+            );
+
+            if (author) {
+              this.setAuthor(first_author_slug);
+              this.$alertify
+                .closeLogOnClick(true)
+                .delay(4000)
+                .success(
+                  this.$t("notifications.connecting_using_saved_account") +
+                    author.name
+                );
+            }
+          });
+        }
       });
     }
   },
@@ -424,7 +453,6 @@ let vm = new Vue({
       }
     },
     current_author() {
-      debugger;
       if (!this.settings.current_author_slug) return false;
       if (!this.store.authors.hasOwnProperty(this.settings.current_author_slug))
         return false;
@@ -581,6 +609,18 @@ let vm = new Vue({
       this.settings.current_author_slug = false;
       this.$socketio.socket.emit("updateClientInfo", { author: {} });
     },
+    getAuthor(slugFolderName) {
+      return this.getFolder({ slugFolderName, type: "authors" });
+    },
+    getFolder({ slugFolderName, type }) {
+      if (
+        Object.keys(this.store[type]).length === 0 ||
+        !this.store[type].hasOwnProperty(slugFolderName)
+      )
+        return false;
+      return this.store[type][slugFolderName];
+    },
+
     format_date_to_human(d) {
       if (this.$root.lang.current === "fr") {
         return this.$moment(d).calendar(null, {
@@ -705,24 +745,41 @@ let vm = new Vue({
       this.$socketio.removeFolder({ type, slugFolderName });
     },
     createMedia: function (mdata) {
-      if (window.state.dev_mode === "debug") {
-        console.log(`ROOT EVENT: createMedia`);
-      }
-      this.justCreatedMediaID = mdata.id =
-        Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15);
-
-      if (this.settings.current_author.hasOwnProperty("name")) {
-        if (!mdata.hasOwnProperty("additionalMeta")) {
-          mdata.additionalMeta = {};
+      return new Promise((resolve, reject) => {
+        if (window.state.dev_mode === "debug") {
+          console.log(`ROOT EVENT: createMedia`);
         }
-        mdata.additionalMeta.authors = [
-          { name: this.settings.current_author.name },
-        ];
-      }
+        mdata.id =
+          Math.random().toString(36).substring(2, 15) +
+          Math.random().toString(36).substring(2, 15);
 
-      this.$nextTick(() => {
+        if (this.current_author) {
+          if (!mdata.hasOwnProperty("additionalMeta")) {
+            mdata.additionalMeta = {};
+          }
+          mdata.additionalMeta.authors = [
+            { slugFolderName: this.current_author.slugFolderName },
+          ];
+        }
+
         this.$socketio.createMedia(mdata);
+
+        const catchMediaCreation = (d) => {
+          if (mdata.id === d.id) {
+            this.$nextTick(() => {
+              return resolve(d);
+            });
+          } else {
+            this.$eventHub.$once(
+              `socketio.media_created_or_updated`,
+              catchMediaCreation
+            );
+          }
+        };
+        this.$eventHub.$once(
+          `socketio.media_created_or_updated`,
+          catchMediaCreation
+        );
       });
     },
     removeMedia: function (mdata) {

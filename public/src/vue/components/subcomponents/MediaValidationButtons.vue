@@ -1,6 +1,10 @@
 <template>
   <div class="m_mediaValidationButtons">
-    <button type="button" class="bg-transparent button-arrow" @click="selectedMoveLeft">
+    <button
+      type="button"
+      class="bg-transparent button-arrow"
+      @click="selectedMoveLeft"
+    >
       <svg
         version="1.1"
         xmlns="http://www.w3.org/2000/svg"
@@ -10,7 +14,7 @@
         width="169px"
         height="169px"
         viewBox="0 0 169 169"
-        style="enable-background:new 0 0 169 169;"
+        style="enable-background: new 0 0 169 169"
         xml:space="preserve"
       >
         <path fill="currentColor" d="M60.2,84.5l48.6-24.3l0,48.6L60.2,84.5z" />
@@ -22,11 +26,11 @@
       class="button button-bg_rounded button-outline c-blanc"
       @mousedown.stop.prevent="validateButton(0)"
       @touchstart.stop.prevent="validateButton(0)"
-      :class="{ 'is--selected' : selected_button === 0 }"
+      :class="{ 'is--selected': selected_button === 0 }"
       @mouseover="selected_button = 0"
     >
       <template v-if="cancelButtonIsBackButton">
-        <span class>‹ {{ $t('back') }}</span>
+        <span class>‹ {{ $t("back") }}</span>
       </template>
       <template v-else>
         <svg
@@ -36,7 +40,7 @@
           x="0px"
           y="0px"
           viewBox="0 0 168 168"
-          style="enable-background:new 0 0 168 168;"
+          style="enable-background: new 0 0 168 168"
           xml:space="preserve"
         >
           <polygon
@@ -44,7 +48,7 @@
         84.1,98.7 57.5,125.4 42.6,110.5 69.3,83.9 			"
           />
         </svg>
-        <span class>{{ $t('cancel') }}</span>
+        <span class>{{ $t("cancel") }}</span>
       </template>
     </button>
 
@@ -53,7 +57,7 @@
       :disabled="read_only"
       @click="validateButton(1)"
       class="button button-bg_rounded button-outline c-rouge"
-      :class="{ 'is--selected' : selected_button === 1 }"
+      :class="{ 'is--selected': selected_button === 1 }"
       @mouseover="selected_button = 1"
     >
       <svg
@@ -64,7 +68,7 @@
         x="0px"
         y="0px"
         viewBox="0 0 168 168"
-        style="enable-background:new 0 0 168 168;"
+        style="enable-background: new 0 0 168 168"
         xml:space="preserve"
       >
         <rect
@@ -82,7 +86,7 @@
           height="19.5"
         />
       </svg>
-      <span class="c-rouge">{{ $t('save') }}</span>
+      <span class="c-rouge">{{ $t("save") }}</span>
     </button>
 
     <button
@@ -90,7 +94,7 @@
       :disabled="read_only"
       @click="validateButton(2)"
       class="button button-bg_rounded button-outline c-rouge"
-      :class="{ 'is--selected' : selected_button === 2 }"
+      :class="{ 'is--selected': selected_button === 2 }"
       @mouseover="selected_button = 2"
     >
       <svg
@@ -104,7 +108,7 @@
         width="68.5px"
         height="80.4px"
         viewBox="0 0 78.5 106.4"
-        style="enable-background:new 0 0 78.5 106.4;"
+        style="enable-background: new 0 0 78.5 106.4"
         xml:space="preserve"
       >
         <polygon
@@ -114,13 +118,17 @@
         <polygon class="st0" points="9.6,106.4 0,106.4 0,2 9.6,0 " />
       </svg>
       <span class>
-        {{ $t('save') }}
+        {{ $t("save") }}
         <br />
-        {{ $t('as_favorite') }}
+        {{ $t("as_favorite") }}
       </span>
     </button>
 
-    <button type="button" class="bg-transparent button-arrow" @click="selectedMoveRight">
+    <button
+      type="button"
+      class="bg-transparent button-arrow"
+      @click="selectedMoveRight"
+    >
       <svg
         version="1.1"
         xmlns="http://www.w3.org/2000/svg"
@@ -130,7 +138,7 @@
         width="169px"
         height="169px"
         viewBox="0 0 169 169"
-        style="enable-background:new 0 0 169 169;"
+        style="enable-background: new 0 0 169 169"
         xml:space="preserve"
       >
         <path fill="currentColor" d="M108.8,84.5l-48.6,24.3V60.2L108.8,84.5z" />
@@ -154,13 +162,13 @@ export default {
     media_being_sent_percent: Number,
     cancelButtonIsBackButton: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   components: {},
   data() {
     return {
-      selected_button: 1
+      selected_button: 1,
     };
   },
 
@@ -170,7 +178,7 @@ export default {
     document.addEventListener("keyup", this.captureKeyListener);
   },
   beforeDestroy() {
-    // this.$root.settings.capture_mode_cant_be_changed = false;
+    this.$root.settings.capture_mode_cant_be_changed = false;
     document.removeEventListener("keyup", this.captureKeyListener);
   },
 
@@ -220,8 +228,8 @@ export default {
       } else if (idx === 2) {
         this.$emit("save_and_fav");
       }
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss">

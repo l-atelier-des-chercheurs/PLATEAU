@@ -174,7 +174,7 @@ export default {
       show_password: true,
       show_image: false,
       show_nfc: false,
-      possible_roles: ["contributor", "participant", "admin"],
+      possible_roles: ["contributor", "admin"],
       authordata: {
         name: "",
         email: "",

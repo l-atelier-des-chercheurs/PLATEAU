@@ -1,21 +1,12 @@
 <template>
-  <div
-    class="m_capture"
-    :class="{
-      'is--slave': $root.settings.is_slave,
-    }"
-  >
+  <div class="m_capture">
     <div class="m_capture--modeSelector">
       <select
         v-model="selected_mode"
         :disabled="$root.settings.capture_mode_cant_be_changed"
       >
-        <option
-          v-for="mode in available_modes"
-          :key="mode.key"
-          :value="mode.key"
-        >
-          {{ mode.key }}
+        <option v-for="mode in available_modes" :key="mode" :value="mode">
+          {{ $t(mode) }}
         </option>
       </select>
     </div>
@@ -44,11 +35,11 @@
             :class="{ 'is--recording': is_recording }"
           >
             <!-- OPTIONS -->
-            <div
-              class="m_panel--previewCard--live--options"
-              v-if="show_capture_settings && !is_recording"
-            >
-              <div class="_scrollBox">
+            <transition name="slideleft" :duration="400">
+              <div
+                class="m_panel--previewCard--live--options"
+                v-if="show_capture_settings && !is_recording"
+              >
                 <div class="margin-bottom-small">
                   <div>
                     <label>Sources</label>
@@ -57,7 +48,7 @@
                     v-for="(currentId, kind) in selected_devicesId"
                     :key="kind"
                   >
-                    <span class="font-verysmall">{{ kind }}</span>
+                    <span class="font-verysmall">{{ $t(kind) }}</span>
                     <select
                       v-if="sorted_available_devices.hasOwnProperty(kind)"
                       v-model="selected_devicesId[kind]"
@@ -143,8 +134,9 @@
                     </div>
                   </template>
                 </div>
-              </div>
-              <div class="m_panel--previewCard--live--options--updateButton">
+
+                <hr />
+
                 <button
                   type="button"
                   @click="updateSettings"
@@ -153,7 +145,7 @@
                   <span class>{{ $t("update") }}</span>
                 </button>
               </div>
-            </div>
+            </transition>
 
             <transition-group
               tag="div"
@@ -212,6 +204,7 @@
               v-show="['photo', 'video', 'stopmotion'].includes(selected_mode)"
               ref="videoElement"
               autoplay
+              playsinline
             />
 
             <canvas
@@ -232,20 +225,25 @@
               :context="'edit'"
               :slugFolderName="current_stopmotion"
               :media="stopmotion.onion_skin_img"
-              :subfolder="'_stopmotions/'"
+              :folderType="'stopmotions'"
               :style="
                 is_showing_live_feed
                   ? `--onionskin-opacity: ${stopmotion.onion_skin_opacity}`
                   : ''
               "
-              :element_width_for_sizes="1600"
             />
 
             <div
               id="vectoContainer"
               v-if="selected_mode === 'vecto'"
               v-html="vecto.svgstr"
-            />
+            ></div>
+
+            <div
+              id="vectoContainer"
+              v-if="selected_mode === 'lines'"
+              v-html="vecto.svgstr"
+            ></div>
 
             <transition name="slideright" :duration="400">
               <div
@@ -288,7 +286,7 @@
                                   :context="'preview'"
                                   :slugFolderName="stopmotion.slugFolderName"
                                   :media="media"
-                                  :subfolder="'_stopmotions/'"
+                                  :folderType="'stopmotions'"
                                   :preview_size="150"
                                 />
                               </div>
@@ -306,7 +304,7 @@
             </transition>
           </div>
 
-          <!-- <transition name="fade_fast" :duration="150">
+          <transition name="fade_fast" :duration="150">
             <div
               class="m_panel--previewCard--validate"
               v-if="media_to_validate"
@@ -343,7 +341,7 @@
                 class="m_panel--previewCard--validate--svg"
               />
             </div>
-          </transition>-->
+          </transition>
 
           <transition name="mediaCapture" :duration="300">
             <div
@@ -356,9 +354,12 @@
         <StopmotionPanel
           v-if="$root.store.stopmotions.hasOwnProperty(current_stopmotion)"
           :stopmotiondata="$root.store.stopmotions[current_stopmotion]"
-          :slugProjectName="slugProjectName"
+          :type="type"
+          :slugFolderName="slugFolderName"
           :read_only="read_only"
           :videoStream="videoStream"
+          :can_add_to_fav="can_add_to_fav"
+          @saveMedia="(metaFileName) => $emit('insertMedias', [metaFileName])"
           @close="current_stopmotion = false"
           @new_single_image="updateSingleImage"
           @show_live_feed="
@@ -371,9 +372,9 @@
               is_validating_stopmotion_video = state;
             }
           "
-        />
+        ></StopmotionPanel>
 
-        <div class="m_panel--buttons" v-if="!$root.settings.is_slave">
+        <div class="m_panel--buttons">
           <div
             class="m_panel--buttons--row"
             :class="{ 'bg-orange': is_recording }"
@@ -381,7 +382,7 @@
             <button
               type="button"
               @click="show_capture_settings = !show_capture_settings"
-              class="m_panel--buttons--row--settingsButton"
+              class="button c-rouge font-small bg-transparent"
               :disabled="is_recording || is_making_stopmotion"
             >
               <svg
@@ -414,6 +415,7 @@
                 type="button"
                 class="padding-verysmall bg-transparent m_panel--buttons--row--captureButton--btn"
                 :class="{ 'is--justCaptured': capture_button_pressed }"
+                :disabled="is_saving"
                 @mousedown.stop.prevent="captureOrStop()"
                 @touchstart.stop.prevent="captureOrStop()"
               >
@@ -423,24 +425,10 @@
 
               <button
                 type="button"
-                v-if="$root.settings.has_slave_connected"
-                class="padding-verysmall bg-transparent m_panel--buttons--row--captureButton--btn"
-                @mousedown.stop.prevent="
-                  $eventHub.$emit('clients.sendCaptureEventToSlaves')
-                "
-                @touchstart.stop.prevent="
-                  $eventHub.$emit('clients.sendCaptureEventToSlaves')
-                "
-              >
-                lancer à distance
-              </button>
-
-              <button
-                type="button"
                 class="m_panel--buttons--row--captureButton--advancedOptions"
                 :class="{ 'is--active': timelapse_mode }"
                 v-if="selected_mode === 'stopmotion'"
-                :title="$t('timelapse')"
+                :content="$t('timelapse')"
                 v-tippy="{
                   placement: 'top',
                   delay: [600, 0],
@@ -543,17 +531,18 @@
             </label>
           </div>
 
-          <!-- <transition name="slideup" :duration="400">
+          <transition name="slideup" :duration="400">
             <MediaValidationButtons
               v-if="media_to_validate"
               :read_only="read_only"
+              :can_add_to_fav="can_add_to_fav"
               :media_is_being_sent="media_is_being_sent"
               :media_being_sent_percent="media_being_sent_percent"
               @cancel="cancelValidation()"
               @save="sendMedia({})"
               @save_and_fav="sendMedia({ fav: true })"
             />
-          </transition>-->
+          </transition>
         </div>
       </div>
     </div>
@@ -575,20 +564,32 @@ import MediaValidationButtons from "./subcomponents/MediaValidationButtons.vue";
 import DistantFlux from "./subcomponents/DistantFlux.vue";
 
 import RecordRTC from "recordrtc";
-// import "webrtc-adapter";
+import "webrtc-adapter";
 import ImageTracer from "imagetracerjs";
 import { setTimeout } from "timers";
 import * as axios from "axios";
 
 export default {
   props: {
-    project: {
-      type: Object,
-      default: "",
-    },
-    slugProjectName: String,
+    slugFolderName: String,
+    type: String,
     read_only: Boolean,
-    validation_before_upload: {
+    bypass_media_validation: {
+      type: Boolean,
+      default: false,
+    },
+    available_modes: {
+      type: Array,
+      default: () => [
+        "photo",
+        "video",
+        "stopmotion",
+        "audio",
+        "vecto",
+        "lines",
+      ],
+    },
+    can_add_to_fav: {
       type: Boolean,
       default: true,
     },
@@ -602,31 +603,21 @@ export default {
   data() {
     return {
       selected_mode: "",
-      available_modes: [
-        {
-          picto: "/images/i_icone-dodoc_image.svg",
-          key: "photo",
-        },
-        {
-          picto: "/images/i_icone-dodoc_video.svg",
-          key: "video",
-        },
-        {
-          picto: "/images/i_icone-dodoc_anim.svg",
-          key: "stopmotion",
-        },
-        {
-          picto: "/images/i_icone-dodoc_audio.svg",
-          key: "audio",
-        },
-        {
-          picto: "/images/i_icone-dodoc_vecto.svg",
-          key: "vecto",
-        },
-      ],
+      is_saving: false,
+
+      available_mode_picto: {
+        photo: "/images/i_icone-dodoc_image.svg",
+        video: "/images/i_icone-dodoc_video.svg",
+        stopmotion: "/images/i_icone-dodoc_anim.svg",
+        audio: "/images/i_icone-dodoc_audio.svg",
+        vecto: "/images/i_icone-dodoc_vecto.svg",
+        lines: "/images/i_icone-dodoc_lines.svg",
+      },
 
       recordVideoFeed: undefined,
       recordVideoWithAudio: true,
+
+      id: (Math.random().toString(36) + "00000000000000000").slice(2, 3 + 5),
 
       show_capture_settings: false,
       show_stopmotion_list: false,
@@ -640,10 +631,6 @@ export default {
       is_recording: false,
       timer_recording: false,
 
-      cut_duration_medias_in_parts_of_x_minutes: 2,
-
-      send_automatically_to_planning_media: false,
-
       actual_current_video_resolution: false,
 
       media_to_validate: false,
@@ -651,6 +638,8 @@ export default {
       media_being_sent_percent: 0,
       media_send_timeout: 10000,
       media_send_timeout_timer: false,
+
+      send_automatically_to_planning_media: false,
 
       current_username: this.$root.settings.capture_options.distant_flux
         .username,
@@ -718,8 +707,8 @@ export default {
   created() {
     console.log("CREATED • CaptureView");
 
-    navigator.mediaDevices.enumerateDevices().then((deviceInfos) => {
-      this.available_devices = deviceInfos;
+    this.listAllDevices().then((all_device_infos) => {
+      this.available_devices = all_device_infos;
 
       // SOURCES (device_id)
       Object.keys(this.selected_devicesId).map((kind) => {
@@ -753,10 +742,15 @@ export default {
       });
 
       // MODE
-      if (this.$root.settings.capture_options.selected_mode !== "") {
+      if (
+        this.$root.settings.capture_options.selected_mode !== "" &&
+        this.available_modes.includes(
+          this.$root.settings.capture_options.selected_mode
+        )
+      ) {
         this.selected_mode = this.$root.settings.capture_options.selected_mode;
       } else {
-        this.selected_mode = this.available_modes[0].key;
+        this.selected_mode = this.available_modes[0];
       }
 
       // RESOLUTION
@@ -768,14 +762,11 @@ export default {
     });
   },
   mounted() {
-    // document.addEventListener("keyup", this.captureKeyListener);
+    document.addEventListener("keyup", this.captureKeyListener);
     this.$root.settings.capture_mode_cant_be_changed = false;
-
-    this.$eventHub.$on("capture.start", this.captureOrStop);
-    this.$eventHub.$on("capture.end", this.captureOrStop);
   },
   beforeDestroy() {
-    // document.removeEventListener("keyup", this.captureKeyListener);
+    document.removeEventListener("keyup", this.captureKeyListener);
     this.stopAllFeeds();
     // this.$refs.videoElement.srcObject = null;
   },
@@ -804,12 +795,6 @@ export default {
         `WATCH • Capture: selected_devicesId.videoinput = ${this.selected_devicesId.videoinput}`
       );
       this.$root.settings.capture_options.selected_devicesId.videoinput = this.selected_devicesId.videoinput;
-    },
-    "$root.settings.capture_options.selected_mode": function () {
-      if (
-        this.selected_mode !== this.$root.settings.capture_options.selected_mode
-      )
-        this.selected_mode = this.$root.settings.capture_options.selected_mode;
     },
     selected_mode: function () {
       console.log("WATCH • Capture: selected_mode : " + this.selected_mode);
@@ -848,12 +833,6 @@ export default {
       console.log(
         `WATCH • Capture: media_to_validate = ${this.media_to_validate}`
       );
-
-      if (!this.validation_before_upload && this.media_to_validate) {
-        this.sendMedia({});
-        return;
-      }
-
       if (this.media_to_validate) {
         this.$refs.videoElement.pause();
       } else {
@@ -890,24 +869,16 @@ export default {
       return this.$_.groupBy(this.available_devices, "kind");
     },
     uriToUploadMedia: function () {
-      return `file-upload/projects/${this.slugProjectName}`;
+      return (
+        window.location.origin +
+        `/_file-upload/${this.type}/${this.slugFolderName}/?socketid=${this.$root.$socketio.socket.id}`
+      );
     },
     recording_duration: function () {
       if (this.timer_recording) {
-        // if >= 2 minutes, then stop recording and start again
-        const delta = this.$moment(
-          this.$root.currentTime - this.timer_recording
-        ).startOf("second");
-
-        if (
-          !!this.cut_duration_medias_in_parts_of_x_minutes &&
-          delta.minutes() >= this.cut_duration_medias_in_parts_of_x_minutes
-        ) {
-          this.captureOrStop();
-          setTimeout(() => this.captureOrStop(), 1000);
-        }
-
-        return delta.format("mm:ss");
+        return this.$moment(this.$root.currentTime - this.timer_recording)
+          .startOf("second")
+          .format("mm:ss");
       }
       return false;
     },
@@ -924,6 +895,59 @@ export default {
     },
   },
   methods: {
+    listAllDevices() {
+      return new Promise((resolve, reject) => {
+        let tasks = [];
+
+        tasks.push(
+          new Promise((resolve, reject) => {
+            navigator.mediaDevices.enumerateDevices().then((device_infos) => {
+              return resolve(device_infos);
+            });
+          })
+        );
+
+        if (this.$root.state.is_electron) {
+          tasks.push(
+            new Promise((resolve, reject) => {
+              const { desktopCapturer } = window.require("electron");
+              desktopCapturer.getSources(
+                { types: ["window", "screen"] },
+                (error, sources) => {
+                  const screen_infos = sources.reduce((acc, source) => {
+                    acc.push(source);
+                    return acc;
+                  }, []);
+                  return resolve(screen_infos);
+                }
+              );
+            })
+          );
+        }
+
+        Promise.all(tasks).then((d_array) => {
+          const all_devices = d_array.reduce((acc, devices) => {
+            devices.map((device) => {
+              const _device = JSON.parse(JSON.stringify(device));
+              if (!_device.hasOwnProperty("kind")) {
+                if (_device.name === "Entire screen") {
+                  _device.label = _device.name;
+                  _device.deviceId = _device.id;
+                  // _device.deviceId = "Entire screen";
+                  _device.kind = "videoinput";
+                  acc.push(_device);
+                }
+              } else {
+                acc.push(_device);
+              }
+            });
+            return acc;
+          }, []);
+
+          return resolve(all_devices);
+        });
+      });
+    },
     startMode() {
       console.log("METHODS • CaptureView: startMode");
 
@@ -952,6 +976,10 @@ export default {
         this.stopAllFeeds().then(() => {
           this.startVectoFeed();
         });
+      } else if (this.selected_mode === "lines") {
+        this.stopAllFeeds().then(() => {
+          this.startLinesFeed();
+        });
       }
     },
     previousMode() {
@@ -960,12 +988,10 @@ export default {
         return;
       }
 
-      let currentModeIndex = this.available_modes.findIndex((d) => {
-        return d.key === this.selected_mode;
-      });
+      let currentModeIndex = this.available_modes.indexOf(this.selected_mode);
 
       if (currentModeIndex > 0) {
-        this.selected_mode = this.available_modes[currentModeIndex - 1].key;
+        this.selected_mode = this.available_modes[currentModeIndex - 1];
       }
     },
     nextMode() {
@@ -974,12 +1000,10 @@ export default {
         return;
       }
 
-      let currentModeIndex = this.available_modes.findIndex((d) => {
-        return d.key === this.selected_mode;
-      });
+      let currentModeIndex = this.available_modes.indexOf(this.selected_mode);
 
       if (currentModeIndex < this.available_modes.length - 1) {
-        this.selected_mode = this.available_modes[currentModeIndex + 1].key;
+        this.selected_mode = this.available_modes[currentModeIndex + 1];
       }
     },
 
@@ -1031,6 +1055,11 @@ export default {
       console.log("METHODS • CaptureView: changeStreamTo");
       this.videoStream = new_stream;
       this.$refs.videoElement.srcObject = new_stream;
+      this.$refs.videoElement.volume = 0;
+
+      setTimeout(() => {
+        this.$refs.videoElement.play();
+      }, 500);
     },
     stopAudioFeed() {
       console.log("METHODS • CaptureView: stopAudioFeed");
@@ -1101,36 +1130,55 @@ export default {
       return new Promise((resolve, reject) => {
         console.log("METHODS • CaptureView: getCameraFeed");
 
-        const constraints = {
-          video: {
-            /* old syntax, with webrtc-adapter */
-            // optional: [{ sourceId: this.selected_devicesId.videoinput }],
-            // mandatory: {
-            //   // minWidth:"1280","maxWidth":"1280","minHeight":"720","maxHeight":"720"
-            //   // minWidth:"640","maxWidth":"640","minHeight":"480","maxHeight":"480"
-            //   minWidth: this.ideal_camera_resolution.width,
-            //   maxWidth: this.ideal_camera_resolution.width,
-            //   minHeight: this.ideal_camera_resolution.height,
-            //   maxHeight: this.ideal_camera_resolution.height
-            // }
+        let constraints = {};
 
-            deviceId: this.selected_devicesId.videoinput
-              ? { exact: this.selected_devicesId.videoinput }
-              : undefined,
-            // minHeight: this.ideal_camera_resolution.height
-            width: {
-              min: 640,
-              ideal: this.ideal_camera_resolution.width,
-              max: 1920,
+        if (this.selected_devicesId.videoinput.startsWith("screen:")) {
+          constraints = {
+            audio: false,
+            video: {
+              mandatory: {
+                chromeMediaSource: "desktop",
+                // chromeMediaSourceId: this.selected_devicesId.videoinput,
+                minWidth: this.ideal_camera_resolution.width,
+                maxWidth: this.ideal_camera_resolution.width,
+                minHeight: this.ideal_camera_resolution.height,
+                maxHeight: this.ideal_camera_resolution.height,
+              },
             },
-            height: {
-              min: 480,
-              ideal: this.ideal_camera_resolution.height,
-              max: 1080,
+          };
+          // if (withAudio) {}
+        } else {
+          constraints = {
+            video: {
+              /* old syntax, with webrtc-adapter */
+              // optional: [{ sourceId: this.selected_devicesId.videoinput }],
+              // mandatory: {
+              //   // minWidth:"1280","maxWidth":"1280","minHeight":"720","maxHeight":"720"
+              //   // minWidth:"640","maxWidth":"640","minHeight":"480","maxHeight":"480"
+              //   minWidth: this.ideal_camera_resolution.width,
+              //   maxWidth: this.ideal_camera_resolution.width,
+              //   minHeight: this.ideal_camera_resolution.height,
+              //   maxHeight: this.ideal_camera_resolution.height
+              // }
+              deviceId: this.selected_devicesId.videoinput
+                ? { exact: this.selected_devicesId.videoinput }
+                : undefined,
+              // minHeight: this.ideal_camera_resolution.height
+              width: {
+                min: 640,
+                ideal: this.ideal_camera_resolution.width,
+                max: 1920,
+              },
+              height: {
+                min: 480,
+                ideal: this.ideal_camera_resolution.height,
+                max: 1080,
+              },
             },
-          },
-          audio: withAudio,
-        };
+            audio: withAudio,
+          };
+        }
+
         navigator.getUserMedia(
           constraints,
           (stream) => {
@@ -1240,7 +1288,8 @@ export default {
           this.is_recording = true;
           this.$root.settings.capture_mode_cant_be_changed = true;
 
-          this.$eventHub.$once("capture.stopRecording", () => {
+          this.$eventHub.$on("capture.stopRecording", () => {
+            this.$eventHub.$off("capture.stopRecording");
             recordVideoFeed.stopRecording(() => {
               this.is_recording = false;
               const videoBlob = recordVideoFeed.getBlob();
@@ -1312,6 +1361,7 @@ export default {
             objectURL: URL.createObjectURL(rawData),
             type: "image",
           };
+          if (this.bypass_media_validation) this.sendMedia({});
         });
       } else if (this.selected_mode === "video") {
         this.stopVideoFeed();
@@ -1322,6 +1372,7 @@ export default {
               objectURL: URL.createObjectURL(rawData),
               type: "video",
             };
+            if (this.bypass_media_validation) this.sendMedia({});
           }
         );
       } else if (this.selected_mode === "audio") {
@@ -1334,6 +1385,7 @@ export default {
             objectURL: URL.createObjectURL(rawData),
             type: "audio",
           };
+          if (this.bypass_media_validation) this.sendMedia({});
         });
       } else if (this.selected_mode === "stopmotion") {
         this.addStopmotionImage();
@@ -1343,32 +1395,32 @@ export default {
           rawData: new Blob([this.vecto.svgstr], { type: "text/xml" }),
           type: "svg",
         };
+        if (this.bypass_media_validation) this.sendMedia({});
       }
     },
     addStopmotionImage() {
       const smdata = {
         name:
-          this.slugProjectName + "-" + this.$moment().format("YYYYMMDD_HHmmss"),
-        linked_project: this.slugProjectName,
-        authors: this.$root.settings.current_author.hasOwnProperty("name")
-          ? [{ name: this.$root.settings.current_author.name }]
+          this.slugFolderName + "-" + this.$moment().format("YYYYMMDD_HHmmss"),
+        linked_folder: this.slugFolderName,
+        linked_type: this.type,
+        authors: this.$root.current_author
+          ? [{ slugFolderName: this.$root.current_author.slugFolderName }]
           : "",
       };
 
       this.getStaticImageFromVideoElement().then((imageData) => {
         if (!this.current_stopmotion) {
           // create stopmotion
-          this.$eventHub.$on("socketio.folder_created_or_updated", (fdata) => {
-            if (fdata.id === this.$root.justCreatedFolderID) {
-              this.$eventHub.$off("socketio.folder_created_or_updated");
+          this.$root
+            .createFolder({
+              type: "stopmotions",
+              data: smdata,
+            })
+            .then((fdata) => {
               this.current_stopmotion = fdata.slugFolderName;
               this.addImageToStopmotion(imageData);
-            }
-          });
-          this.$root.createFolder({
-            type: "stopmotions",
-            data: smdata,
-          });
+            });
         } else {
           // append to stopmotion
           this.addImageToStopmotion(imageData);
@@ -1377,14 +1429,31 @@ export default {
     },
     addImageToStopmotion(imageData) {
       console.log("METHODS • CaptureView: addImageToStopmotion");
-      this.$root.createMedia({
-        slugFolderName: this.current_stopmotion,
-        type: "stopmotions",
-        rawData: imageData,
-        additionalMeta: {
-          type: "image",
-        },
-      });
+      this.is_saving = true;
+
+      const media_editing_timeout = setTimeout(() => {
+        if (this.is_saving) {
+          this.is_saving = false;
+          this.$alertify
+            .closeLogOnClick(true)
+            .delay(4000)
+            .error(this.$t("notifications.failed_to_save_media"));
+        }
+      }, 5000);
+
+      this.$root
+        .createMedia({
+          slugFolderName: this.current_stopmotion,
+          type: "stopmotions",
+          rawData: imageData,
+          additionalMeta: {
+            type: "image",
+          },
+        })
+        .then((mdata) => {
+          this.is_saving = false;
+          clearTimeout(media_editing_timeout);
+        });
     },
     startVectoFeed() {
       return new Promise((resolve, reject) => {
@@ -1395,13 +1464,15 @@ export default {
 
         this.ideal_camera_resolution = this.available_camera_resolutions[0];
 
+        const interval_between_images = 1500;
+
         this.startCameraFeed()
           .then(() => {
             let scanToVecto = () => {
               if (this.selected_mode !== "vecto" || !this.videoStream) {
                 return;
               } else if (this.media_to_validate) {
-                window.setTimeout(scanToVecto, 1000);
+                window.setTimeout(scanToVecto, interval_between_images);
                 return;
               }
               this.getStaticImageFromVideoElement().then((imageData) => {
@@ -1409,7 +1480,7 @@ export default {
                   URL.createObjectURL(imageData),
                   (svgstr) => {
                     this.vecto.svgstr = svgstr;
-                    window.setTimeout(scanToVecto, 1000);
+                    window.setTimeout(scanToVecto, interval_between_images);
                   },
                   {
                     colorsampling: false,
@@ -1427,7 +1498,60 @@ export default {
                 );
               });
             };
-            window.setTimeout(scanToVecto, 500);
+            window.setTimeout(scanToVecto, interval_between_images);
+
+            resolve();
+          })
+          .catch((err) => {
+            this.$alertify.error(err);
+            reject();
+          });
+      });
+    },
+    startLinesFeed() {
+      return new Promise((resolve, reject) => {
+        console.log("METHODS • CaptureView: startVectoFeed");
+        if (this.selected_devicesId.videoinput === "") {
+          return reject(this.$t("notifications.video_source_not_set"));
+        }
+
+        this.ideal_camera_resolution = this.available_camera_resolutions[0];
+
+        const interval_between_images = 1500;
+
+        this.startCameraFeed()
+          .then(() => {
+            let scanToVecto = () => {
+              if (this.selected_mode !== "vecto" || !this.videoStream) {
+                return;
+              } else if (this.media_to_validate) {
+                window.setTimeout(scanToVecto, interval_between_images);
+                return;
+              }
+              this.getStaticImageFromVideoElement().then((imageData) => {
+                ImageTracer.imageToSVG(
+                  URL.createObjectURL(imageData),
+                  (svgstr) => {
+                    this.vecto.svgstr = svgstr;
+                    window.setTimeout(scanToVecto, interval_between_images);
+                  },
+                  {
+                    colorsampling: false,
+                    numberofcolors: 2,
+                    colorquantcycles: 1,
+                    scale: 1,
+                    strokewidth: 1,
+                    blurradius: this.vecto.blurradius,
+                    pal: [
+                      { r: 255, g: 255, b: 255, a: 255 },
+                      { r: 0, g: 0, b: 0, a: 255 },
+                    ],
+                    // pal : [{r:255,g:255,b:255,a:255}, {r:214,g:0,b:103,a:255}]
+                  }
+                );
+              });
+            };
+            window.setTimeout(scanToVecto, interval_between_images);
 
             resolve();
           })
@@ -1473,19 +1597,13 @@ export default {
 
         let formData = new FormData();
         formData.append("files", rawData, filename);
-
-        let meta = {
+        const meta = {
           fileCreationDate: modified,
           fav,
-          authors: this.$root.settings.current_author.hasOwnProperty("name")
-            ? [{ name: this.$root.settings.current_author.name }]
+          authors: this.$root.current_author
+            ? [{ slugFolderName: this.$root.current_author.slugFolderName }]
             : "",
         };
-
-        if (this.send_automatically_to_planning_media) {
-          meta.caption = "Le " + this.$moment().format("LLL");
-        }
-
         formData.append(filename, JSON.stringify(meta));
 
         const socketid = this.$socketio.socket.id;
@@ -1501,15 +1619,6 @@ export default {
 
         this.media_is_being_sent = true;
         this.media_being_sent_percent = 0;
-
-        if (this.send_automatically_to_planning_media) {
-          this.$eventHub.$once("socketio.projects.listMedia", (m) => {
-            try {
-              const media = Object.values(m[this.slugProjectName].medias)[0];
-              this.$eventHub.$emit("writeup.addMedia", media);
-            } catch (e) {}
-          });
-        }
 
         // TODO : possibilité de cancel
         axios
@@ -1541,6 +1650,19 @@ export default {
               .success(this.$t("notifications.media_was_sent"));
             this.media_is_being_sent = false;
             this.media_to_validate = false;
+
+            if (this.send_automatically_to_planning_media) {
+              this.$eventHub.$once("socketio.projects.media_listed", (m) => {
+                try {
+                  const media = Object.values(
+                    m["projects"][this.slugFolderName].medias
+                  )[0];
+                  this.$eventHub.$emit("writeup.addMedia", media);
+                } catch (e) {}
+              });
+            }
+
+            this.$emit("insertMedias", [x.metaFileNames[0]]);
 
             // this.selected_files_meta[filename].status = 'success';
             // this.selected_files_meta[filename].upload_percentages = 100;

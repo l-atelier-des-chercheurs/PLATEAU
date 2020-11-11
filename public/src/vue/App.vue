@@ -130,7 +130,62 @@ body {
 }
 
 .alertify {
-  z-index: 1000;
+  z-index: 100000;
+}
+
+.alertify {
+  z-index: 20000;
+  background-color: fade(#333, 86%);
+
+  .dialog > * {
+    width: 450px;
+    border-radius: 2px;
+    border: 1px solid var(--c-gris);
+
+    nav button.ok {
+      background-color: transparent;
+      border: none;
+      font-size: inherit;
+      font-family: inherit;
+      background-color: #fff;
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      text-transform: uppercase;
+      font-weight: 500 !important;
+      letter-spacing: 0.06em;
+      flex-shrink: 0;
+      margin: 0;
+      cursor: pointer;
+      min-height: 3.24rem;
+      padding: 0 0.81rem !important;
+      border-radius: 6px !important;
+      transition: color 0.25s ease-out, opacity 0.5s;
+      color: #fff !important;
+      background-color: var(--c-bleu) !important;
+    }
+  }
+}
+
+.alertify-logs {
+  z-index: 20001;
+  right: 48px;
+  pointer-events: none;
+  font-size: 0.8em;
+}
+.alertify-logs > *,
+.alertify-logs > .default {
+  background-color: var(--c-gris);
+  color: var(--c-noir);
+  pointer-events: auto;
+}
+.alertify-logs > .error {
+  background: var(--c-rouge);
+  color: white;
+}
+.alertify-logs > .success {
+  background: var(--c-vert);
+  color: white;
 }
 
 hr {

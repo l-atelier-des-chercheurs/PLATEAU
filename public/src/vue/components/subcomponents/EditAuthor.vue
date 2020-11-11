@@ -158,7 +158,7 @@ export default {
       show_nfc: !!this.author.nfc_tag,
       show_password: false,
 
-      possible_roles: ["contributor", "participant", "admin"],
+      possible_roles: ["contributor", "admin"],
 
       authordata: {
         name: this.author.name,
