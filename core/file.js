@@ -1207,6 +1207,7 @@ module.exports = (function () {
               if (
                 (meta.type === "text" ||
                   meta.type === "marker" ||
+                  meta.type === "planning" ||
                   meta.type === "embed" ||
                   meta.type === "code") &&
                 data.hasOwnProperty("content")
@@ -1478,6 +1479,7 @@ module.exports = (function () {
         } else if (
           additionalMeta.type === "text" ||
           additionalMeta.type === "marker" ||
+          additionalMeta.type === "planning" ||
           additionalMeta.type === "embed"
         ) {
           tasks.push(
@@ -1800,6 +1802,7 @@ module.exports = (function () {
             if (
               (mediaData.type === "text" ||
                 mediaData.type === "marker" ||
+                mediaData.type === "planning" ||
                 mediaData.type === "embed" ||
                 mediaData.type === "code") &&
               mediaData.hasOwnProperty("media_filename")
