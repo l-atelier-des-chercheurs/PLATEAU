@@ -430,6 +430,28 @@ let vm = new Vue({
         return false;
       return this.store.authors[this.settings.current_author_slug];
     },
+    unique_clients() {
+      return this.$root.state.clients.reduce((acc, client) => {
+        if (client.id === this.$root.$socketio.socket.id.substring(0, 4))
+          return acc;
+
+        if (
+          this.$root.state.local_options.force_login &&
+          !client.data.hasOwnProperty("author")
+        )
+          return acc;
+
+        if (
+          !client.data.hasOwnProperty("author") ||
+          !acc.some(
+            (a) => a.data.slugFolderName === client.data.author.slugFolderName
+          )
+        )
+          acc.push(client);
+
+        return acc;
+      }, []);
+    },
     all_authors() {
       return Object.values(this.store.authors);
     },
