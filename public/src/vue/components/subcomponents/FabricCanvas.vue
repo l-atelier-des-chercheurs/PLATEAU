@@ -137,6 +137,11 @@ export default {
       },
       deep: true,
     },
+    "drawing_options.background_color": function () {
+      this.$nextTick(() => {
+        this.updateCanvas();
+      });
+    },
   },
   computed: {
     containerProperties() {
