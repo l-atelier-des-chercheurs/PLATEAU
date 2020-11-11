@@ -59,7 +59,7 @@
             >
               <label>{{ $t("devices_used") }}</label>
               <div v-for="client in clients_for_author" :key="client.id">
-                {{ getDeviceName(client) }}
+                {{ $root.getDeviceName(client) }}
               </div>
               <br />
             </template>
@@ -442,25 +442,6 @@ export default {
 
       return false;
     },
-    getDeviceName(client) {
-      if (
-        !client ||
-        !client.hasOwnProperty("data") ||
-        !client.data.hasOwnProperty("device")
-      )
-        return ".";
-
-      let str = "";
-      const device = client.data.device;
-
-      if (device.hasOwnProperty("client"))
-        str += device.client.name + " " + device.client.version;
-      if (device.hasOwnProperty("os"))
-        str += " " + this.$t("on") + " " + device.os.name;
-
-      return str;
-    },
-
     submitPassword({
       slugFolderName,
       password = this.$auth.hashCode(this.$refs.passwordField.value),

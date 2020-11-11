@@ -12,7 +12,7 @@
 
     <template slot="preview"> -->
 
-  <div class>
+  <div class="m_authorsList">
     <label>{{ $t("users_connected") }}</label>
     <div class="margin-sides-medium margin-vert-small">
       <div
@@ -36,7 +36,7 @@
         }}</small>
       </div> -->
     </div>
-    <transition-group tag="div" class="m_authorsList" name="list-complete">
+    <transition-group tag="div" name="list-complete">
       <div class :key="'createAuthor'">
         <div class="m_authorsList--createAuthor">
           <button
@@ -62,7 +62,23 @@
       </template>
     </transition-group>
 
-    <label
+    <div v-if="clients_not_identified.length > 0">
+      <label>
+        {{ $t("devices_not_identified") }}
+      </label>
+      <div v-for="client in clients_not_identified" :key="client.id">
+        {{ $root.getDeviceName(client) }}
+        <!-- {{ client.id }} -->
+        <template
+          v-if="
+            $root.$socketio.socket.id &&
+            $root.$socketio.socket.id.startsWith(client.id)
+          "
+          >({{ $t("self").toLowerCase() }})
+        </template>
+      </div>
+    </div>
+    <!-- <label
       >Liste des personnes sur Plateau
       <ul>
         <li>en premier, celles qui sont dans ce projet</li>
@@ -71,7 +87,7 @@
           leur disposition
         </li>
       </ul>
-    </label>
+    </label> -->
   </div>
   <!-- </template>
   </Modal> -->
@@ -172,7 +188,14 @@ export default {
         return c;
       });
     },
-    not_connected_authors() {},
+    clients_not_identified() {
+      return this.$root.state.clients.filter(
+        (c) =>
+          !c.hasOwnProperty("data") ||
+          !c.data.hasOwnProperty("author") ||
+          !c.data.author.slugFolderName
+      );
+    },
     connected_authors() {
       return this.$root.state.clients;
     },
@@ -186,7 +209,7 @@ export default {
   // flex-flow: row wrap;
   // align-items: flex-start;
   // justify-content: flex-start;
-  // margin: calc(var(--spacing) / 2);
+  margin-bottom: calc(var(--spacing) * 2);
 
   > * {
     // .margin-sides-small;

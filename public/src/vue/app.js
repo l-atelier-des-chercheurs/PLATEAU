@@ -1091,5 +1091,23 @@ let vm = new Vue({
     setFavFilter() {
       this.settings.media_filter.fav = !this.settings.media_filter.fav;
     },
+    getDeviceName(client) {
+      if (
+        !client ||
+        !client.hasOwnProperty("data") ||
+        !client.data.hasOwnProperty("device")
+      )
+        return ".";
+
+      let str = "";
+      const device = client.data.device;
+
+      if (device.hasOwnProperty("client"))
+        str += device.client.name + " " + device.client.version;
+      if (device.hasOwnProperty("os"))
+        str += " " + this.$t("on") + " " + device.os.name;
+
+      return str;
+    },
   },
 });

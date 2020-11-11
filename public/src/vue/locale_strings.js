@@ -45,6 +45,8 @@ module.exports = (function () {
       logout: "Se déconnecter",
       contributor: "Contributeur.trice",
       admin: "Adminstrateur.trice",
+      self: "Cet appareil",
+      devices_not_identified: "Appareils non identifiés",
 
       photo: "photo",
       video: "vidéo",
