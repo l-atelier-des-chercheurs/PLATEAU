@@ -1,69 +1,92 @@
 <template>
-  <div class>
-    <div
-      v-for="f in files_to_upload"
-      :key="f.name"
-      class="m_uploadFile"
-      :class="cssStatus(f)"
-      :style="`--progress-percent: ${files_to_upload_meta.hasOwnProperty(f.name) ? files_to_upload_meta[f.name].upload_percentages/100 : 0}`"
-    >
-      <!-- too heavy on memory on mobile devices -->
-      <!-- <img 
-            v-if="!!f.type && f.type.includes('image') && index < 5" 
-            class="m_uploadFile--image"
-            :src="getImgPreview(f)"
-      >-->
-      <!-- <div class="m_uploadFile--image" /> -->
+  <div>
+    <transition-group tag="div" name="fileupload_list">
+      <div
+        v-for="(f, index) in files_to_upload"
+        :key="f.name"
+        class="m_uploadFile"
+        :class="cssStatus(f)"
+        :style="`--progress-percent: ${
+          files_to_upload_meta.hasOwnProperty(f.name)
+            ? files_to_upload_meta[f.name].upload_percentages / 100
+            : 0
+        }`"
+      >
+        <div class="m_uploadFile--progressBar"></div>
 
-      <div :title="f.name" class="m_uploadFile--filename">{{ f.name }}</div>
-      <div class="m_uploadFile--size">{{ formatBytes(f.size) }}</div>
-      <div class="m_uploadFile--action" v-if="files_to_upload_meta.hasOwnProperty(f.name)">
-        <button
-          type="button"
-          class="buttonLink"
-          @click="sendThisFile(f)"
-          :disabled="read_only || (files_to_upload_meta.hasOwnProperty(f.name) && files_to_upload_meta[f.name].status === 'success')"
+        <img
+          v-if="!!f.type && f.type.includes('image') && index < 5"
+          class="m_uploadFile--image"
+          :src="getImgPreview(f)"
+        />
+        <div v-else class="m_uploadFile--image" />
+
+        <div :title="f.name" class="m_uploadFile--filename">{{ f.name }}</div>
+        <div class="m_uploadFile--size">{{ formatBytes(f.size) }}</div>
+        <div
+          class="m_uploadFile--action"
+          v-if="files_to_upload_meta.hasOwnProperty(f.name)"
         >
-          <template v-if="!files_to_upload_meta.hasOwnProperty(f.name)">{{ $t('import') }}</template>
-          <template v-else-if="files_to_upload_meta[f.name].status === 'success'">{{ $t('sent') }}</template>
-          <template v-else-if="files_to_upload_meta[f.name].status === 'failed'">{{ $t('retry') }}</template>
-        </button>
+          <button
+            type="button"
+            class="buttonLink"
+            @click="sendThisFile(f)"
+            :disabled="
+              read_only ||
+              (files_to_upload_meta.hasOwnProperty(f.name) &&
+                files_to_upload_meta[f.name].status === 'success')
+            "
+          >
+            <template v-if="!files_to_upload_meta.hasOwnProperty(f.name)">{{
+              $t("import")
+            }}</template>
+            <template
+              v-else-if="files_to_upload_meta[f.name].status === 'success'"
+              >{{ $t("sent") }}</template
+            >
+            <template
+              v-else-if="files_to_upload_meta[f.name].status === 'failed'"
+              >{{ $t("retry") }}</template
+            >
+          </button>
+        </div>
       </div>
-    </div>
+    </transition-group>
   </div>
 </template>
 <script>
-import Modal from "./BaseModal.vue";
 import * as axios from "axios";
 import { setTimeout } from "timers";
+// import UAparser from "ua-parser-js";
 
 export default {
   props: {
-    read_only: Boolean,
     slugFolderName: String,
     type: String,
-    selected_files: Array
+    selected_files: Array,
   },
-  components: {
-    Modal
-  },
+  components: {},
   data() {
     return {
       files_to_upload: this.selected_files,
       files_to_upload_meta: {},
-      upload_percentages: 0
+      upload_percentages: 0,
+
+      list_of_medias_to_add_to_fragment: [],
     };
   },
   watch: {},
   mounted() {
-    console.log("MOUNTED • TimeLineView: onScroll");
     this.sendAllFiles();
   },
   beforeDestroy() {},
   computed: {
-    uriToUploadMedia: function() {
-      return `file-upload/${this.type}/${this.slugFolderName}`;
-    }
+    uriToUploadMedia: function () {
+      return (
+        window.location.origin +
+        `/_file-upload/${this.type}/${this.slugFolderName}/?socketid=${this.$root.$socketio.socket.id}`
+      );
+    },
   },
   methods: {
     sendThisFile(f) {
@@ -77,17 +100,29 @@ export default {
 
         this.$set(this.files_to_upload_meta, filename, {
           upload_percentages: 0,
-          status: "sending"
+          status: "sending",
         });
 
         let formData = new FormData();
         formData.append("files", f, filename);
-        const meta = {
+
+        let meta = {
           fileCreationDate: modified,
-          authors: this.$root.settings.current_author_name
-            ? [{ name: this.$root.settings.current_author_name }]
-            : ""
+          authors: this.$root.current_author
+            ? [{ slugFolderName: this.$root.current_author.slugFolderName }]
+            : "",
         };
+
+        // const parser = new UAparser();
+        // const result = parser.getResult();
+        // if (result) {
+        //   meta.device_infos = [];
+        //   const browser = Object.assign(result.browser, { type: "browser" });
+        //   const device = Object.assign(result.device, { type: "device" });
+        //   const os = Object.assign(result.os, { type: "os" });
+        //   meta.device_infos.push(browser, device, os);
+        // }
+
         formData.append(filename, JSON.stringify(meta));
 
         const socketid = this.$socketio.socket.id;
@@ -95,76 +130,69 @@ export default {
           formData.append("socketid", socketid);
         }
 
-        if (this.$root.state.dev_mode === "debug") {
+        if (this.$root.state.dev_mode === "debug")
           console.log(
-            `METHODS • sendThisFile: name = ${filename} / formData is ready / sending to ${this.uriToUploadMedia}`
+            `UploadFile • METHODS: name = ${filename} / formData is ready / sending to ${this.uriToUploadMedia}`
           );
-        }
 
         // TODO : possibilité de cancel
         axios
           .post(this.uriToUploadMedia, formData, {
             headers: { "Content-Type": "multipart/form-data" },
-            onUploadProgress: function(progressEvent) {
+            onUploadProgress: function (progressEvent) {
               this.files_to_upload_meta[filename].upload_percentages = parseInt(
                 Math.round((progressEvent.loaded * 100) / progressEvent.total)
               );
-            }.bind(this)
+            }.bind(this),
           })
-          .then(x => x.data)
-          .then(x => {
-            if (this.$root.state.dev_mode === "debug") {
+          .then((x) => x.data)
+          .then((x) => {
+            if (this.$root.state.dev_mode === "debug")
               console.log(
-                `METHODS • sendThisFile: name = ${filename} / success uploading`
+                `UploadFile • METHODS: name = ${filename} / success uploading`
               );
-            }
 
             this.files_to_upload_meta[filename].status = "success";
             this.files_to_upload_meta[filename].upload_percentages = 100;
 
-            resolve(filename);
-            // resolve(x.map(img => Object.assign({}, img, { url: `${BASE_URL}/images/${img.id}` })));
+            this.list_of_medias_to_add_to_fragment.push(x.metaFileNames[0]);
+            return resolve();
           })
-          .catch(err => {
-            if (this.$root.state.dev_mode === "debug") {
+          .catch((err) => {
+            if (this.$root.state.dev_mode === "debug")
               console.log(
                 `METHODS • sendThisFile: name = ${filename} / failed uploading`
               );
-            }
 
             this.files_to_upload_meta[filename].status = "failed";
             this.files_to_upload_meta[filename].upload_percentages = 0;
-
-            this.$alertify
-              .closeLogOnClick(true)
-              .delay(4000)
-              .error(this.$t("notifications.media_couldnt_be_sent"));
-
-            reject();
+            return reject();
           });
       });
     },
     sendAllFiles() {
-      const executeSequentially = array => {
+      const executeSequentially = (array) => {
         return this.sendThisFile(this.files_to_upload[array.shift()]).then(
-          filename => {
-            // bug : removes files before uploads
-            // setTimeout(() => {
-            //   this.files_to_upload = this.files_to_upload.filter(x => x.name !== filename);
-            //   this.$delete(this.files_to_upload_meta, filename);
+          (x) => {
+            if (this.$root.state.dev_mode === "debug")
+              console.log(
+                `UploadFile • METHODS: sendAllFiles / finished sending file, onto next`
+              );
 
-            //   if(Object.keys(this.files_to_upload_meta).length === 0) {
-            //     this.$emit('close');
-            //   }
-            // }, 500);
-            return array.length == 0 ? "" : executeSequentially(array);
+            return array.length === 0 ? x : executeSequentially(array);
           }
         );
       };
+
       executeSequentially(
         Array.from(Array(this.files_to_upload.length).keys())
-      ).then(x => {
-        this.$emit("close");
+      ).then((x) => {
+        if (this.$root.state.dev_mode === "debug")
+          console.log(
+            `UploadFile • METHODS: sendAllFiles / finished uploading sequentially`
+          );
+        this.$emit("insertMedias", this.list_of_medias_to_add_to_fragment);
+        this.$emit("close", "");
       });
 
       // const test = async () => {
@@ -185,7 +213,7 @@ export default {
         "PB",
         "EB",
         "ZB",
-        "YB"
+        "YB",
       ];
 
       var c = 1024,
@@ -200,10 +228,11 @@ export default {
       if (this.files_to_upload_meta.hasOwnProperty(f.name)) {
         return "is--" + this.files_to_upload_meta[f.name].status;
       }
-    }
-  }
+    },
+  },
 };
 </script>
+-
 <style lang="less" scoped>
 .m_uploadFile {
   position: relative;
