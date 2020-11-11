@@ -42,6 +42,12 @@
             v-if="!!media.caption"
             v-text="media.caption"
           />
+          <figcaption class="m_media--authors" v-if="!!media.authors">
+            <AuthorsInput
+              :currentAuthors.sync="media.authors"
+              :read_only="true"
+            />
+          </figcaption>
           <div class="m_media--date">
             {{
               $moment(media.date_uploaded, "YYYY-MM-DD HH:mm:ss").format(
@@ -85,6 +91,7 @@
 <script>
 import MediaContent from "./MediaContent.vue";
 import { setTimeout } from "timers";
+import AuthorsInput from "../subcomponents/AuthorsInput.vue";
 
 export default {
   props: {
@@ -95,6 +102,7 @@ export default {
   },
   components: {
     MediaContent,
+    AuthorsInput,
   },
   data() {
     return {
@@ -269,7 +277,7 @@ export default {
       display: block;
       width: 100%;
       height: 0;
-      padding-bottom: 100%;
+      padding-bottom: 66%;
     }
 
     // > img {
@@ -283,6 +291,7 @@ export default {
       display: flex;
       justify-content: center;
       align-items: center;
+      height: 100%;
 
       svg {
         width: 20px;
@@ -298,6 +307,12 @@ export default {
   }
 }
 
+.m_media--authors {
+  font-size: 70%;
+  padding: 0 calc(var(--spacing) / 4);
+  white-space: pre-line;
+  pointer-events: none;
+}
 .m_media--caption {
   font-size: 70%;
   padding: 0 calc(var(--spacing) / 4);

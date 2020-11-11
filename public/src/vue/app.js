@@ -609,6 +609,18 @@ let vm = new Vue({
       this.settings.current_author_slug = false;
       this.$socketio.socket.emit("updateClientInfo", { author: {} });
     },
+    getAuthor(slugFolderName) {
+      return this.getFolder({ slugFolderName, type: "authors" });
+    },
+    getFolder({ slugFolderName, type }) {
+      if (
+        Object.keys(this.store[type]).length === 0 ||
+        !this.store[type].hasOwnProperty(slugFolderName)
+      )
+        return false;
+      return this.store[type][slugFolderName];
+    },
+
     format_date_to_human(d) {
       if (this.$root.lang.current === "fr") {
         return this.$moment(d).calendar(null, {

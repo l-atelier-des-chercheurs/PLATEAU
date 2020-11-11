@@ -60,6 +60,9 @@ module.exports = (function () {
       Team: "Équipe",
       other_devices_connected: "autre appareils connectés",
       back: "Retour",
+      caption: "Légende",
+      edit_caption: "Modifier la légende",
+      add_keyword: "Ajouter un mot-clé",
 
       bytes: "octets",
       kb: "ko",
