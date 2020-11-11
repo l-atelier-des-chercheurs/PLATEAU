@@ -206,7 +206,7 @@ export default {
   data() {
     return {
       mediaSort: {
-        field: "date_created",
+        field: "date_uploaded",
         type: "date",
         order: "descending",
       },
@@ -358,13 +358,13 @@ export default {
       let mediaGroup = this.$_.groupBy(this.sortedMedias, (media) => {
         let _date;
 
-        if (media.hasOwnProperty("date_created") && !!media.date_created) {
-          _date = media.date_created;
-        } else if (
-          media.hasOwnProperty("date_uploaded") &&
-          !!media.date_uploaded
-        ) {
+        if (media.hasOwnProperty("date_uploaded") && !!media.date_uploaded) {
           _date = media.date_uploaded;
+        } else if (
+          media.hasOwnProperty("date_created") &&
+          !!media.date_created
+        ) {
+          _date = media.date_created;
         } else {
           return this.$t("invalid_date");
         }
