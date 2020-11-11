@@ -6,6 +6,7 @@
 // so you don't have to do: import Vue from 'vue/dist/vue'
 // This is done with the browser options. For the config, see package.json
 import Vue from "vue";
+import DeviceDetector from "device-detector-js";
 
 import localstore from "store";
 import _ from "underscore";
@@ -333,6 +334,10 @@ let vm = new Vue({
         this.$socketio.connect();
       }
 
+      const deviceDetector = new DeviceDetector();
+      const device = deviceDetector.parse(navigator.userAgent);
+      this.$socketio.socket.emit("updateClientInfo", { device });
+
       this.$eventHub.$once("socketio.authentificated", () => {
         this.$socketio.listFolders({ type: "authors" });
         this.$socketio.listFolders({ type: "projects" });
@@ -430,9 +435,18 @@ let vm = new Vue({
       },
       deep: true,
     },
+    current_project() {
+      this.updateClientInfo({
+        looking_at_project: {
+          slugFolderName: this.current_project
+            ? this.current_project.slugFolderName
+            : false,
+        },
+      });
+    },
   },
   computed: {
-    currentProject: function () {
+    current_project: function () {
       if (
         !this.store.hasOwnProperty("projects") ||
         Object.keys(this.store.projects).length === 0
@@ -490,11 +504,11 @@ let vm = new Vue({
     current_planning_media: function () {
       if (
         !this.settings.current_planning_media_metaFileName ||
-        Object.keys(this.currentProject).length === 0
+        Object.keys(this.current_project).length === 0
       )
         return false;
 
-      return Object.values(this.currentProject.medias).find(
+      return Object.values(this.current_project.medias).find(
         (m) =>
           m.metaFileName === this.settings.current_planning_media_metaFileName
       );

@@ -4,7 +4,7 @@
     class="m_fabricCanvas"
     :class="{
       'is--receptiveToDrop': !!$root.settings.media_being_dragged,
-      'is--dragover': is_being_dragover
+      'is--dragover': is_being_dragover,
     }"
     :style="containerProperties"
     @dragover="ondragover($event)"
@@ -28,8 +28,8 @@ export default {
     drawing_options: Object,
     max_zoom: {
       type: Number,
-      default: 1
-    }
+      default: 1,
+    },
   },
   components: {},
   data() {
@@ -39,9 +39,9 @@ export default {
       isDown: false,
       canvas_properties: {
         width: 1024,
-        height: 768
+        height: 768,
       },
-      zoom: 0
+      zoom: 0,
     };
   },
 
@@ -55,16 +55,16 @@ export default {
 
     // store relative URL for images thumbs
     // TODO: also work out a solution when media is directly embedded (for example, videos)
-    fabric.Image.prototype.toObject = (function(toObject) {
-      return function() {
+    fabric.Image.prototype.toObject = (function (toObject) {
+      return function () {
         return fabric.util.object.extend(toObject.call(this), {
-          src: "_thumbs" + this.getSrc().split("_thumbs")[1]
+          src: "_thumbs" + this.getSrc().split("_thumbs")[1],
         });
       };
     })(fabric.Image.prototype.toObject);
 
     this.canvas = new fabric.Canvas(this.$refs.canvas, {
-      enableRetinaScaling: false
+      enableRetinaScaling: false,
     });
 
     if (this.media.hasOwnProperty("content") && this.media.content !== "") {
@@ -81,7 +81,7 @@ export default {
       this.updateCanvasSizeAccordingToPanel
     );
 
-    this.canvas.on("mouse:down", o => {
+    this.canvas.on("mouse:down", (o) => {
       this.isDown = true;
       var pointer = this.canvas.getPointer(o.e);
       var points = [pointer.x, pointer.y, pointer.x, pointer.y];
@@ -97,7 +97,7 @@ export default {
         // this.canvas.add(this.new_line);
       }
     });
-    this.canvas.on("mouse:move", o => {
+    this.canvas.on("mouse:move", (o) => {
       if (!this.isDown) return;
       var pointer = this.canvas.getPointer(o.e);
 
@@ -108,7 +108,7 @@ export default {
       }
     });
 
-    this.canvas.on("mouse:up", o => {
+    this.canvas.on("mouse:up", (o) => {
       if (!this.isDown) return;
 
       this.isDown = false;
@@ -127,7 +127,7 @@ export default {
   },
 
   watch: {
-    "media.content": function() {
+    "media.content": function () {
       this.canvas.loadFromJSON(JSON.parse(this.media.content));
       this.setDrawingOptions();
     },
@@ -135,8 +135,8 @@ export default {
       handler() {
         this.setDrawingOptions();
       },
-      deep: true
-    }
+      deep: true,
+    },
   },
   computed: {
     containerProperties() {
@@ -149,7 +149,7 @@ export default {
     canvasProperties() {
       return `
         `;
-    }
+    },
   },
   methods: {
     captureKeyListener(event) {
@@ -160,7 +160,7 @@ export default {
     setDrawingOptions() {
       console.log(`METHODS • FabricCanvas / setDrawingOptions`);
       this.canvas.selection = this.drawing_options.mode === "select";
-      this.canvas.forEachObject(o => {
+      this.canvas.forEachObject((o) => {
         o.evented = this.drawing_options.mode === "select";
       });
       if (this.drawing_options.mode === "drawing") {
@@ -177,15 +177,15 @@ export default {
       this.canvas.freeDrawingBrush.color = this.drawing_options.color;
       this.canvas.freeDrawingBrush.width = this.drawing_options.width;
     },
-    removeSelection: function() {
-      this.canvas.getActiveObjects().forEach(obj => {
+    removeSelection: function () {
+      this.canvas.getActiveObjects().forEach((obj) => {
         this.canvas.remove(obj);
       });
       this.canvas.discardActiveObject().renderAll();
 
       this.updateCanvas();
     },
-    updateCanvas: function() {
+    updateCanvas: function () {
       console.log(`METHODS • FabricCanvas / updateCanvas`);
 
       const content = JSON.stringify(this.canvas.toJSON());
@@ -195,8 +195,8 @@ export default {
         slugFolderName: this.slugFolderName,
         slugMediaName: this.media.metaFileName,
         data: {
-          content
-        }
+          content,
+        },
       });
     },
     ondragover($event) {
@@ -210,7 +210,7 @@ export default {
       if (this.$root.state.dev_mode === "debug") {
         console.log(`METHODS • AddMedia / cancelDragOver`);
       }
-      this.removeDragoverFromBlots();
+      // this.removeDragoverFromBlots();
       this.is_being_dragover = false;
     },
 
@@ -246,12 +246,12 @@ export default {
           : `/${this.slugFolderName}/${media.media_filename}`;
 
       if (media.type === "image") {
-        const thumb = media.thumbs.find(m => m.size === 1600);
+        const thumb = media.thumbs.find((m) => m.size === 1600);
 
         const media_width = thumb.size;
         const media_height = media.ratio ? media_width * media.ratio : 900;
 
-        fabric.Image.fromURL(thumb.path, oImg => {
+        fabric.Image.fromURL(thumb.path, (oImg) => {
           // scale image down, and flip it, before adding it onto canvas
           oImg.set({
             left: this.canvas_properties.width / 2 - 100,
@@ -259,7 +259,7 @@ export default {
             width: media_width,
             height: media_height,
             scaleX: 0.1,
-            scaleY: 0.1
+            scaleY: 0.1,
           });
           this.canvas.add(oImg);
         });
@@ -276,8 +276,8 @@ export default {
           this.zoom = Math.min(this.max_zoom, 1);
         }
       }
-    }
-  }
+    },
+  },
 };
 </script>
 <style lang="scss">

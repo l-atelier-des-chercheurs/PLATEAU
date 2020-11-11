@@ -1509,6 +1509,17 @@ html[lang="fr"] .ql-tooltip::before {
   display: none;
 }
 
+.ql-cursor {
+  color: white;
+
+  &#ql-cursor-_self {
+    pointer-events: none;
+  }
+  small {
+    color: inherit;
+  }
+}
+
 .ql-toolbar.ql-snow .ql-formats {
   // display: block;
   // margin-right: 0 !important;

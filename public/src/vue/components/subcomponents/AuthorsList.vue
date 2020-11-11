@@ -11,6 +11,7 @@
     </template>
 
     <template slot="preview"> -->
+
   <div class>
     <label>{{ $t("users_connected") }}</label>
     <div class="margin-sides-medium margin-vert-small">
@@ -21,7 +22,7 @@
       </div>
 
       <small>{{ $t("when_logged_as_author_content_will_be_tagged") }}</small>
-      <button
+      <!-- <button
         v-if="!show_detail"
         type="button"
         class="buttonLink margin-left-none padding-left-none"
@@ -33,7 +34,7 @@
         <small v-if="show_detail">{{
           $t("more_informations_on_authors")
         }}</small>
-      </div>
+      </div> -->
     </div>
     <transition-group tag="div" class="m_authorsList" name="list-complete">
       <div class :key="'createAuthor'">
@@ -55,13 +56,9 @@
       </div>
 
       <template v-if="Object.keys(sorted_authors).length > 0">
-        <template v-for="author in sorted_authors">
-          <Author
-            :author="author"
-            :key="author.slugFolderName"
-            @close="$emit('close')"
-          />
-        </template>
+        <div v-for="author in sorted_authors" :key="author.slugFolderName">
+          <Author :author="author" @close="$emit('close')" />
+        </div>
       </template>
     </transition-group>
 
@@ -124,6 +121,27 @@ export default {
         a.name && b.name ? a.name.localeCompare(b.name) : false
       );
 
+      // move connected authors to top
+      if (this.$root.unique_clients) {
+        sorted_authors.map((a, idx) => {
+          const client_identified_as_author = this.$root.unique_clients.find(
+            (c) => {
+              return (
+                c.data &&
+                c.data.author &&
+                c.data.author.slugFolderName === a.slugFolderName
+              );
+            }
+          );
+          if (client_identified_as_author)
+            sorted_authors.unshift(
+              // remove the found item, in-place (by index with splice),
+              // returns an array of a single item removed
+              sorted_authors.splice(idx, 1)[0]
+            );
+        });
+      }
+
       // move current author to top
       if (this.$root.current_author) {
         sorted_authors.some(
@@ -136,7 +154,27 @@ export default {
             )
         );
       }
+
       return sorted_authors;
+    },
+    connected_clients_and_authors() {
+      return this.$root.state.clients.map((c) => {
+        if (
+          c.hasOwnProperty("data") &&
+          c.data.hasOwnProperty("author") &&
+          c.data.author.slugFolderName
+        ) {
+          const fitting_author = this.sorted_authors.find(
+            (a) => a.slugFolderName === c.data.author.slugFolderName
+          );
+          if (fitting_author) c._author = fitting_author;
+        }
+        return c;
+      });
+    },
+    not_connected_authors() {},
+    connected_authors() {
+      return this.$root.state.clients;
     },
   },
   methods: {},

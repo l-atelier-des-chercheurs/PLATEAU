@@ -14,7 +14,7 @@ module.exports = (function () {
       showing: "Affichage de",
       medias_of: "médias sur",
       create: "Créer",
-      remove: "Suppr.",
+      remove: "Supprimer",
       close: "Fermer",
       rename: "Renommer",
       filters: "Filtres",
@@ -22,7 +22,14 @@ module.exports = (function () {
       back: "Retour",
       at: "à",
       edit: "Modifier",
-
+      duplicate: "Dupliquer",
+      currently_connected: "Connecté actuellement",
+      on: "sur",
+      when_logged_as_author_content_will_be_tagged:
+        "Quand vous êtes identifiés, tous les contenus que vous contribuez seront associés à votre profil.",
+      password_required_to_open: "Mot de passe requis",
+      devices_used: "Appareils utilisés",
+      is_checking_out: "Consulte actuellement",
       settings: "Règlages",
       new_project: "Nouveau Projet",
       project: "Projet",
@@ -86,6 +93,8 @@ module.exports = (function () {
         connection_lost: "La connexion au serveur a été perdue.",
         sure_to_cancel_stopmotion:
           "Êtes-vous sur de vouloir annuler ce stopmoion ? Vous pourrez toujours le retrouver en cliquant sur Liste des stopmotions",
+        connecting_using_saved_account:
+          "Identification automatique en tant que ",
       },
     },
     en: {

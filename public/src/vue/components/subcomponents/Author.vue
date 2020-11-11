@@ -31,28 +31,40 @@
               : ''
           "
         />
-        <div class="m_author--name">{{ author.name }}</div>
-        <div class="m_author--email" v-if="author.email">
-          {{ author.email }}
+        <div>
+          <div class="m_author--name">{{ author.name }}</div>
+          <div class="m_author--email" v-if="author.email">
+            {{ author.email }}
+          </div>
         </div>
         <div class="m_author--role" v-if="author.role">
           <label>{{ $t(author.role) }}</label>
         </div>
 
         <div class="m_author--connected" v-if="author_is_connected" @click.stop>
-          <label class="">
-            <button
-              type="button"
-              class="button-nostyle padding-none text-uc button-triangle"
-              :class="{ 'is--active': show_connection_information }"
-              @click.stop="
-                show_connection_information = !show_connection_information
-              "
+          <button
+            type="button"
+            class="button-nostyle padding-none text-uc button-triangle"
+            :class="{ 'is--active': show_connection_information }"
+            @click.stop="
+              show_connection_information = !show_connection_information
+            "
+          >
+            {{ $t("currently_connected") }}
+          </button>
+
+          <div v-if="show_connection_information">
+            <template
+              v-if="clients_for_author && clients_for_author.length > 0"
             >
-              {{ $t("currently_connected") }}
-            </button>
-          </label>
-          <div v-if="show_connection_information && author_looking_at">
+              <label>{{ $t("devices_used") }}</label>
+              <div v-for="client in clients_for_author" :key="client.id">
+                {{ getDeviceName(client) }}
+              </div>
+              <br />
+            </template>
+
+            <label>{{ $t("is_checking_out") }}</label>
             <div
               class="m_metaField"
               v-if="
@@ -65,7 +77,7 @@
                 })
               "
             >
-              <div>{{ $t("project") }}</div>
+              <!-- <div>{{ $t("project") }}</div> -->
               <div>
                 <button
                   type="button"
@@ -328,7 +340,7 @@ export default {
     return {
       edit_author_mode: false,
       show_input_password_field: false,
-      show_connection_information: false,
+      show_connection_information: true,
     };
   },
   created() {},
@@ -370,6 +382,19 @@ export default {
           client.data.author.slugFolderName === this.author.slugFolderName
         );
       });
+    },
+    clients_for_author() {
+      if (!this.author_is_connected || this.$root.unique_clients.length === 0)
+        return false;
+
+      debugger;
+
+      return this.$root.unique_clients.filter(
+        (c) =>
+          c.data &&
+          c.data.author &&
+          c.data.author.slugFolderName === this.author.slugFolderName
+      );
     },
     author_looking_at() {
       if (!this.author_is_connected || !this.author_is_connected.data)
@@ -416,6 +441,24 @@ export default {
       }
 
       return false;
+    },
+    getDeviceName(client) {
+      if (
+        !client ||
+        !client.hasOwnProperty("data") ||
+        !client.data.hasOwnProperty("device")
+      )
+        return ".";
+
+      let str = "";
+      const device = client.data.device;
+
+      if (device.hasOwnProperty("client"))
+        str += device.client.name + " " + device.client.version;
+      if (device.hasOwnProperty("os"))
+        str += " " + this.$t("on") + " " + device.os.name;
+
+      return str;
     },
 
     submitPassword({
@@ -571,10 +614,10 @@ export default {
     // background-color: transparent;
     // padding-left: calc(var(--spacing) / 2);
     // padding-right: calc(var(--spacing) / 2);
-    display: flex;
-    flex-flow: row wrap;
-    justify-content: space-between;
-    align-items: center;
+    // display: flex;
+    // flex-flow: row wrap;
+    // justify-content: space-between;
+    // align-items: center;
 
     > * {
       margin-right: calc(var(--spacing) / 2);
@@ -621,7 +664,10 @@ export default {
   .m_author--connected {
     background-color: var(--c-bleu);
     border-radius: 4px;
-    padding: calc(var(--spacing) / 4);
+    padding: calc(var(--spacing) / 4) calc(var(--spacing) / 2);
+    margin-right: 0;
+    text-align: center;
+    width: 100%;
 
     > label {
       margin-bottom: 0;
@@ -655,5 +701,10 @@ export default {
   button {
     margin: 0;
   }
+}
+
+._connected_button {
+  width: 100%;
+  max-width: none;
 }
 </style>
