@@ -10,7 +10,7 @@
         @click="cancelStopmotion"
         class="buttonLink"
       >
-        <span class="text-cap font-verysmall">{{ $t("back") }}</span>
+        <span class="text-cap font-verysmall">{{ $t("stop_stopmotion") }}</span>
       </button>
 
       <button
@@ -25,17 +25,6 @@
     </div>
 
     <div class="m_stopmotionpanel--medias" v-if="!validating_video_preview">
-      <!-- <div class="m_stopmotionpanel--medias--single">
-        <MediaContent
-          v-if="show_previous_photo"
-          :context="'preview'"
-          :slugFolderName="stopmotiondata.slugFolderName"
-          :media="show_previous_photo"
-          :subfolder="'_stopmotions/'"
-          :preview_size="1200"
-        />
-      </div>-->
-
       <transition-group
         class="m_stopmotionpanel--medias--list"
         name="list-complete"
@@ -59,7 +48,7 @@
             :context="'preview'"
             :slugFolderName="stopmotiondata.slugFolderName"
             :media="media"
-            :subfolder="'_stopmotions/'"
+            :folderType="'stopmotions'"
             :preview_size="150"
           />
         </div>
@@ -76,6 +65,7 @@
       </transition-group>
       <div class="m_stopmotionpanel--medias--validation">
         <div class="m_stopmotionpanel--medias--validation--fpscounter">
+          <label class>{{ $t("img_per_second") }}</label>
           <select step="1" v-model.number="frameRate">
             <option>2</option>
             <option>4</option>
@@ -84,9 +74,6 @@
             <option>24</option>
             <option>30</option>
           </select>
-          <label class v-if="medias.length <= 1">{{
-            $t("img_per_second")
-          }}</label>
         </div>
 
         <button
@@ -98,18 +85,36 @@
             validating_video_preview && frameRate === previousFrameRate
           "
         >
-          <!-- <span class="text-cap font-verysmall">
-            {{ $t('generate') }}
-          </span>-->
-          Compiler
+          <span class="text-cap padding-left-small font-verysmall">{{
+            $t("create")
+          }}</span>
+          <img
+            src="/images/i_play.svg"
+            width="48"
+            height="48"
+            draggable="false"
+          />
         </button>
+
+        <!-- <button
+          type="button"
+          class="buttonLink padding-verysmall margin-none"
+          :class="{ 'is--active': show_advanced_menu }"
+          @mousedown.stop.prevent="
+            show_advanced_menu = !show_advanced_menu;
+          "
+          @touchstart.stop.prevent="
+            show_advanced_menu = !show_advanced_menu;
+          "
+        >{{ $t('advanced_options') }}</button>-->
       </div>
     </div>
 
     <div v-else class="m_stopmotionpanel--videopreview" ref="videoPreview">
       <MediaContent
         :context="'full'"
-        :slugFolderName="slugProjectName"
+        :slugFolderName="slugFolderName"
+        :folderType="type"
         :media="validating_video_preview"
       />
     </div>
@@ -119,6 +124,7 @@
       :read_only="read_only"
       :media_is_being_sent="media_is_being_sent"
       :cancelButtonIsBackButton="true"
+      :can_add_to_fav="can_add_to_fav"
       @cancel="backToStopmotion"
       @save="save()"
       @save_and_fav="saveAndFav()"
@@ -136,8 +142,10 @@ import MediaValidationButtons from "./MediaValidationButtons.vue";
 export default {
   props: {
     stopmotiondata: Object,
-    slugProjectName: String,
+    slugFolderName: String,
+    type: String,
     videoStream: MediaStream,
+    can_add_to_fav: Boolean,
   },
   components: {
     MediaContent,
@@ -151,6 +159,7 @@ export default {
       show_previous_photo: false,
       media_is_being_sent: false,
       show_live_feed: true,
+      show_advanced_menu: false,
     };
   },
 
@@ -197,24 +206,23 @@ export default {
   methods: {
     assembleStopmotionMedias: function () {
       console.log("METHODS • StopmotionPanel: assembleStopmotionMedias");
+      this.$eventHub.$on(
+        "socketio.media_created_or_updated",
+        this.newStopmotionVideo
+      );
 
       const list_media_names = this.medias.map((x) => x.media_filename);
 
-      this.$root
-        .createMedia({
-          slugFolderName: this.slugProjectName,
-          type: "projects",
-          rawData: list_media_names,
-          additionalMeta: {
-            type: "stopmotion",
-            slugStopmotionName: this.stopmotiondata.slugFolderName,
-            frameRate: this.frameRate,
-          },
-        })
-        .then((mdata) => {
-          this.newStopmotionVideo(mdata);
-        });
-
+      this.$root.createMedia({
+        slugFolderName: this.slugFolderName,
+        type: this.type,
+        rawData: list_media_names,
+        additionalMeta: {
+          type: "stopmotion",
+          slugStopmotionName: this.stopmotiondata.slugFolderName,
+          frameRate: this.frameRate,
+        },
+      });
       this.previousFrameRate = this.frameRate;
       this.validating_video_preview = false;
       this.media_is_being_sent = true;
@@ -235,8 +243,8 @@ export default {
     backToStopmotion: function () {
       console.log("METHODS • StopmotionPanel: backToStopmotion");
       this.$root.removeMedia({
-        type: "projects",
-        slugFolderName: this.slugProjectName,
+        type: this.type,
+        slugFolderName: this.slugFolderName,
         slugMediaName: this.validating_video_preview.metaFileName,
       });
       this.validating_video_preview = false;
@@ -257,23 +265,28 @@ export default {
         );
     },
     save: function () {
+      this.$emit("saveMedia", this.validating_video_preview.metaFileName);
       this.show_previous_photo = false;
       this.validating_video_preview = false;
+
       this.$nextTick(() => {
         this.$emit("close");
       });
     },
     saveAndFav: function () {
       this.$root.editMedia({
-        type: "projects",
-        slugFolderName: this.slugProjectName,
+        type: this.type,
+        slugFolderName: this.slugFolderName,
         slugMediaName: this.validating_video_preview.metaFileName,
         data: {
           fav: true,
         },
       });
+      this.$emit("saveMedia", this.validating_video_preview.metaFileName);
+
       this.show_previous_photo = false;
       this.validating_video_preview = false;
+
       this.$nextTick(() => {
         this.$emit("close");
       });

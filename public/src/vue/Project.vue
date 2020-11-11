@@ -88,10 +88,10 @@
             ref="Capture"
           >
             <Capture
-              :slugProjectName="slugProjectName"
-              :project="project"
+              :slugFolderName="slugProjectName"
+              :type="`projects`"
               :read_only="!$root.state.connected"
-              :validation_before_upload="false"
+              :bypass_media_validation="true"
               data-id="Capture"
             />
           </pane>
