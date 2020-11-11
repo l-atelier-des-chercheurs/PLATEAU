@@ -336,6 +336,34 @@ let vm = new Vue({
       this.$eventHub.$once("socketio.authentificated", () => {
         this.$socketio.listFolders({ type: "authors" });
         this.$socketio.listFolders({ type: "projects" });
+        this.$socketio.listFolders({ type: "chats" });
+
+        const authorized_authors = this.state.list_authorized_folders.find(
+          (f) => f.type === "authors" && f.allowed_slugFolderNames.length > 0
+        );
+
+        if (authorized_authors) {
+          this.$eventHub.$once("socketio.authors.folders_listed", () => {
+            if (Object.values(this.store.authors).length === 0) return;
+
+            const first_author_slug =
+              authorized_authors.allowed_slugFolderNames[0];
+            const author = Object.values(this.store.authors).find(
+              (a) => a.slugFolderName === first_author_slug
+            );
+
+            if (author) {
+              this.setAuthor(first_author_slug);
+              this.$alertify
+                .closeLogOnClick(true)
+                .delay(4000)
+                .success(
+                  this.$t("notifications.connecting_using_saved_account") +
+                    author.name
+                );
+            }
+          });
+        }
       });
     }
   },
