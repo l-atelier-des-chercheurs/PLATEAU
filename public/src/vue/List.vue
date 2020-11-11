@@ -255,6 +255,7 @@ export default {
   padding: 10vh 0 10vh 4%;
   flex: 1 1 33%;
   background-color: var(--c-vert);
+  overflow-y: auto;
 }
 .m_panes--leftPane--title {
   text-transform: uppercase;

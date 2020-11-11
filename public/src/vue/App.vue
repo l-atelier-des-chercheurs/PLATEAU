@@ -10,7 +10,7 @@
       v-if="$root.state.mode !== 'export_planning'"
       :is="$root.do_navigation.view"
       :projects="$root.store.projects"
-      :project="$root.currentProject"
+      :project="$root.current_project"
       :slugProjectName="$root.do_navigation.current_slugProjectName"
     />
     <div v-else>
@@ -50,8 +50,8 @@ export default {
   created() {},
   computed: {
     planning_items() {
-      if (typeof this.$root.currentProject.medias !== "object") return [];
-      return Object.values(this.$root.currentProject.medias).filter(
+      if (typeof this.$root.current_project.medias !== "object") return [];
+      return Object.values(this.$root.current_project.medias).filter(
         (m) => m.type === "planning"
       );
     },
@@ -216,6 +216,46 @@ label {
   text-transform: lowercase;
   cursor: inherit;
   font-weight: 600;
+
+  &.button-triangle {
+    &::after {
+      content: "◄";
+      display: inline-block;
+      margin-left: 0.5em;
+      transition: transform 0.5s, color 0.5s;
+    }
+
+    &:hover {
+      background: transparent;
+
+      &::after {
+        color: var(--c-rouge);
+      }
+    }
+
+    &.is--active {
+      color: var(--c-rouge);
+
+      &::after {
+        transform: rotate(-90deg);
+      }
+
+      &:hover {
+        background: transparent;
+      }
+    }
+
+    &.bg-rouge {
+      &:hover {
+        &::after {
+          color: var(--c-noir);
+        }
+      }
+      &.is--active {
+        color: var(--c-noir);
+      }
+    }
+  }
 }
 
 button,

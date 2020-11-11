@@ -195,23 +195,6 @@ export default {
         );
       });
     },
-    getDeviceName(client) {
-      if (
-        !client ||
-        !client.hasOwnProperty("data") ||
-        !client.data.hasOwnProperty("device")
-      )
-        return ".";
-
-      let str = "";
-      const device = client.data.device;
-
-      if (device.hasOwnProperty("client"))
-        str += device.client.name + " " + device.client.version;
-      if (device.hasOwnProperty("os")) str += " sur " + device.os.name;
-
-      return str;
-    },
   },
 };
 </script>

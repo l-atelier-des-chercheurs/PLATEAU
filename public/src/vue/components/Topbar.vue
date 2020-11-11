@@ -104,7 +104,7 @@
             :key="`projectname`"
             @click="$root.navigation_back()"
             style="font-weight: 700"
-            >{{ $root.currentProject.name }}</span
+            >{{ $root.current_project.name }}</span
           >
           <!-- <button
           type="button"
@@ -159,7 +159,7 @@
     <div class="m_topbar--status" v-if="!$root.state.connected">
       {{ $t("notifications.connection_lost") }}
     </div>
-    <Clients v-if="$root.settings.is_slave" />
+    <!-- <Clients v-if="$root.settings.is_slave" /> -->
   </div>
 </template>
 <script>
@@ -212,7 +212,7 @@ export default {
       const query_url =
         window.location.origin +
         "/_archives/projects/" +
-        this.$root.currentProject.slugFolderName;
+        this.$root.current_project.slugFolderName;
       // + `?pwd=${pwd}`;
 
       if (this.$root.state.dev_mode === "debug")

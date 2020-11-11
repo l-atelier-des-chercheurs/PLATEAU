@@ -16,7 +16,7 @@
     </div>
     <div class>
       <button @click="$root.openProject(project.slugFolderName)">
-        {{ $t("ouvrir") }}
+        {{ $t("open") }}
       </button>
 
       <button
@@ -26,7 +26,7 @@
         @click="showDuplicateProjectMenu = !showDuplicateProjectMenu"
         :disabled="read_only"
       >
-        {{ $t("dupliquer") }}
+        {{ $t("duplicate") }}
       </button>
 
       <button
