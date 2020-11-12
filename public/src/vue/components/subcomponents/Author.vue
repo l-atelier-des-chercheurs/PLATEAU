@@ -340,7 +340,7 @@ export default {
     return {
       edit_author_mode: false,
       show_input_password_field: false,
-      show_connection_information: true,
+      show_connection_information: false,
     };
   },
   created() {},
