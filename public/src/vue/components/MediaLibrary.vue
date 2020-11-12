@@ -565,11 +565,16 @@ export default {
 }
 
 .m_library--chronology {
+  > * {
+    margin: var(--spacing);
+  }
+
   h3 {
     // font-weight: normal;
     font-size: 75%;
-    margin: var(--spacing);
-    margin-bottom: calc(var(--spacing) / 2);
+    // margin: var(--spacing);
+    margin: calc(var(--spacing)) 0;
+    // text-align: center;
   }
 }
 
