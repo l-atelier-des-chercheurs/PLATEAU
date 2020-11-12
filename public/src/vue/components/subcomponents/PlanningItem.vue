@@ -84,8 +84,10 @@
         <!-- <span v-if="!media.planning_info_start">début</span>
         -->
       </div>
-      <span v-if="(!edit_mode && media_duration) || edit_mode">→</span>
+      <!-- <span v-if="(!edit_mode && media_duration) || edit_mode">→</span> -->
       <div class="m_planningItem--date--duration">
+        <label>{{ $t("duration") }}</label>
+
         <span v-if="!edit_mode && media_duration">
           {{ media_duration }}
           <button

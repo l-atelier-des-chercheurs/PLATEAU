@@ -565,11 +565,16 @@ export default {
 }
 
 .m_library--chronology {
+  > * {
+    margin: var(--spacing);
+  }
+
   h3 {
     // font-weight: normal;
     font-size: 75%;
-    margin: var(--spacing);
-    margin-bottom: calc(var(--spacing) / 2);
+    // margin: var(--spacing);
+    margin: calc(var(--spacing)) 0;
+    // text-align: center;
   }
 }
 
@@ -587,46 +592,6 @@ export default {
 
   figure {
     margin: 0;
-  }
-}
-
-.m_library--mediaFocus {
-  width: 100%;
-  height: 100%;
-
-  display: flex;
-  flex-flow: column nowrap;
-
-  // box-shadow: 0 10px 23px rgba(0, 0, 0, 0.4);
-
-  .mediaContainer {
-    position: relative;
-    flex: 1 1 auto;
-
-    > * {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      object-position: center;
-    }
-  }
-
-  .m_library--mediaFocus--buttons {
-    flex: 0 0 auto;
-
-    position: relative;
-    z-index: 1;
-    padding: 0 calc(var(--spacing) / 2);
-    pointer-events: none;
-
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
-
-    > * {
-      pointer-events: auto;
-    }
   }
 }
 

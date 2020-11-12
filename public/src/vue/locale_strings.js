@@ -38,6 +38,7 @@ module.exports = (function () {
       keyword: "Mot-clé",
       keywords: "Mot-clés",
       more_informations: "Plus d’informations",
+      add_caption: "Ajouter une légende",
       users_connected: "Utilisateurs connectes",
       channels: "Sujets",
       users: "Utilisateurs",

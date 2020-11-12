@@ -672,6 +672,9 @@ let vm = new Vue({
 
       return _duration.format("H [heures] [et] m [minutes]");
     },
+    formatDurationToHoursMinutesSeconds(date) {
+      return this.$moment.utc(date).format("HH:mm:ss");
+    },
     createFolder: function (fdata) {
       return new Promise((resolve, reject) => {
         if (window.state.dev_mode === "debug") {

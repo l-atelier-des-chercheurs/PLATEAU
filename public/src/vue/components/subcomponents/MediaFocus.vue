@@ -1,6 +1,6 @@
 <template>
   <div
-    class="m_library--mediaFocus"
+    class="m_mediaFocus"
     @dragstart="startMediaDrag(media, $event)"
     @dragend="endMediaDrag()"
     :draggable="
@@ -39,7 +39,7 @@
       />
     </div>
 
-    <div class="m_library--mediaFocus--buttons">
+    <div class="m_mediaFocus--buttons">
       <a
         class="button"
         :download="media.media_filename"
@@ -48,10 +48,10 @@
         >{{ $t("download") }}</a
       >
       <button type="button" @click="removeMedia(show_media_detail_for)">
-        {{ $t("supprimer") }}
+        {{ $t("remove") }}
       </button>
       <button type="button" @click="toggleMediaModal()">
-        {{ $t("fermer") }}
+        {{ $t("close") }}
       </button>
       <button type="button" @click="$emit('prevMedia')">←</button>
       <button type="button" @click="$emit('nextMedia')">→</button>
@@ -151,4 +151,44 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss">
+.m_mediaFocus {
+  width: 100%;
+  height: 100%;
+
+  display: flex;
+  flex-flow: column nowrap;
+
+  // box-shadow: 0 10px 23px rgba(0, 0, 0, 0.4);
+
+  .mediaContainer {
+    position: relative;
+    flex: 1 1 auto;
+
+    > * {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+    }
+  }
+
+  .m_mediaFocus--buttons {
+    flex: 0 0 auto;
+
+    position: relative;
+    z-index: 1;
+    padding: 0 calc(var(--spacing) / 2);
+    pointer-events: none;
+
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+
+    > * {
+      pointer-events: auto;
+    }
+  }
+}
+</style>
