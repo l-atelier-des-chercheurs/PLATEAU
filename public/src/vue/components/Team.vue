@@ -86,6 +86,11 @@ export default {
 
   display: flex;
   flex-flow: column nowrap;
+  overflow-y: auto;
+
+  > ._sidebyside_radio {
+    flex: 0 0 auto;
+  }
 }
 
 ._sidebyside_radio {
