@@ -3,7 +3,7 @@
     <div class="m_filters" style="">
       <button
         type="button"
-        class="button-nostyle text-uc button-triangle"
+        class="button-nostyle text-uc _toggle_filters"
         :class="{ 'is--active': show_filters }"
         @click="show_filters = !show_filters"
       >
@@ -275,9 +275,13 @@ export default {
 </script>
 <style lang="scss">
 .m_filters {
-  background-color: white;
+  background-color: #fff;
   border-bottom: 1px solid black;
 }
+._toggle_filters {
+  line-height: 1;
+}
+
 .m_project {
   position: relative;
   height: 100%;
