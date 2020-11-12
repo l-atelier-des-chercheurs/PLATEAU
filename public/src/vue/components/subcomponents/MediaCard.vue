@@ -304,6 +304,23 @@ export default {
         border-radius: 10px;
       }
     }
+    ._duration {
+      width: auto;
+      height: auto;
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      // background-color: #fff;
+
+      // margin: 2px;
+      padding: 1px 2px 0px 3px;
+      // border-radius: 10px;
+      // filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.5));
+
+      font-size: 60%;
+      font-weight: 600;
+      color: white;
+    }
   }
 }
 
