@@ -590,46 +590,6 @@ export default {
   }
 }
 
-.m_library--mediaFocus {
-  width: 100%;
-  height: 100%;
-
-  display: flex;
-  flex-flow: column nowrap;
-
-  // box-shadow: 0 10px 23px rgba(0, 0, 0, 0.4);
-
-  .mediaContainer {
-    position: relative;
-    flex: 1 1 auto;
-
-    > * {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      object-position: center;
-    }
-  }
-
-  .m_library--mediaFocus--buttons {
-    flex: 0 0 auto;
-
-    position: relative;
-    z-index: 1;
-    padding: 0 calc(var(--spacing) / 2);
-    pointer-events: none;
-
-    display: flex;
-    justify-content: flex-end;
-    align-items: flex-end;
-
-    > * {
-      pointer-events: auto;
-    }
-  }
-}
-
 ._drop_indicator {
   position: absolute;
   top: 0;
