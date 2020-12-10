@@ -87,11 +87,12 @@
             min-size="5"
             ref="Capture"
           >
-            <Capture
+            <CaptureView
               :slugFolderName="slugProjectName"
               :type="`projects`"
               :read_only="!$root.state.connected"
               :bypass_media_validation="true"
+              :available_modes="['photo', 'video', 'stopmotion', 'audio']"
               data-id="Capture"
             />
           </pane>
@@ -132,7 +133,7 @@
 <script>
 import MediaLibrary from "./components/MediaLibrary.vue";
 import WriteUp from "./components/WriteUp.vue";
-import Capture from "./components/Capture.vue";
+import CaptureView from "./components/capture/CaptureView.vue";
 import Team from "./components/Team.vue";
 import Composition from "./components/Composition.vue";
 import Planning from "./components/Planning.vue";
@@ -148,7 +149,7 @@ export default {
   components: {
     MediaLibrary,
     WriteUp,
-    Capture,
+    CaptureView,
     Team,
     Composition,
     Planning,

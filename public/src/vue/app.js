@@ -44,8 +44,9 @@ Vue.component("Loader", {
   `,
 });
 
-import VueTippy from "../../node_modules/vue-tippy/dist/vue-tippy.min.js";
-Vue.use(VueTippy, {});
+import VueTippy, { TippyComponent } from "vue-tippy";
+Vue.use(VueTippy);
+Vue.component("tippy", TippyComponent);
 
 import VueGoodTablePlugin from "vue-good-table";
 Vue.use(VueGoodTablePlugin);
@@ -674,6 +675,26 @@ let vm = new Vue({
     },
     formatDurationToHoursMinutesSeconds(date) {
       return this.$moment.utc(date).format("HH:mm:ss");
+    },
+    formatBytes(a, b) {
+      if (0 == a) return `0 ${this.$t("bytes")}`;
+
+      var e = [
+        this.$t("bytes"),
+        this.$t("kb"),
+        this.$t("mb"),
+        this.$t("gb"),
+        "TB",
+        "PB",
+        "EB",
+        "ZB",
+        "YB",
+      ];
+
+      var c = 1024,
+        d = b || 2,
+        f = Math.floor(Math.log(a) / Math.log(c));
+      return parseFloat((a / Math.pow(c, f)).toFixed(d)) + " " + e[f];
     },
     createFolder: function (fdata) {
       return new Promise((resolve, reject) => {

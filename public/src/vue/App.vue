@@ -821,6 +821,52 @@ svg.inline-svg {
 }
 </style>
 <style lang="scss">
+.m_captureview {
+  height: 100%;
+
+  ._picto {
+    display: none !important;
+  }
+  svg {
+    width: 36px;
+    height: 36px;
+  }
+  ._modeSelector {
+    color: black;
+  }
+}
+.m_captureSettings {
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    color: black;
+  }
+}
+
+.inline-svg {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+
+  &.inline-svg-larger {
+    width: 1.4em;
+    height: 1.4em;
+  }
+
+  > * {
+    fill: currentColor;
+  }
+
+  &_larger {
+    width: 1.5em;
+    height: 1.5em;
+    margin-top: -0.25em;
+    margin-bottom: -0.25em;
+  }
+}
+
 body {
   &::-webkit-scrollbar {
     height: calc((var(--scrollbar-padding) * 2) + var(--scrollbar-height));
