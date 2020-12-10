@@ -261,9 +261,8 @@ module.exports = (function () {
           const thisFolderPath = path.join(mainFolderPath, slugFolderName);
           dev.logverbose(`Making a new folder at path ${thisFolderPath}`);
 
-          fs.mkdirp(
-            thisFolderPath,
-            () => {
+          fs.ensureDir(thisFolderPath)
+            .then(() => {
               let tasks = [];
 
               if (
@@ -314,12 +313,11 @@ module.exports = (function () {
               Promise.all(tasks).then(() => {
                 resolve(slugFolderName);
               });
-            },
-            function (err, p) {
+            })
+            .catch((err) => {
               dev.error(`Failed to create folder ${slugFolderName}: ${err}`);
               reject(err);
-            }
-          );
+            });
         });
       });
     },
@@ -738,8 +736,8 @@ module.exports = (function () {
             });
 
             dev.logverbose(
-              `All medias meta have been processed`,
-              JSON.stringify(folders_and_medias, null, 4)
+              `All medias meta have been processed`
+              // JSON.stringify(folders_and_medias, null, 4)
             );
             resolve(folders_and_medias);
           })
@@ -1207,8 +1205,6 @@ module.exports = (function () {
               if (
                 (meta.type === "text" ||
                   meta.type === "marker" ||
-                  meta.type === "planning" ||
-                  meta.type === "composition" ||
                   meta.type === "embed" ||
                   meta.type === "code") &&
                 data.hasOwnProperty("content")
@@ -1480,8 +1476,6 @@ module.exports = (function () {
         } else if (
           additionalMeta.type === "text" ||
           additionalMeta.type === "marker" ||
-          additionalMeta.type === "planning" ||
-          additionalMeta.type === "composition" ||
           additionalMeta.type === "embed"
         ) {
           tasks.push(
@@ -1804,8 +1798,6 @@ module.exports = (function () {
             if (
               (mediaData.type === "text" ||
                 mediaData.type === "marker" ||
-                mediaData.type === "planning" ||
-                mediaData.type === "composition" ||
                 mediaData.type === "embed" ||
                 mediaData.type === "code") &&
               mediaData.hasOwnProperty("media_filename")
