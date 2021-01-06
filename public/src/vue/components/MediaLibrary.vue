@@ -180,7 +180,7 @@
   </div>
 </template>
 <script>
-import UploadFile from "./modals/UploadFile.vue";
+import UploadFile from "./subcomponents/UploadFile.vue";
 import MediaCard from "./subcomponents/MediaCard.vue";
 import TagsAndAuthorFilters from "./subcomponents/TagsAndAuthorFilters.vue";
 import MediaFocus from "./subcomponents/MediaFocus.vue";
