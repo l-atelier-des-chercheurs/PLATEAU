@@ -1,6 +1,6 @@
 <template>
   <div class="m_project">
-    <div class="m_filters" style="">
+    <div class="m_filters" style="" v-if="false">
       <button
         type="button"
         class="button-nostyle text-uc _toggle_filters"
