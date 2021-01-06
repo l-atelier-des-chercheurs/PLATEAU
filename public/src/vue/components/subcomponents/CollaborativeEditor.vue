@@ -333,8 +333,7 @@ export default {
 
     this.cancelDragOver = debounce(this.cancelDragOver, 300);
 
-    // if (this.show_cursors)
-    this.cursors = this.editor.getModule("cursors");
+    if (this.show_cursors) this.cursors = this.editor.getModule("cursors");
 
     if (this.read_only || this.$root.state.mode !== "live")
       this.editor.disable();
@@ -344,9 +343,9 @@ export default {
         ? this.$root.current_author.name
         : this.$t("anonymous");
 
-      this.cursors.createCursor("_self", name, "#1d327f");
-      this.cursors.toggleFlag("_self", false);
       if (this.show_cursors) {
+        this.cursors.createCursor("_self", name, "#1d327f");
+        this.cursors.toggleFlag("_self", false);
       }
     }
 
