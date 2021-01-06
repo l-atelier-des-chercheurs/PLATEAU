@@ -54,7 +54,9 @@
         </div>
       </div>
 
-      <div v-if="false" key="current_author"></div>
+      <div v-if="$root.current_author" key="current_author">
+        <Author :author="$root.current_author" @close="$emit('close')" />
+      </div>
 
       <div v-else-if="Object.keys(sorted_authors).length > 0" key="login">
         <div class="m_authorsList--login">
@@ -83,20 +85,20 @@
             </div>
           </div>
         </div>
-        <div key="authors_list">
-          <button type="button" @click="show_author_list = !show_author_list">
-            <template v-if="!show_author_list">{{
-              $t("show_all_users")
-            }}</template>
-            <template v-else>{{ $t("hide_users_list") }}</template>
-          </button>
-          <div
-            v-if="show_author_list"
-            v-for="author in sorted_authors"
-            :key="author.slugFolderName"
-          >
-            <Author :author="author" @close="$emit('close')" />
-          </div>
+      </div>
+      <div key="authors_list">
+        <button type="button" @click="show_author_list = !show_author_list">
+          <template v-if="!show_author_list">{{
+            $t("show_all_users")
+          }}</template>
+          <template v-else>{{ $t("hide_users_list") }}</template>
+        </button>
+        <div
+          v-if="show_author_list"
+          v-for="author in sorted_authors"
+          :key="author.slugFolderName"
+        >
+          <Author :author="author" @close="$emit('close')" />
         </div>
       </div>
     </transition-group>
