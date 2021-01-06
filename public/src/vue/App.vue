@@ -322,6 +322,13 @@ input[type="text"] {
   font-size: 0.8em;
 }
 
+.m_captureview--videoPane--top {
+  min-height: 100px !important;
+}
+.m_stopmotionpanel--medias--validation {
+  color: black;
+}
+
 [draggable="true"] {
   -moz-user-select: none;
   -khtml-user-select: none;
