@@ -93,6 +93,7 @@
                 selected_devices.video_input_device.deviceId ===
                   'screen_capture'
               "
+              class="margin-top-veryverysmall"
             >
               <span class="switch switch-xs">
                 <input
@@ -134,7 +135,10 @@
               </select>
             </div>
 
-            <div v-if="selected_devices.audio_input_device">
+            <div
+              v-if="selected_devices.audio_input_device"
+              class="margin-top-veryverysmall"
+            >
               <span class="switch switch-xs">
                 <input
                   class="switch"
@@ -155,7 +159,10 @@
                 </small>
               </span>
             </div>
-            <div v-if="selected_devices.audio_input_device">
+            <div
+              v-if="selected_devices.audio_input_device"
+              class="margin-top-veryverysmall"
+            >
               <span class="switch switch-xs">
                 <input
                   class="switch"
@@ -204,34 +211,28 @@
         </div>
         <label>{{ $t("resolutions") }}</label>
         <div>
-          <small
+          <div
             v-if="
               !selected_devices.video_input_device ||
               !selected_devices.video_input_device.deviceId
             "
           >
-            {{ $t("pick_a_camera") }}
-          </small>
-          <template v-else>
-            <!-- <button
-                type="button"
-                class="buttonLink"
-                @click="getAllAvailableResolutions"
-                :disabled="is_scanning_resolutions"
-              >
-                get all input resolutions for
-                {{ selected_devices.video_input_device.label }}
-              </button> -->
-          </template>
-
-          <small
+            <small>
+              {{ $t("pick_a_camera") }}
+            </small>
+          </div>
+          <div
             v-if="
               selected_devices.video_input_device &&
-              selected_devices.video_input_device.deviceId === 'screen_capture'
+              (selected_devices.video_input_device.deviceId ===
+                'screen_capture' ||
+                selected_devices.video_input_device.chromeMediaSource)
             "
           >
-            {{ $t("cant_pick_resolution_when_screen_capture") }}
-          </small>
+            <small>
+              {{ $t("cant_pick_resolution_when_screen_capture") }}
+            </small>
+          </div>
           <div class="m_captureSettings--settings--resolutions" v-else>
             <div
               v-for="res in predefined_resolutions.concat(
@@ -295,6 +296,8 @@
               v-model.trim="access_distant_stream.callee"
               required
               :disabled="access_distant_stream.status.enabled"
+              autofocus="autofocus"
+              onfocus="this.select()"
               @keydown.enter.prevent="callStream"
             />
           </div>
@@ -313,7 +316,8 @@
         <transition name="fade_fast" :duration="150">
           <Loader v-if="share_this_stream.status.loading" />
         </transition>
-        <span class="switch switch-xs">
+
+        <div class="switch switch-xs">
           <input
             class="switch"
             id="shareStream"
@@ -321,7 +325,7 @@
             v-model="share_this_stream.enabled"
           />
           <label for="shareStream">{{ $t("share_stream") }}</label>
-        </span>
+        </div>
 
         <div
           v-if="share_this_stream.enabled"
@@ -332,7 +336,9 @@
             type="text"
             v-model.trim="share_this_stream.name"
             required
-            autofocus
+            autofocus="autofocus"
+            onfocus="this.select()"
+            @keydown.enter.prevent="setCameraStreamFromDefaults"
           />
         </div>
       </div>
@@ -343,11 +349,6 @@
             type="button"
             class="bg-rouge button-wide"
             @click="setCameraStreamFromDefaults"
-            :disabled="
-              !desired_camera_resolution ||
-              !selected_devices.video_input_device ||
-              current_settings === stream_current_settings
-            "
           >
             {{ $t("update") }}
           </button>
@@ -399,8 +400,6 @@ import RTCMultiConnection from "rtcmulticonnection";
 export default {
   props: {
     audio_output_deviceId: String,
-    enable_audio: Boolean,
-    enable_video: Boolean,
   },
   components: {
     RTCMultiConnection,
@@ -442,60 +441,24 @@ export default {
           height: 1080,
           ratio: "16:9",
         },
-        // {
-        //   label: "UXGA",
-        //   width: 1600,
-        //   height: 1200,
-        //   ratio: "4:3",
-        // },
         {
           label: "720p(HD)",
           width: 1280,
           height: 720,
           ratio: "16:9",
         },
-        // {
-        //   label: "SVGA",
-        //   width: 800,
-        //   height: 600,
-        //   ratio: "4:3",
-        // },
         {
           label: "VGA",
           width: 640,
           height: 480,
           ratio: "4:3",
         },
-        // {
-        //   label: "360p(nHD)",
-        //   width: 640,
-        //   height: 360,
-        //   ratio: "16:9",
-        // },
-        // {
-        //   label: "CIF",
-        //   width: 352,
-        //   height: 288,
-        //   ratio: "4:3",
-        // },
         {
           label: "QVGA",
           width: 320,
           height: 240,
           ratio: "4:3",
         },
-        // {
-        //   label: "QCIF",
-        //   width: 176,
-        //   height: 144,
-        //   ratio: "4:3",
-        // },
-        // {
-        //   label: "QQVGA",
-        //   width: 160,
-        //   height: 120,
-        //   ratio: "4:3",
-        // },
       ],
 
       unavailable_camera_resolutions: [],
@@ -521,6 +484,8 @@ export default {
         },
       },
 
+      rtcmulti_connection: undefined,
+
       share_this_stream: {
         enabled: false,
         name: `dodoc-${(Math.random().toString(36) + "00000000000000000").slice(
@@ -531,6 +496,7 @@ export default {
           loading: false,
           enabled: undefined,
           name: undefined,
+          peers_connected: [],
         },
       },
 
@@ -542,8 +508,6 @@ export default {
           callee: undefined,
         },
       },
-
-      rtcmulti_connection: undefined,
     };
   },
   created() {},
@@ -581,7 +545,6 @@ export default {
               err.message
           );
         if (err.message === "Could not start audio source") {
-          this.$emit("update:enable_audio", false);
         }
         this.is_loading_feed = false;
         this.$emit("hasFinishedLoading");
@@ -620,24 +583,12 @@ export default {
       this.local_stream.getTracks().forEach((track) => track.stop());
     if (this.remote_stream)
       this.remote_stream.getTracks().forEach((track) => track.stop());
-    this.stopSharingStream();
+    this.closeMultiRTC();
   },
   watch: {
     "selected_devices.video_input_device": function () {
       this.unavailable_camera_resolutions = [];
       this.last_working_resolution = false;
-    },
-    enable_audio: function () {
-      console.log(
-        `WATCH • CaptureSettings: enable_audio = ${this.enable_audio}`
-      );
-      if (!this.is_loading_feed) this.setCameraStreamFromDefaults();
-    },
-    enable_video: function () {
-      console.log(
-        `WATCH • CaptureSettings: enable_video = ${this.enable_video}`
-      );
-      if (!this.is_loading_feed) this.setCameraStreamFromDefaults();
     },
     local_stream: function () {
       this.setCurrentStream();
@@ -1023,7 +974,7 @@ export default {
             `CaptureSettings • METHODS : setCameraStreamFromDefaults`
           );
 
-        this.stream_current_settings = this.current_settings;
+        this.is_loading_feed = true;
 
         if (!!this.selected_devices.audio_output_device)
           this.$emit(
@@ -1031,27 +982,21 @@ export default {
             this.selected_devices.audio_output_device.deviceId
           );
 
-        this.startCameraStream()
+        this.startLocalStream()
           .then(() => {
+            this.stream_current_settings = this.current_settings;
             this.last_working_resolution = this.desired_camera_resolution;
+            this.is_loading_feed = false;
             return;
           })
-          .then(() => {
-            this.share_this_stream.status.loading = true;
-            return this.setStreamSharing();
-          })
-          .then(() => {
-            this.share_this_stream.status.loading = false;
-            return resolve();
-          })
           .catch((error) => {
-            this.stream_current_settings = false;
+            this.is_loading_feed = false;
             this.$alertify
               .closeLogOnClick(true)
               .delay(4000)
               .error(
                 this.$t(
-                  "notifications.failed_to_start_video_change_source_or_res"
+                  "notifications.failed_to_start_streams_change_source_or_res"
                 ) +
                   "<br>" +
                   error.name
@@ -1064,19 +1009,42 @@ export default {
                 this.desired_camera_resolution = this.last_working_resolution;
                 this.last_working_resolution = false;
                 setTimeout(() => {
-                  this.setCameraStreamFromDefaults().then(() => resolve());
+                  this.setCameraStreamFromDefaults()
+                    .then(() => resolve())
+                    .catch(() => reject());
                 }, 500);
               } else {
                 return reject();
               }
             }
+          })
+          .then(() => {
+            this.share_this_stream.status.loading = true;
+            return this.setStreamSharing();
+          })
+          .then(() => {
+            this.share_this_stream.status.loading = false;
+            this.is_loading_feed = false;
+            return resolve();
+          })
+          .catch((error) => {
+            this.share_this_stream.status.loading = false;
+            this.is_loading_feed = false;
+            this.$alertify
+              .closeLogOnClick(true)
+              .delay(4000)
+              .error(
+                this.$t("notifications.failed_to_share_stream") +
+                  "<br>" +
+                  error.name
+              );
           });
       });
     },
-    startCameraStream() {
+    startLocalStream() {
       return new Promise((resolve, reject) => {
         if (this.$root.state.dev_mode === "debug")
-          console.log(`CaptureSettings • METHODS : startCameraStream`);
+          console.log(`CaptureSettings • METHODS : startLocalStream`);
 
         //Kill any running streams;
         if (this.local_stream)
@@ -1115,64 +1083,58 @@ export default {
         video: false,
       };
 
-      if (this.enable_audio) {
-        _constraints.audio = {
-          deviceId: this.selected_devices.audio_input_device.deviceId
-            ? { exact: this.selected_devices.audio_input_device.deviceId }
-            : undefined,
-          echoCancellation: this.advanced_capture_options.echoCancellation
-            .enabled,
-          noiseSuppression: this.advanced_capture_options.noiseSuppression
-            .enabled,
-        };
-      }
+      _constraints.audio = {
+        deviceId: this.selected_devices.audio_input_device.deviceId
+          ? { exact: this.selected_devices.audio_input_device.deviceId }
+          : undefined,
+        echoCancellation: this.advanced_capture_options.echoCancellation
+          .enabled,
+        noiseSuppression: this.advanced_capture_options.noiseSuppression
+          .enabled,
+      };
 
-      if (this.enable_video) {
-        // IF ELECTRON DESKTOP CAPTURER AND VIDEO ENABLED
+      // IF ELECTRON DESKTOP CAPTURER AND VIDEO ENABLED
+      if (
+        this.selected_devices.video_input_device.hasOwnProperty(
+          "chromeMediaSource"
+        ) &&
+        this.selected_devices.video_input_device.chromeMediaSource
+      ) {
+        // screen capture devices
+        _constraints._is_electron_screen_capture = true;
+        _constraints.video = {
+          mandatory: {
+            chromeMediaSource: this.selected_devices.video_input_device
+              .chromeMediaSource,
+            chromeMediaSourceId: this.selected_devices.video_input_device
+              .deviceId,
+            // minWidth: this.desired_camera_resolution.width,
+            // maxWidth: this.desired_camera_resolution.width,
+            // minHeight: this.desired_camera_resolution.height,
+            // maxHeight: this.desired_camera_resolution.height,
+          },
+        };
+      } else {
+        // IF BROWSER SCREEN CAPTURE
+        // IF BROWSER OR ELECTRON CAMERA FEED
         if (
-          this.selected_devices.video_input_device.hasOwnProperty(
-            "chromeMediaSource"
-          ) &&
-          this.selected_devices.video_input_device.chromeMediaSource &&
-          this.enable_video
+          this.selected_devices.video_input_device &&
+          this.selected_devices.video_input_device.deviceId === "screen_capture"
         ) {
-          // screen capture devices
-          _constraints._is_electron_screen_capture = true;
+          _constraints._is_webrtc_screen_capture = true;
           _constraints.video = {
-            mandatory: {
-              chromeMediaSource: this.selected_devices.video_input_device
-                .chromeMediaSource,
-              chromeMediaSourceId: this.selected_devices.video_input_device
-                .deviceId,
-              minWidth: this.desired_camera_resolution.width,
-              maxWidth: this.desired_camera_resolution.width,
-              minHeight: this.desired_camera_resolution.height,
-              maxHeight: this.desired_camera_resolution.height,
-            },
+            cursor: this.advanced_capture_options.cursor.enabled,
           };
         } else {
-          // IF BROWSER SCREEN CAPTURE
-          // IF BROWSER OR ELECTRON CAMERA FEED
-          if (
-            this.selected_devices.video_input_device &&
-            this.selected_devices.video_input_device.deviceId ===
-              "screen_capture"
-          ) {
-            _constraints._is_webrtc_screen_capture = true;
-            _constraints.video = {
-              cursor: this.advanced_capture_options.cursor.enabled,
-            };
-          } else {
-            _constraints.video = {
-              deviceId: this.selected_devices.video_input_device.deviceId
-                ? {
-                    exact: this.selected_devices.video_input_device.deviceId,
-                  }
-                : undefined,
-              width: { exact: this.desired_camera_resolution.width }, //new syntax
-              height: { exact: this.desired_camera_resolution.height }, //new syntax
-            };
-          }
+          _constraints.video = {
+            deviceId: this.selected_devices.video_input_device.deviceId
+              ? {
+                  exact: this.selected_devices.video_input_device.deviceId,
+                }
+              : undefined,
+            width: { exact: this.desired_camera_resolution.width }, //new syntax
+            height: { exact: this.desired_camera_resolution.height }, //new syntax
+          };
         }
       }
 
@@ -1190,25 +1152,40 @@ export default {
           return resolve();
         }
 
-        this.initRTCMulti();
-
         if (this.share_this_stream.name.length === 0)
           return reject("missing_stream_name");
 
-        if (!this.current_stream)
+        if (!this.local_stream)
           this.$alertify
             .closeLogOnClick(true)
             .delay(4000)
             .error(this.$t("notifications.no_stream_found_while_sharing"));
 
-        this.rtcmulti_connection.addStream(this.current_stream);
+        if (!this.rtcmulti_connection) {
+          this.initRTCMulti();
+        }
+
+        this.rtcmulti_connection.addStream(this.local_stream);
 
         this.rtcmulti_connection.open(
           this.share_this_stream.name,
           (isRoomOpened, roomid, error) => {
-            this.is_started = true;
+            if (this.$root.state.dev_mode === "debug")
+              console.log(
+                `CaptureSettings • METHODS : setStreamSharing • opened room ${roomid}`
+              );
+
             this.share_this_stream.status.enabled = true;
             this.share_this_stream.status.name = roomid;
+
+            this.rtcmulti_connection.onNewParticipant = (
+              participantId,
+              userPreferences
+            ) =>
+              this.newParticipantOnStream({ participantId, userPreferences });
+
+            this.rtcmulti_connection.onleave = (participantId) =>
+              this.onParticipantLeave({ participantId });
 
             if (error) {
               this.$alertify
@@ -1226,12 +1203,36 @@ export default {
         return resolve();
       });
     },
+    newParticipantOnStream({ participantId, userPreferences }) {
+      this.share_this_stream.status.peers_connected.push(participantId);
+
+      this.$alertify
+        .closeLogOnClick(true)
+        .delay(8000)
+        .success(this.$t("notifications.new_user_connected_to_stream"));
+
+      this.rtcmulti_connection.acceptParticipationRequest(
+        participantId,
+        userPreferences
+      );
+    },
+    onParticipantLeave(participantId) {
+      if (this.$root.state.dev_mode === "debug")
+        console.log(
+          `CaptureSettings • METHODS : onParticipantLeave ${participantId}`
+        );
+
+      this.share_this_stream.status.peers_connected.filter(
+        (id) => id !== participantId
+      );
+    },
     callStream() {
       if (this.$root.state.dev_mode === "debug")
         console.log(`CaptureSettings • METHODS : callStream`);
 
       this.access_distant_stream.calling = true;
-      this.initRTCMulti();
+
+      if (!this.rtcmulti_connection) this.initRTCMulti();
 
       const call_timeout = setTimeout(() => {
         this.access_distant_stream.calling = false;
@@ -1242,6 +1243,14 @@ export default {
       }, 5000);
 
       this.rtcmulti_connection.onstream = (event) => {
+        if (this.$root.state.dev_mode === "debug")
+          console.log(`CaptureSettings • METHODS : callStream • onstream`);
+
+        event.mediaElement.removeAttribute("src");
+        event.mediaElement.removeAttribute("srcObject");
+        event.mediaElement.muted = true;
+        event.mediaElement.volume = 0;
+
         if (this.access_distant_stream.calling) {
           this.remote_stream = event.stream;
           this.access_distant_stream.calling = false;
@@ -1252,7 +1261,11 @@ export default {
 
       this.rtcmulti_connection.checkPresence(
         this.access_distant_stream.callee,
-        (isOnline, username) => {
+        (isOnline, username, error) => {
+          if (this.$root.state.dev_mode === "debug")
+            console.log(
+              `CaptureSettings • METHODS : username • for ${username} and ${isOnline}`
+            );
           if (!isOnline) {
             this.$alertify
               .closeLogOnClick(true)
@@ -1262,12 +1275,12 @@ export default {
             this.access_distant_stream.calling = false;
             clearTimeout(call_timeout);
             return;
-          } else {
-            this.$alertify
-              .closeLogOnClick(true)
-              .delay(4000)
-              .success(username + " is online.");
           }
+
+          this.$alertify
+            .closeLogOnClick(true)
+            .delay(4000)
+            .success(username + " is online.");
           this.access_distant_stream.status.callee = username;
           this.rtcmulti_connection.join(username);
         }
@@ -1284,9 +1297,10 @@ export default {
       if (this.$root.state.dev_mode === "debug")
         console.log(`CaptureSettings • METHODS : initRTCMulti`);
 
-      if (this.rtcmulti_connection) return;
+      if (!window.rtcmulti_connection)
+        window.rtcmulti_connection = new RTCMultiConnection();
+      this.rtcmulti_connection = window.rtcmulti_connection;
 
-      this.rtcmulti_connection = new RTCMultiConnection();
       this.rtcmulti_connection.iceServers = [
         {
           urls: [
@@ -1326,7 +1340,8 @@ export default {
       };
       this.rtcmulti_connection.onstreamended = (event) => {
         console.log("CaptureSettings: onstreamended");
-        this.share_this_stream.status.enabled = false;
+        this.$alertify.closeLogOnClick(true).delay(4000).error("onstreamended");
+        // this.share_this_stream.status.enabled = false;
       };
       this.rtcmulti_connection.onMediaError = (e) => {
         console.log("CaptureSettings: onMediaError");
@@ -1340,12 +1355,22 @@ export default {
       if (this.$root.state.dev_mode === "debug")
         console.log(`CaptureSettings • METHODS : stopSharingStream`);
 
-      if (this.rtcmulti_connection) {
-        this.rtcmulti_connection.getAllParticipants().forEach((pid) => {
-          this.rtcmulti_connection.disconnectWith(pid);
-        });
-        this.rtcmulti_connection.closeSocket();
-      }
+      if (!this.rtcmulti_connection) return;
+
+      // only disconnect peers connected to this stream
+
+      this.share_this_stream.status.peers_connected.map((pid) => {
+        this.rtcmulti_connection.disconnectWith(pid);
+      });
+    },
+    closeMultiRTC() {
+      if (this.$root.state.dev_mode === "debug")
+        console.log(`CaptureSettings • METHODS : closeMultiRTC`);
+
+      if (!this.rtcmulti_connection) return;
+
+      this.stopSharingStream();
+      this.rtcmulti_connection.closeSocket();
     },
   },
 };
@@ -1388,17 +1413,18 @@ export default {
 .m_captureSettings--settings {
   overflow-y: auto;
   flex: 1 1 auto;
-  padding: calc(var(--spacing) / 2);
   // padding-bottom: var(--spacing);
 
   > div {
+    padding: calc(var(--spacing) / 2);
+    padding-top: calc(var(--spacing) / 4);
     > div {
       background-color: rgba(0, 0, 0, 0.1);
       padding: 0 calc(var(--spacing) / 2) calc(var(--spacing) / 2);
       border-radius: 6px;
 
       > div {
-        padding-top: calc(var(--spacing) / 8);
+        padding-top: calc(var(--spacing) / 4);
         margin-bottom: calc(var(--spacing) / 4);
 
         &:last-child {
@@ -1409,9 +1435,6 @@ export default {
     > label {
       line-height: 2;
     }
-  }
-  .switch {
-    margin-top: calc(var(--spacing) / 8);
   }
 }
 
@@ -1441,14 +1464,13 @@ export default {
 }
 
 .m_sideBySideSwitches {
-  display: flex;
   flex-flow: row nowrap;
 }
 
 .m_sideBySideSwitches > * {
   display: block;
   border-color: var(--c-rouge_fonce);
-  // min-width: 100px;
+  min-width: 100px;
   padding: calc(var(--spacing) / 8) 0;
 
   display: flex;
@@ -1484,8 +1506,11 @@ export default {
 
 .m_captureSettings--updateButton--buttons {
   padding: calc(var(--spacing) / 2);
+  display: flex;
+  justify-content: center;
 }
 .m_captureSettings--updateButton--shareStreamToggle {
+  position: relative;
   background-color: var(--c-rouge_fonce);
   color: white;
   text-align: center;
