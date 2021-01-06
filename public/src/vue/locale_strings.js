@@ -81,7 +81,7 @@ module.exports = (function () {
       duration: "Durée",
       send: "Envoyer",
       cancel: "Annuler",
-      create_an_author: "Créer un auteur",
+      create_an_author: "Créer un compte",
 
       stopmotion_list: "Liste des stopmotions",
 
