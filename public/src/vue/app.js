@@ -54,6 +54,9 @@ Vue.use(VueGoodTablePlugin);
 import VCalendar from "v-calendar";
 Vue.use(VCalendar);
 
+import PasswordFieldComponent from "./components/subcomponents/PasswordField.vue";
+Vue.component("PasswordField", PasswordFieldComponent);
+
 let lang_settings = {
   available: {
     fr: "Français",

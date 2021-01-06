@@ -260,13 +260,13 @@
         >
           <div class="margin-bottom-small">
             <label>{{ $t("password") }}</label>
-            <input
-              type="password"
-              ref="passwordField"
-              @keydown.enter.prevent="submitPassword"
-              required
-              autofocus
-              placeholder="…"
+            <PasswordField
+              v-model="entered_password"
+              :required="true"
+              :autofocus="true"
+              :placeholder="'…'"
+              :field_type="'current-password'"
+              @enter-was-pressed="submitPassword"
             />
           </div>
 
@@ -341,6 +341,8 @@ export default {
       edit_author_mode: false,
       show_input_password_field: false,
       show_connection_information: false,
+
+      entered_password: "",
     };
   },
   created() {},
@@ -444,8 +446,8 @@ export default {
     },
     submitPassword({
       slugFolderName,
-      password = this.$auth.hashCode(this.$refs.passwordField.value),
-    }) {
+      password = this.$auth.hashCode(this.entered_password),
+    } = {}) {
       if (this.$root.state.dev_mode === "debug")
         console.log(`Author • METHODS / submitPassword`);
 
@@ -492,8 +494,7 @@ export default {
             .closeLogOnClick(true)
             .delay(4000)
             .error(this.$t("notifications.wrong_password"));
-          this.$refs.passwordField.value = "";
-          this.$refs.passwordField.focus();
+          this.entered_password = "";
         }
       });
     },

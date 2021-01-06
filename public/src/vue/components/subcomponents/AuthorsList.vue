@@ -43,7 +43,6 @@
             type="button"
             @click="openCreateAuthorPanel = true"
             v-if="openCreateAuthorPanel == false"
-            class="m_authorsList--createAuthor--createButton bg-bleumarine"
           >
             {{ $t("create_an_author") }}
           </button>
@@ -55,11 +54,53 @@
         </div>
       </div>
 
-      <template v-if="Object.keys(sorted_authors).length > 0">
-        <div v-for="author in sorted_authors" :key="author.slugFolderName">
+      <div v-if="$root.current_author" key="current_author">
+        <Author :author="$root.current_author" @close="$emit('close')" />
+      </div>
+
+      <div v-else-if="Object.keys(sorted_authors).length > 0" key="login">
+        <div class="m_authorsList--login">
+          <button
+            type="button"
+            @click="openLoginPanel = true"
+            v-if="openLoginPanel === false"
+          >
+            {{ $t("login") }}
+          </button>
+          <div v-else>
+            <label>{{ $t("select_username") }}</label>
+            <div>
+              <select v-model="login_author">
+                <option
+                  v-for="author in sorted_authors"
+                  :value="author"
+                  :key="author.slugFolderName"
+                >
+                  {{ author.name }}
+                </option>
+              </select>
+            </div>
+            <div v-if="!!login_author">
+              <Author :author="login_author" @close="$emit('close')" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div key="authors_list">
+        <button type="button" @click="show_author_list = !show_author_list">
+          <template v-if="!show_author_list">{{
+            $t("show_all_users")
+          }}</template>
+          <template v-else>{{ $t("hide_users_list") }}</template>
+        </button>
+        <div
+          v-if="show_author_list"
+          v-for="author in sorted_authors"
+          :key="author.slugFolderName"
+        >
           <Author :author="author" @close="$emit('close')" />
         </div>
-      </template>
+      </div>
     </transition-group>
 
     <div v-if="clients_not_identified.length > 0">
@@ -114,9 +155,14 @@ export default {
   data() {
     return {
       openCreateAuthorPanel: false,
+      openLoginPanel: false,
       editAuthorSlug: false,
       show_detail: false,
       is_loading: false,
+      show_author_list: false,
+
+      login_author: "",
+      login_author_password: "",
     };
   },
 
@@ -220,7 +266,8 @@ export default {
   }
 
   .m_authorsList--createAuthor,
-  .m_authorsList--editAuthor {
+  .m_authorsList--editAuthor,
+  .m_authorsList--login {
     margin: calc(var(--spacing)) 0;
     padding: calc(var(--spacing) / 2);
 
@@ -237,12 +284,16 @@ export default {
     justify-content: center;
     max-width: none;
 
-    .m_authorsList--createAuthor--createButton {
+    > button {
       max-height: none;
       display: block;
       border: none;
 
       // .bg-gris_tresclair;
+    }
+
+    > div {
+      width: 100%;
     }
 
     > form {
