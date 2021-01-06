@@ -91,7 +91,7 @@
               :slugFolderName="slugProjectName"
               :type="`projects`"
               :read_only="!$root.state.connected"
-              :bypass_media_validation="true"
+              :must_validate_media="false"
               :available_modes="['photo', 'video', 'stopmotion', 'audio']"
               data-id="Capture"
             />
@@ -287,6 +287,7 @@ export default {
   position: relative;
   height: 100%;
   background-color: #eee;
+  overflow: hidden;
 
   display: flex;
   flex-flow: column nowrap;
