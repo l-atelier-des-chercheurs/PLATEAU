@@ -37,7 +37,6 @@
   "api": {
     "enabled": false,
     "allow_all_domains": false,
-    "domains_whitelist": []
     "domains_whitelist": ["localhost"]
   },
 
