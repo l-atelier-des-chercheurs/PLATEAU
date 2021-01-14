@@ -148,6 +148,11 @@ body {
       // display: block;
     }
   }
+  > button:last-child {
+    margin: 0;
+    min-height: 0;
+    padding: 0;
+  }
 
   ._submitbutton {
     width: 100%;

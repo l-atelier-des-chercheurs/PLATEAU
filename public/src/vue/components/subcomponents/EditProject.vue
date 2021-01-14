@@ -156,6 +156,11 @@
         <slot name="submit_button">{{ $t("edit") }}</slot>
       </span>
     </button>
+    <button type="button" class="button-small" @click="$emit('close')">
+      <span class="text-cap font-verysmall">
+        {{ $t("cancel") }}
+      </span>
+    </button>
   </form>
   <!-- </template> -->
 

@@ -324,6 +324,7 @@ export default {
 
 .m_panes--rightPane {
   flex: 1 1 66%;
+  background-color: var(--c-gris);
 
   position: relative;
 
@@ -355,8 +356,8 @@ export default {
       // background: white;
       // box-shadow: 0px 2px 6px rgba(150, 150, 150, 0.8);
       // border-radius: 8px;
-      // border: 1px solid var(--c-noir);
-      background-color: var(--c-gris);
+      border: 1px solid var(--c-noir);
+      background-color: white;
 
       padding: calc(var(--spacing) / 1.5) calc(var(--spacing));
       margin: calc(var(--spacing) / 2) calc(var(--spacing));

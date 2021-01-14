@@ -141,10 +141,10 @@ let vm = new Vue({
           key: "MediaLibrary",
           enabled: true,
         },
-        {
-          key: "Composition",
-          enabled: false,
-        },
+        // {
+        //   key: "Composition",
+        //   enabled: false,
+        // },
         {
           key: "Capture",
           enabled: false,
