@@ -46,58 +46,63 @@
       </div>
 
       <div class="m_list">
-        <div class="m_list--filters" v-if="$root.current_author">
-          <label>Trier</label>
-          <div class="switch switch-xs">
-            <input
-              class="switch"
-              id="show_only_my_content"
-              type="checkbox"
-              v-model="show_only_my_content"
+        <template v-if="!$root.current_author">
+          {{ $t("login_to_open_project") }}
+        </template>
+        <template v-else>
+          <div class="m_list--filters">
+            <label>Trier</label>
+            <div class="switch switch-xs">
+              <input
+                class="switch"
+                id="show_only_my_content"
+                type="checkbox"
+                v-model="show_only_my_content"
+              />
+              <label for="show_only_my_content">{{
+                $t("only_my_projects")
+              }}</label>
+            </div>
+            <div class="_keywordFilter">
+              <label v-html="$t('by_keyword:')"></label>
+
+              <button
+                v-for="keyword in $root.getAllKeywordsFrom(this.projects)"
+                :key="keyword.text"
+                :class="[
+                  keyword.classes,
+                  {
+                    'is--active':
+                      $root.settings.project_filter.keyword === keyword.text,
+                  },
+                ]"
+                @click="$root.setProjectKeywordFilter(keyword.text)"
+              >
+                {{ keyword.text }}
+              </button>
+            </div>
+          </div>
+
+          <transition-group
+            class="m_list--projects"
+            name="list-complete"
+            :duration="300"
+            tag="div"
+          >
+            <CreateProject
+              v-if="show_create_project_box"
+              @close="show_create_project_box = false"
+              :read_only="read_only"
+              :key="`create_project`"
             />
-            <label for="show_only_my_content">{{
-              $t("only_my_projects")
-            }}</label>
-          </div>
-          <div class="_keywordFilter">
-            <label v-html="$t('by_keyword:')"></label>
-
-            <button
-              v-for="keyword in $root.getAllKeywordsFrom(this.projects)"
-              :key="keyword.text"
-              :class="[
-                keyword.classes,
-                {
-                  'is--active':
-                    $root.settings.project_filter.keyword === keyword.text,
-                },
-              ]"
-              @click="$root.setProjectKeywordFilter(keyword.text)"
-            >
-              {{ keyword.text }}
-            </button>
-          </div>
-        </div>
-
-        <transition-group
-          class="m_list--projects"
-          name="list-complete"
-          :duration="300"
-          tag="div"
-        >
-          <CreateProject
-            v-if="show_create_project_box"
-            @close="show_create_project_box = false"
-            :read_only="read_only"
-            :key="`create_project`"
-          />
-          <ProjectThumb
-            v-for="sortedProject in sortedProjects"
-            :project="projects[sortedProject.slugProjectName]"
-            :selected_field_to_show="selected_field_to_show"
-            :key="sortedProject.slugProjectName"
-          />
-        </transition-group>
+            <ProjectThumb
+              v-for="sortedProject in sortedProjects"
+              :project="projects[sortedProject.slugProjectName]"
+              :selected_field_to_show="selected_field_to_show"
+              :key="sortedProject.slugProjectName"
+            />
+          </transition-group>
+        </template>
       </div>
     </div>
   </div>
@@ -182,6 +187,17 @@ export default {
               (k) =>
                 k.slugFolderName === this.$root.current_author.slugFolderName
             )
+          ) {
+            continue;
+          }
+        }
+
+        if (this.$root.current_author) {
+          if (
+            !this.$root.canEditFolder({
+              type: "projects",
+              slugFolderName: project.slugFolderName,
+            })
           ) {
             continue;
           }
@@ -324,6 +340,7 @@ export default {
 
 .m_panes--rightPane {
   flex: 1 1 66%;
+  background-color: var(--c-gris);
 
   position: relative;
 
@@ -355,8 +372,8 @@ export default {
       // background: white;
       // box-shadow: 0px 2px 6px rgba(150, 150, 150, 0.8);
       // border-radius: 8px;
-      // border: 1px solid var(--c-noir);
-      background-color: var(--c-gris);
+      border: 1px solid var(--c-noir);
+      background-color: white;
 
       padding: calc(var(--spacing) / 1.5) calc(var(--spacing));
       margin: calc(var(--spacing) / 2) calc(var(--spacing));

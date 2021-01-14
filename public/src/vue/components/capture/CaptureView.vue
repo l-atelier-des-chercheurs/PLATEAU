@@ -1662,7 +1662,8 @@ export default {
       // TODO : write captcha to prevent writing to interfere with camera
       if (
         event.target.tagName.toLowerCase() === "input" ||
-        event.target.tagName.toLowerCase() === "textarea"
+        event.target.tagName.toLowerCase() === "textarea" ||
+        event.target.className.includes("ql-editor")
       ) {
         return false;
       }

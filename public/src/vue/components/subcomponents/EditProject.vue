@@ -32,7 +32,7 @@
           :class="{ 'is--active': show_authors }"
           @click="show_authors = !show_authors"
         >
-          {{ $t("author") }}
+          {{ $t("authors") }}
         </button>
       </label>
 
@@ -154,6 +154,11 @@
     <button type="submit" :disabled="read_only" class="_submitbutton">
       <span class="text-cap font-verysmall">
         <slot name="submit_button">{{ $t("edit") }}</slot>
+      </span>
+    </button>
+    <button type="button" class="button-small" @click="$emit('close')">
+      <span class="text-cap font-verysmall">
+        {{ $t("cancel") }}
       </span>
     </button>
   </form>
