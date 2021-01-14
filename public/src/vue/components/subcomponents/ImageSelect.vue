@@ -200,6 +200,8 @@ export default {
         slugFolderName: this.show_medias_from_project,
         type: "projects",
       };
+
+      this.image.thumb = this.getPreviewFromMedias(this.image);
       this.$emit("newPreview", this.image);
     },
     getPreviewFromMedias(image) {

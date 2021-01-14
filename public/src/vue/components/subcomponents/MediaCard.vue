@@ -63,7 +63,7 @@
             <div>{{ $t(media.type) }}</div>
           </div>
           <div class="m_metaField" v-if="!!media.authors">
-            <div>{{ $t("author") }}</div>
+            <div>{{ $t("authors") }}</div>
             <div>{{ media.authors }}</div>
           </div>
           <div class="m_metaField">

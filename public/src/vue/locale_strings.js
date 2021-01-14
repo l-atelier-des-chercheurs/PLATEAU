@@ -22,6 +22,12 @@ module.exports = (function () {
       back: "Retour",
       at: "à",
       edit: "Modifier",
+      cover_image: "Image de couverture",
+      show_all_users: "Afficher tous les utilisateurs inscrits",
+
+      only_my_projects: "Afficher seulement mes projets",
+      "by_keyword:": "Par mot-clé&nbsp;:",
+
       duplicate: "Dupliquer",
       currently_connected: "Connecté actuellement",
       on: "sur",
@@ -48,6 +54,21 @@ module.exports = (function () {
       admin: "Adminstrateur.trice",
       self: "Cet appareil",
       devices_not_identified: "Appareils non identifiés",
+      create_a_project: "Créer un projet",
+      project_name: "Nom",
+      authors: "Contributeur(s)",
+      manage_access: "Gérer l’accès au contenu",
+
+      who_can_edit: "Qui peut contribuer",
+      consultation: "Consultation",
+      visible_to_all: "Visible par tout le monde",
+      visible_to_authors: "Visible par les contributeurs uniquement",
+      visible_to_nobody: "Visible pour personne",
+      nobody: "Personne",
+      only_authors: "Seulement les contributeurs",
+      protected_by_authors: "Protégé par les contributeurs",
+      with_password: "Avec un mot de passe",
+      everybody: "Tout le monde",
 
       photo: "photo",
       video: "vidéo",
@@ -80,6 +101,7 @@ module.exports = (function () {
       gb: "Go",
       duration: "Durée",
       send: "Envoyer",
+      yes: "Oui",
       cancel: "Annuler",
       create_an_author: "Créer un compte",
 

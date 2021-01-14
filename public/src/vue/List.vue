@@ -19,10 +19,8 @@
       <div class="m_bar">
         <button
           type="button"
-          @click="
-            $root.show_create_project_modal = !$root.show_create_project_modal
-          "
-          :class="{ 'is--active': $root.show_create_project_modal }"
+          @click="show_create_project_box = !show_create_project_box"
+          :class="{ 'is--active': show_create_project_box }"
           :key="`new_project`"
         >
           <svg
@@ -47,32 +45,67 @@
         </button>
       </div>
 
-      <transition-group
-        class="m_list"
-        name="list-complete"
-        :duration="300"
-        tag="div"
-      >
-        <div :key="`create_project`" v-if="$root.show_create_project_modal">
-          <form @submit.prevent="createProject">
-            <label>{{ $t("name") }}</label>
-            <input type="text" name="name" />
-            <input type="submit" />
-          </form>
+      <div class="m_list">
+        <div class="m_list--filters" v-if="$root.current_author">
+          <label>Trier</label>
+          <div class="switch switch-xs">
+            <input
+              class="switch"
+              id="show_only_my_content"
+              type="checkbox"
+              v-model="show_only_my_content"
+            />
+            <label for="show_only_my_content">{{
+              $t("only_my_projects")
+            }}</label>
+          </div>
+          <div class="_keywordFilter">
+            <label v-html="$t('by_keyword:')"></label>
+
+            <button
+              v-for="keyword in $root.getAllKeywordsFrom(this.projects)"
+              :key="keyword.text"
+              :class="[
+                keyword.classes,
+                {
+                  'is--active':
+                    $root.settings.project_filter.keyword === keyword.text,
+                },
+              ]"
+              @click="$root.setProjectKeywordFilter(keyword.text)"
+            >
+              {{ keyword.text }}
+            </button>
+          </div>
         </div>
-        <ProjectThumb
-          v-for="sortedProject in sortedProjects"
-          :project="projects[sortedProject.slugProjectName]"
-          :selected_field_to_show="selected_field_to_show"
-          :key="sortedProject.slugProjectName"
-        />
-      </transition-group>
+
+        <transition-group
+          class="m_list--projects"
+          name="list-complete"
+          :duration="300"
+          tag="div"
+        >
+          <CreateProject
+            v-if="show_create_project_box"
+            @close="show_create_project_box = false"
+            :read_only="read_only"
+            :key="`create_project`"
+          />
+          <ProjectThumb
+            v-for="sortedProject in sortedProjects"
+            :project="projects[sortedProject.slugProjectName]"
+            :selected_field_to_show="selected_field_to_show"
+            :key="sortedProject.slugProjectName"
+          />
+        </transition-group>
+      </div>
     </div>
   </div>
 </template>
 <script>
 import ProjectThumb from "./components/subcomponents/ProjectThumb.vue";
 import AuthorsList from "./components/subcomponents/AuthorsList.vue";
+import CreateProject from "./components/subcomponents/CreateProject.vue";
 
 export default {
   props: {
@@ -81,6 +114,7 @@ export default {
   components: {
     ProjectThumb,
     AuthorsList,
+    CreateProject,
   },
   data() {
     return {
@@ -100,8 +134,10 @@ export default {
         order: "descending",
       },
 
+      show_only_my_content: false,
       show_filters: false,
       show_search: false,
+      show_create_project_box: false,
     };
   },
   created() {},
@@ -118,23 +154,37 @@ export default {
 
       for (let slugProjectName in this.projects) {
         let orderBy;
+        const project = this.projects[slugProjectName];
 
         if (this.currentSort.type === "date") {
           orderBy = +this.$moment(
-            this.projects[slugProjectName][this.currentSort.field],
+            project[this.currentSort.field],
             "YYYY-MM-DD HH:mm:ss"
           );
         } else if (this.currentSort.type === "alph") {
-          orderBy = this.projects[slugProjectName][this.currentSort.field];
+          orderBy = project[this.currentSort.field];
         }
 
         if (this.$root.settings.project_filter.name !== "") {
           if (
-            !this.projects[slugProjectName].name
+            !project.name
               .toLowerCase()
               .includes(this.$root.settings.project_filter.name.toLowerCase())
           )
             continue;
+        }
+
+        if (this.show_only_my_content && this.$root.current_author) {
+          if (
+            !project.hasOwnProperty("authors") ||
+            !Array.isArray(project.authors) ||
+            !project.authors.some(
+              (k) =>
+                k.slugFolderName === this.$root.current_author.slugFolderName
+            )
+          ) {
+            continue;
+          }
         }
 
         if (
@@ -151,16 +201,16 @@ export default {
         ) {
           // only add to sorted array if project has this keyword
           if (
-            this.projects[slugProjectName].hasOwnProperty("keywords") &&
-            typeof this.projects[slugProjectName].keywords === "object" &&
-            this.projects[slugProjectName].keywords.filter(
+            project.hasOwnProperty("keywords") &&
+            typeof project.keywords === "object" &&
+            project.keywords.filter(
               (k) => k.title === this.$root.settings.project_filter.keyword
             ).length > 0
           ) {
             if (
-              this.projects[slugProjectName].hasOwnProperty("authors") &&
-              typeof this.projects[slugProjectName].authors === "object" &&
-              this.projects[slugProjectName].authors.filter(
+              project.hasOwnProperty("authors") &&
+              typeof project.authors === "object" &&
+              project.authors.filter(
                 (k) => k.name === this.$root.settings.project_filter.author
               ).length > 0
             ) {
@@ -173,9 +223,9 @@ export default {
         if (!!this.$root.settings.project_filter.keyword) {
           // only add to sorted array if project has this keyword
           if (
-            this.projects[slugProjectName].hasOwnProperty("keywords") &&
-            typeof this.projects[slugProjectName].keywords === "object" &&
-            this.projects[slugProjectName].keywords.filter(
+            project.hasOwnProperty("keywords") &&
+            typeof project.keywords === "object" &&
+            project.keywords.filter(
               (k) => k.title === this.$root.settings.project_filter.keyword
             ).length > 0
           ) {
@@ -187,9 +237,9 @@ export default {
         if (!!this.$root.settings.project_filter.author) {
           // only add to sorted array if project has this keyword
           if (
-            this.projects[slugProjectName].hasOwnProperty("authors") &&
-            typeof this.projects[slugProjectName].authors === "object" &&
-            this.projects[slugProjectName].authors.filter(
+            project.hasOwnProperty("authors") &&
+            typeof project.authors === "object" &&
+            project.authors.filter(
               (k) => k.name === this.$root.settings.project_filter.author
             ).length > 0
           ) {
@@ -231,17 +281,7 @@ export default {
       return sortedSortable;
     },
   },
-  methods: {
-    createProject(event) {
-      console.log(`METHODS • ListView: createProject`);
-
-      let new_project_data = {
-        name: event.target.name.value,
-      };
-      this.$root.createFolder({ type: "projects", data: new_project_data });
-      this.$root.show_create_project_modal = false;
-    },
-  },
+  methods: {},
 };
 </script>
 <style lang="scss" scoped>
@@ -296,19 +336,31 @@ export default {
 }
 
 .m_list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  grid-auto-rows: max-content;
-  padding: calc(10vh + 2.55em) calc(var(--spacing) * 2) 50px;
   flex-basis: 50%;
-
   overflow-y: auto;
+  padding: calc(10vh + 2.55em) 0 var(--spacing);
 
-  > * {
-    background: white;
-    border: 2px solid black;
+  .m_list--filters {
     padding: calc(var(--spacing) / 1.5) calc(var(--spacing));
-    margin: calc(var(--spacing) / 2) calc(var(--spacing));
+    // margin: calc(var(--spacing) / 2) calc(var(--spacing));
+  }
+
+  .m_list--projects {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-auto-rows: max-content;
+    // padding: calc(10vh + 2.55em) calc(var(--spacing) * 2) 50px;
+
+    > * {
+      // background: white;
+      // box-shadow: 0px 2px 6px rgba(150, 150, 150, 0.8);
+      // border-radius: 8px;
+      // border: 1px solid var(--c-noir);
+      background-color: var(--c-gris);
+
+      padding: calc(var(--spacing) / 1.5) calc(var(--spacing));
+      margin: calc(var(--spacing) / 2) calc(var(--spacing));
+    }
   }
 }
 
@@ -318,7 +370,7 @@ export default {
   flex-basis: 50%;
 
   > button {
-    border: 2px solid black;
+    border: 1px solid black;
     padding: calc(var(--spacing) / 2) calc(var(--spacing));
     margin: calc(var(--spacing) / 2) calc(var(--spacing));
 
@@ -330,6 +382,13 @@ export default {
         fill: white;
       }
     }
+  }
+}
+
+._keywordFilter {
+  button.is--active {
+    background-color: var(--c-rouge);
+    border-radius: 4px;
   }
 }
 </style>
