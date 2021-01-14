@@ -24,6 +24,7 @@ module.exports = (function () {
       edit: "Modifier",
       cover_image: "Image de couverture",
       show_all_users: "Afficher tous les utilisateurs inscrits",
+      hide_users_list: "Masquer la liste des inscrits",
 
       only_my_projects: "Afficher seulement mes projets",
       "by_keyword:": "Par mot-clé&nbsp;:",
@@ -34,6 +35,12 @@ module.exports = (function () {
       when_logged_as_author_content_will_be_tagged:
         "Quand vous êtes identifiés, tous les contenus que vous contribuez seront associés à votre profil.",
       password_required_to_open: "Mot de passe requis",
+      password: "Mot de passe",
+      login_after_creation: "S’identifier après la création du compte",
+      email: "Adresse mail",
+      email_instructions:
+        "Optionnel. Sera uniquement utilisé pour vous notifier d’un message sur do•doc et ne sera pas visible aux autres utilisateurs à l’exception des administrateurs.",
+      name_or_pseudo: "Nom ou pseudonyme",
       devices_used: "Appareils utilisés",
       is_checking_out: "Consulte actuellement",
       settings: "Règlages",

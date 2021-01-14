@@ -32,7 +32,7 @@
           :class="{ 'is--active': show_authors }"
           @click="show_authors = !show_authors"
         >
-          {{ $t("author") }}
+          {{ $t("authors") }}
         </button>
       </label>
 
