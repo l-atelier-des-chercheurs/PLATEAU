@@ -276,6 +276,9 @@
         "number_of_medias": {
           "type": "number",
           "only_admin_can_edit": true
+        },
+        "linked_project": {
+          "type": "string"
         }
       },
       "medias": {

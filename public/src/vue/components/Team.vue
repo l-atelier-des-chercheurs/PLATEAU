@@ -17,14 +17,17 @@
       :authors="$root.store.authors"
     />
 
-    <div v-if="current_tab === 'chats'">
-      <label> discussions en lien avec ce projet </label>
-    </div>
+    <Chats
+      v-if="current_tab === 'chats'"
+      :read_only="!$root.state.connected"
+      :chats="$root.store.chats"
+    />
     <!-- <Clients /> -->
   </div>
 </template>
 <script>
 // import Clients from "./subcomponents/Clients.vue";
+import Chats from "./Chats.vue";
 import AuthorsList from "./subcomponents/AuthorsList.vue";
 
 export default {
@@ -32,6 +35,7 @@ export default {
   components: {
     // Clients,
     AuthorsList,
+    Chats,
   },
   data() {
     return {
@@ -80,6 +84,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 .m_team {
+  position: relative;
   background-color: var(--color-Team);
   // padding: 0 var(--spacing);
   height: 100%;

@@ -60,6 +60,9 @@ Vue.component("PasswordField", PasswordFieldComponent);
 import ImageSelectComponent from "./components/subcomponents/ImageSelect.vue";
 Vue.component("ImageSelect", ImageSelectComponent);
 
+import Modal from "./components/modals/BaseModal.vue";
+Vue.component("Modal", Modal);
+
 let lang_settings = {
   available: {
     fr: "Français",
@@ -159,6 +162,10 @@ let vm = new Vue({
         // }
       ],
       project_panes_in_order: [],
+
+      current_chat: {
+        slug: "",
+      },
 
       capture_options: {
         selected_mode: "",
@@ -478,6 +485,13 @@ let vm = new Vue({
         return false;
       return this.store.authors[this.settings.current_author_slug];
     },
+    current_chat() {
+      if (!this.settings.current_chat.slug) return false;
+
+      return Object.values(this.store.chats).find(
+        (c) => c.slugFolderName === this.settings.current_chat.slug
+      );
+    },
     unique_clients() {
       return this.$root.state.clients.reduce((acc, client) => {
         if (client.id === this.$root.$socketio.socket.id.substring(0, 4))
@@ -576,6 +590,37 @@ let vm = new Vue({
     },
   },
   methods: {
+    openChat(slugFolderName) {
+      if (window.state.dev_mode === "debug") {
+        console.log(`ROOT EVENT: openChat: ${slugFolderName}`);
+      }
+      this.settings.current_chat.slug = slugFolderName;
+    },
+    closeChat() {
+      if (window.state.dev_mode === "debug") {
+        console.log(`ROOT EVENT: closeChat`);
+      }
+      this.settings.current_chat.slug = false;
+    },
+    findClientsLookingAt({ type, slugFolderName, metaFileName }) {
+      if (type === "projects" && metaFileName) {
+        type = "editing_media";
+      } else if (type === "projects") {
+        type = "looking_at_project";
+      } else if (type === "publications") {
+        type = "looking_at_publi";
+      } else if (type === "chats") {
+        type = "looking_at_chat";
+      } else return [];
+
+      return this.$root.unique_clients.filter(
+        (c) =>
+          c.data &&
+          c.data.hasOwnProperty(type) &&
+          c.data[type].slugFolderName === slugFolderName &&
+          (!metaFileName || c.data[type].metaFileName === metaFileName)
+      );
+    },
     getAllAuthorsFrom(base) {
       let uniqueAuthors = [];
       Object.values(base).map((meta) => {
@@ -602,6 +647,94 @@ let vm = new Vue({
       } else {
         this.settings.project_filter.keyword = "";
       }
+    },
+    setReadMessageToLast({ chat }) {
+      // if logged in, set author last_messages_read_in_channels to metaFileName of chat
+      if (!this.$root.current_author) return false;
+
+      const last_message_channel = {
+        channel: chat.slugFolderName,
+        index: chat.number_of_medias,
+      };
+
+      let last_messages_read_in_channels = Array.isArray(
+        this.$root.current_author.last_messages_read_in_channels
+      )
+        ? JSON.parse(
+            JSON.stringify(
+              this.$root.current_author.last_messages_read_in_channels
+            )
+          )
+        : [];
+
+      const channel_info_in_author = last_messages_read_in_channels.find(
+        (c) => c.channel === last_message_channel.channel
+      );
+      if (
+        channel_info_in_author &&
+        Number(channel_info_in_author.index) ===
+          Number(last_message_channel.index)
+      ) {
+        // already up to date, do nothing
+        return;
+      }
+
+      // remove existing prop
+      last_messages_read_in_channels = last_messages_read_in_channels.filter(
+        (c) => c.channel !== last_message_channel.channel
+      );
+
+      last_messages_read_in_channels.push(last_message_channel);
+
+      this.$root.editFolder({
+        type: "authors",
+        slugFolderName: this.$root.current_author.slugFolderName,
+        data: {
+          last_messages_read_in_channels,
+        },
+      });
+    },
+    getUnreadMessageCount(chat) {
+      if (!this.current_author) return false;
+
+      if (
+        !this.canSeeFolder({
+          type: "chats",
+          slugFolderName: chat.slugFolderName,
+        })
+      )
+        return false;
+
+      const total_number_of_messages_in_chat = chat.number_of_medias;
+
+      // find media with meta
+      const last_messages_read_in_channels = this.current_author
+        .last_messages_read_in_channels;
+
+      if (last_messages_read_in_channels) {
+        const existing_info = last_messages_read_in_channels.find(
+          (c) => c.channel === chat.slugFolderName
+        );
+
+        if (existing_info) {
+          // const last_message_metaFileName = existing_info.metaFileName;
+          // const index_of_past_message_read = Object.values(
+          //   chat.medias
+          // ).findIndex((m) => m.metaFileName === existing_info.msg);
+          // return (
+          //   total_number_of_messages_in_chat - index_of_past_message_read - 1
+          // );
+          // using index for performance reason (no need to list all chats to get a rough unread count)
+          if (existing_info.hasOwnProperty("index")) {
+            return Math.max(
+              0,
+              total_number_of_messages_in_chat - Number(existing_info.index)
+            );
+          }
+        }
+      }
+
+      return Math.max(0, total_number_of_messages_in_chat);
     },
     canSeeFolder: function ({ type, slugFolderName }) {
       if (!this.store[type].hasOwnProperty(slugFolderName)) return false;
@@ -1194,6 +1327,9 @@ let vm = new Vue({
       } else {
         this.updateLocalLang("fr");
       }
+    },
+    formatDateToCalendar(date) {
+      return this.$moment(date, "YYYY-MM-DD HH:mm:ss").calendar();
     },
     formatDateToHuman(date) {
       return this.$moment(date, "YYYY-MM-DD HH:mm:ss").format("LL");
