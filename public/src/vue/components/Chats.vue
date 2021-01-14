@@ -9,26 +9,13 @@
       <div class="m_channels--content">
         <h3 class="font-folder_title">{{ $t("channels_list") }}</h3>
         <div class="margin-vert-small">
-          <template v-if="$root.current_author">
-            <button
-              type="button"
-              class="barButton barButton_createChannel"
-              @click="show_create_channel_modal = !show_create_channel_modal"
-            >
-              <span>{{ $t("create") }}</span>
-            </button>
-          </template>
-          <template v-else>
-            <div>
-              <button
-                type="button"
-                class="button-thin bg-bleumarine margin-left-none"
-                @click="$root.showAuthorsListModal = true"
-              >
-                {{ $t("login_to_create_channel") }}
-              </button>
-            </div>
-          </template>
+          <button
+            type="button"
+            class="barButton barButton_createChannel"
+            @click="show_create_channel_modal = !show_create_channel_modal"
+          >
+            <span>{{ $t("create") }}</span>
+          </button>
         </div>
 
         <div class="m_actionbar" style="margin-left: 0px; margin-right: 0px">

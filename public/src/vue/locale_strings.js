@@ -17,6 +17,7 @@ module.exports = (function () {
       create: "Créer",
       remove: "Supprimer",
       close: "Fermer",
+      protected_by_pass: "Protégé par un mot de passe",
       rename: "Renommer",
       filters: "Filtres",
       channels_list: "Discussions en lien avec ce projet",
