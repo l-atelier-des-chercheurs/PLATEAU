@@ -63,6 +63,9 @@
         "authors": {
           "type": "array"
         },
+        "keywords": {
+          "type": "array"
+        },
         "planning_slugs_in_order": {
           "type": "array"
         },

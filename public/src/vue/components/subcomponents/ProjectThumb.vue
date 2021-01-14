@@ -1,63 +1,110 @@
 <template>
   <div class="m_projectThumb">
-    <div>
-      <div class="m_projectThumb--name">{{ project.name }}</div>
-      <div class="font-verysmall">
-        {{ $t(selected_field_to_show) }}
-        <br />
-        {{
-          projectDate(project[selected_field_to_show]) +
-          " " +
-          $t("at") +
-          " " +
-          $moment(project[selected_field_to_show]).format("HH:mm")
-        }}
+    <div v-if="!show_edit_project">
+      <div>
+        <div class="m_projectThumb--name">{{ project.name }}</div>
+        <!-- <div class="font-verysmall">
+          {{ $t(selected_field_to_show) }}
+          <br />
+          {{
+            projectDate(project[selected_field_to_show]) +
+            " " +
+            $t("at") +
+            " " +
+            $moment(project[selected_field_to_show]).format("HH:mm")
+          }}
+        </div> -->
+
+        <div class="m_keywordField">
+          <span
+            v-for="keyword in project.keywords"
+            :key="keyword.title"
+            :class="['tagcolorid_' + (parseInt(keyword.title, 36) % 2)]"
+            >{{ keyword.title }}</span
+          >
+        </div>
+
+        <div class="m_metaField" v-if="!!project.authors">
+          <div>{{ $t("authors") }}</div>
+          <AuthorsInput :currentAuthors="project.authors" :read_only="true" />
+        </div>
+
+        <AccessController
+          :folder="project"
+          :context="'preview'"
+          :type="'projects'"
+          @openFolder="$root.openProject(project.slugFolderName)"
+        />
+      </div>
+      <div class>
+        <button
+          v-if="can_see_project"
+          @click="$root.openProject(project.slugFolderName)"
+        >
+          {{ $t("open") }}
+        </button>
+
+        <button v-if="can_edit_project" @click="show_edit_project = true">
+          {{ $t("edit") }}
+        </button>
+
+        <button type="button" @click="more_options = !more_options">+</button>
+
+        <template v-if="more_options">
+          <button
+            type="button"
+            class="buttonLink"
+            :class="{ 'is--active': showDuplicateProjectMenu }"
+            @click="showDuplicateProjectMenu = !showDuplicateProjectMenu"
+            :disabled="read_only"
+          >
+            {{ $t("duplicate") }}
+          </button>
+
+          <button
+            type="button"
+            class="buttonLink"
+            :disabled="zip_export_started"
+            @click="downloadProjectArchive"
+          >
+            {{ $t("download") }}
+          </button>
+
+          <div v-if="showDuplicateProjectMenu" class="margin-bottom-small">
+            <label v-html="'Nom de la copie'" />
+            <form @submit.prevent="duplicateWithNewName()" class="input-group">
+              <input
+                type="text"
+                v-model.trim="copy_project_name"
+                required
+                autofocus
+              />
+              <button type="submit" v-html="$t('copier')" class="bg-bleuvert" />
+            </form>
+          </div>
+
+          <button @click="removeProject(project.slugFolderName)">
+            {{ $t("remove") }}
+          </button>
+        </template>
       </div>
     </div>
-    <div class>
-      <button @click="$root.openProject(project.slugFolderName)">
-        {{ $t("open") }}
-      </button>
-
-      <button
-        type="button"
-        class="buttonLink"
-        :class="{ 'is--active': showDuplicateProjectMenu }"
-        @click="showDuplicateProjectMenu = !showDuplicateProjectMenu"
-        :disabled="read_only"
-      >
-        {{ $t("duplicate") }}
-      </button>
-
-      <button
-        type="button"
-        class="buttonLink"
-        :disabled="zip_export_started"
-        @click="downloadProjectArchive"
-      >
-        {{ $t("download") }}
-      </button>
-
-      <div v-if="showDuplicateProjectMenu" class="margin-bottom-small">
-        <label v-html="'Nom de la copie'" />
-        <form @submit.prevent="duplicateWithNewName()" class="input-group">
-          <input
-            type="text"
-            v-model.trim="copy_project_name"
-            required
-            autofocus
-          />
-          <button type="submit" v-html="$t('copier')" class="bg-bleuvert" />
-        </form>
-      </div>
-
-      <button @click="removeProject(project.slugFolderName)">
-        {{ $t("remove") }}
-      </button>
+    <div v-else>
+      <EditProject
+        :project="project"
+        :project_password="project_password()"
+        :slugProjectName="project.slugFolderName"
+        @close="show_edit_project = false"
+        :read_only="read_only"
+      />
     </div>
   </div>
 </template>
 <script>
+import AuthorsInput from "../subcomponents/AuthorsInput.vue";
+import AccessController from "../subcomponents/AccessController.vue";
+import EditProject from "../subcomponents/EditProject.vue";
+
 import localstore from "store";
 export default {
   props: {
@@ -65,19 +112,39 @@ export default {
     selected_field_to_show: String,
     available_fields: Array,
   },
-  components: {},
+  components: {
+    AuthorsInput,
+    AccessController,
+    EditProject,
+  },
   data() {
     return {
       showDuplicateProjectMenu: false,
+      show_edit_project: false,
       copy_project_name: this.$t("copy_of") + " " + this.project.name,
       zip_export_started: false,
+
+      more_options: false,
     };
   },
   created() {},
   mounted() {},
   beforeDestroy() {},
   watch: {},
-  computed: {},
+  computed: {
+    can_see_project() {
+      return this.$root.canSeeFolder({
+        type: "projects",
+        slugFolderName: this.project.slugFolderName,
+      });
+    },
+    can_edit_project() {
+      return this.$root.canEditFolder({
+        type: "projects",
+        slugFolderName: this.project.slugFolderName,
+      });
+    },
+  },
   methods: {
     removeProject(slugFolderName) {
       this.$alertify
@@ -183,6 +250,13 @@ export default {
         );
 
       window.location.replace(query_url);
+    },
+    project_password() {
+      if (this.password !== "has_pass") return "";
+      return this.$root.getFolderPassword({
+        type: "projects",
+        slugFolderName: this.slugProjectName,
+      });
     },
   },
 };

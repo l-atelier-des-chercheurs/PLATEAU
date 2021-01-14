@@ -19,10 +19,8 @@
       <div class="m_bar">
         <button
           type="button"
-          @click="
-            $root.show_create_project_modal = !$root.show_create_project_modal
-          "
-          :class="{ 'is--active': $root.show_create_project_modal }"
+          @click="show_create_project_box = !show_create_project_box"
+          :class="{ 'is--active': show_create_project_box }"
           :key="`new_project`"
         >
           <svg
@@ -53,13 +51,12 @@
         :duration="300"
         tag="div"
       >
-        <div :key="`create_project`" v-if="$root.show_create_project_modal">
-          <form @submit.prevent="createProject">
-            <label>{{ $t("name") }}</label>
-            <input type="text" name="name" />
-            <input type="submit" />
-          </form>
-        </div>
+        <CreateProject
+          v-if="show_create_project_box"
+          @close="show_create_project_box = false"
+          :read_only="read_only"
+          :key="`create_project`"
+        />
         <ProjectThumb
           v-for="sortedProject in sortedProjects"
           :project="projects[sortedProject.slugProjectName]"
@@ -73,6 +70,7 @@
 <script>
 import ProjectThumb from "./components/subcomponents/ProjectThumb.vue";
 import AuthorsList from "./components/subcomponents/AuthorsList.vue";
+import CreateProject from "./components/subcomponents/CreateProject.vue";
 
 export default {
   props: {
@@ -81,6 +79,7 @@ export default {
   components: {
     ProjectThumb,
     AuthorsList,
+    CreateProject,
   },
   data() {
     return {
@@ -102,6 +101,7 @@ export default {
 
       show_filters: false,
       show_search: false,
+      show_create_project_box: false,
     };
   },
   created() {},
@@ -231,17 +231,7 @@ export default {
       return sortedSortable;
     },
   },
-  methods: {
-    createProject(event) {
-      console.log(`METHODS • ListView: createProject`);
-
-      let new_project_data = {
-        name: event.target.name.value,
-      };
-      this.$root.createFolder({ type: "projects", data: new_project_data });
-      this.$root.show_create_project_modal = false;
-    },
-  },
+  methods: {},
 };
 </script>
 <style lang="scss" scoped>

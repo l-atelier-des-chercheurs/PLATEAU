@@ -119,18 +119,17 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.2em;
-  background-color: var(--c-gris-clair);
+  background-color: var(--c-noir);
 
   button {
     // padding: calc(var(--spacing) / 2);
-    background-color: var(--c-bleuvert);
+    background-color: var(--c-rouge);
     min-height: 0;
     padding: 0;
     display: flex;
-    width: 0.9em;
-    height: 0.9em;
-    padding: 0.1em;
+    width: 1.9em;
+    height: 2em;
+    padding: calc(var(--spacing) / 2);
 
     svg {
       height: 100%;

@@ -57,6 +57,9 @@ Vue.use(VCalendar);
 import PasswordFieldComponent from "./components/subcomponents/PasswordField.vue";
 Vue.component("PasswordField", PasswordFieldComponent);
 
+import ImageSelectComponent from "./components/subcomponents/ImageSelect.vue";
+Vue.component("ImageSelect", ImageSelectComponent);
+
 let lang_settings = {
   available: {
     fr: "Français",
@@ -120,7 +123,6 @@ let vm = new Vue({
     show_session_password_prompt: false,
 
     show_accounts_list: false,
-    show_create_project_modal: false,
 
     // persistant, par device (dans le localstorage)
     settings: {
@@ -594,6 +596,97 @@ let vm = new Vue({
         };
       });
     },
+    canSeeFolder: function ({ type, slugFolderName }) {
+      if (!this.store[type].hasOwnProperty(slugFolderName)) return false;
+
+      if (this.current_author_is_admin) return true;
+
+      // if folder has pass, and user doesn’t have it
+      const folder = this.store[type][slugFolderName];
+
+      if (
+        folder.hasOwnProperty("viewing_limited_to") &&
+        folder.viewing_limited_to === "everybody"
+      ) {
+        return true;
+      }
+
+      if (
+        folder.hasOwnProperty("viewing_limited_to") &&
+        folder.viewing_limited_to === "only_authors"
+      ) {
+        if (!folder.authors || folder.authors.length === 0) return false;
+
+        return folder.authors.some(
+          (a) => a.slugFolderName === this.current_author.slugFolderName
+        );
+      }
+
+      return this.canEditFolder({ type, slugFolderName });
+    },
+    canEditFolder: function ({ type, slugFolderName }) {
+      if (!this.store[type].hasOwnProperty(slugFolderName)) return false;
+
+      const folder = this.store[type][slugFolderName];
+
+      // if admin
+      if (this.current_author_is_admin) return true;
+
+      if (
+        folder.hasOwnProperty("editing_limited_to") &&
+        folder.editing_limited_to === "nobody"
+      )
+        return false;
+
+      // if no password && no editing limits
+      if (
+        folder.password !== "has_pass" &&
+        (!folder.hasOwnProperty("editing_limited_to") ||
+          folder.editing_limited_to === "" ||
+          folder.editing_limited_to === "with_password")
+      )
+        return true;
+
+      // if explicit edit authorized
+      if (
+        folder.hasOwnProperty("editing_limited_to") &&
+        folder.editing_limited_to === "everybody"
+      )
+        return true;
+
+      // if password is set
+      if (
+        folder.password === "has_pass" &&
+        (!folder.hasOwnProperty("editing_limited_to") ||
+          folder.editing_limited_to === "" ||
+          folder.editing_limited_to === "with_password")
+      ) {
+        return this.state.list_authorized_folders.some((i) => {
+          return (
+            !!i &&
+            i.hasOwnProperty("type") &&
+            i.type === type &&
+            i.hasOwnProperty("allowed_slugFolderNames") &&
+            i.allowed_slugFolderNames.indexOf(slugFolderName) >= 0
+          );
+        });
+      }
+
+      // if editing_limited_to === 'only_authors'
+      if (
+        folder.hasOwnProperty("editing_limited_to") &&
+        folder.editing_limited_to === "only_authors"
+      ) {
+        if (!folder.authors || folder.authors.length === 0) return false;
+
+        return folder.authors.some(
+          (a) => a.slugFolderName === this.current_author.slugFolderName
+        );
+      }
+
+      return false;
+    },
+
     setAuthor: function (author_slug) {
       if (this.settings.current_author_slug === author_slug) return;
 
@@ -1115,6 +1208,17 @@ let vm = new Vue({
         this.settings.media_filter.keyword = "";
       }
     },
+    getFolderPassword({ type, slugFolderName }) {
+      const folders_password = this.$auth.getFoldersPasswords();
+      if (
+        folders_password.hasOwnProperty(type) &&
+        folders_password[type].hasOwnProperty(slugFolderName)
+      ) {
+        return folders_password[type][slugFolderName];
+      }
+      return "";
+    },
+
     setFavFilter() {
       this.settings.media_filter.fav = !this.settings.media_filter.fav;
     },

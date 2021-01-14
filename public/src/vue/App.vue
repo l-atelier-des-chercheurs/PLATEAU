@@ -129,6 +129,168 @@ body {
   flex-flow: column nowrap;
 }
 
+.formbox {
+  > *:first-child {
+    font-weight: bold;
+    // background-color: var(--c-noir);
+    // width: 100%;
+    // color: white;
+    // display: block;
+    // text-transform: lowercase;
+    // font-variant: small-caps;
+  }
+  > *:not(:first-child):not(:last-child) {
+    border-left: 4px solid var(--c-gris);
+    padding: 0 ~"calc(var(--spacing) / 2)";
+    margin: ~"calc(var(--spacing) / 2)" 0;
+
+    label {
+      // display: block;
+    }
+  }
+
+  ._submitbutton {
+    width: 100%;
+    background-color: var(--c-vert);
+    // color: white;
+    border-radius: 2px;
+  }
+}
+
+.m_metaField {
+  position: relative;
+
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+
+  color: var(--c-noir);
+  border-bottom: 1px dashed var(--c-gris);
+  border-radius: 2px;
+  text-align: left;
+
+  margin-bottom: ~"calc(var(--spacing) / 4)";
+
+  > *:first-child {
+    font-size: 80%;
+    font-family: "Fira Mono";
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    color: var(--c-noir);
+
+    &.is--active {
+      color: var(--c-rouge) !important;
+    }
+
+    span {
+      color: inherit;
+    }
+
+    margin-right: ~"calc(var(--spacing) / 4)";
+  }
+
+  > *:nth-child(2) {
+    text-transform: initial;
+    font-weight: 400;
+  }
+  &:last-child {
+    // margin-bottom: 0;
+  }
+
+  button {
+    min-height: 0;
+    padding: 0;
+  }
+}
+
+.m_authorField {
+  position: relative;
+  margin-bottom: 0;
+
+  .font-verysmall;
+  letter-spacing: 0.04em;
+  display: flex;
+  flex-flow: row wrap;
+  text-transform: initial;
+
+  font-weight: 400;
+
+  .m_authorField--show_all_authors {
+    text-transform: uppercase;
+    background-color: transparent !important;
+    border: 2px solid var(--c-gris);
+    font-size: 80% !important;
+    font-weight: bold;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  > button,
+  > span {
+    flex-basis: auto;
+    display: flex;
+    align-items: center;
+    min-height: 0;
+    border-radius: 4px !important;
+    background-color: var(--c-gris) !important;
+    // color: white !important;
+    color: var(--c-noir);
+    font-size: inherit !important;
+    // .padding-sides-verysmall !important;
+    // .padding-vert-verysmall !important;
+    padding: ~"calc(var(--spacing)/4)" ~"calc(var(--spacing)/2)";
+
+    text-transform: initial;
+    font-weight: inherit;
+    // font-weight: 500;
+
+    margin: 0 !important;
+    margin-right: ~"calc(var(--spacing) / 4)" !important;
+    margin-bottom: ~"calc(var(--spacing) / 4)" !important;
+
+    transition: all 0.06s cubic-bezier(0.19, 1, 0.22, 1);
+
+    &.is--active {
+      background-color: var(--c-noir) !important;
+      color: var(--c-vert) !important;
+      // font-weight: 700;
+      &::before {
+        filter: invert(1);
+      }
+    }
+    &::before {
+      content: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2084%2084%22%3E%0A%20%20%3Ctitle%3Etext%20copie%2010%3C/title%3E%0A%20%20%3Cg%20id%3D%22Calque_6%22%20data-name%3D%22Calque%206%22%3E%0A%20%20%20%20%3Cg%20id%3D%22flc%22%3E%0A%20%20%20%20%20%20%3Cpath%20d%3D%22M64%2C56.53a18.29%2C18.29%2C0%2C0%2C0-10.06-8.09s-3.44-1.71-12.28-1.71-12.27%2C1.71-12.27%2C1.71a18.31%2C18.31%2C0%2C0%2C0-10.07%2C8.09c-1%2C1.47-1.47%2C4.66-1.71%2C6.37v2.45c0%2C3.19%2C2.2%2C5.89%2C4.9%2C5.89H60.56c2.7%2C0%2C4.91-2.7%2C4.91-5.89V62.9A10.5%2C10.5%2C0%2C0%2C0%2C64%2C56.53M28.41%2C24.91c0%2C7.36%2C4.66%2C18.39%2C13.5%2C18.39%2C8.59%2C0%2C13.5-11%2C13.5-18.39a13.44%2C13.44%2C0%2C0%2C0-13.5-13.47%2C13.29%2C13.29%2C0%2C0%2C0-13.5%2C13.47%22/%3E%0A%20%20%20%20%3C/g%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E%0A");
+      display: inline-block;
+      vertical-align: baseline;
+      width: 20px;
+      height: 20px;
+      opacity: 0.2;
+      transform: scale(0.8);
+    }
+    &.is--loggedInAuthor {
+      &::before {
+        opacity: 0.6;
+      }
+    }
+
+    &:last-child {
+      margin-right: 0 !important;
+    }
+  }
+}
+
+.input-group,
+.input-single {
+  margin-bottom: var(--spacing);
+  display: flex;
+  align-content: center;
+}
+.input-addon:last-child {
+}
 .alertify {
   z-index: 100000;
 }
@@ -162,7 +324,7 @@ body {
       border-radius: 6px !important;
       transition: color 0.25s ease-out, opacity 0.5s;
       color: #fff !important;
-      background-color: var(--c-bleu) !important;
+      background-color: var(--c-vert) !important;
     }
   }
 }
@@ -293,9 +455,25 @@ input:required {
     background-size: 20px 20px;
   }
 }
-input[type="text"] {
-  border: 1px solid #000;
-  line-height: 1.7;
+input[type="color"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="email"],
+input[type="month"],
+input[type="number"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="text"],
+input[type="time"],
+input[type="url"],
+input[type="week"],
+select,
+textarea {
+  width: 100%;
+  background-color: var(--c-gris);
+  border: 0px solid #000;
+  line-height: 2;
   padding: 0 ~"calc(var(--spacing) / 2)";
   &:focus {
     outline: 0;
@@ -751,9 +929,9 @@ svg.inline-svg {
     min-height: 0;
     border-radius: 4px !important;
     // background-color: @c-bleuvert_clair !important;
-    background-color: white;
+    background-color: var(--c-noir);
     // color: white !important;
-    color: black !important;
+    color: white !important;
     font-size: inherit !important;
     // .padding-sides-verysmall !important;
     // .padding-vert-verysmall !important;
