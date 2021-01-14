@@ -25,6 +25,9 @@ module.exports = (function () {
       cover_image: "Image de couverture",
       show_all_users: "Afficher tous les utilisateurs inscrits",
 
+      only_my_projects: "Afficher seulement mes projets",
+      "by_keyword:": "Par mot-clé&nbsp;:",
+
       duplicate: "Dupliquer",
       currently_connected: "Connecté actuellement",
       on: "sur",

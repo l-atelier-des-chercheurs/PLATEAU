@@ -48,7 +48,13 @@
           {{ $t("edit") }}
         </button>
 
-        <button type="button" @click="more_options = !more_options">+</button>
+        <button
+          type="button"
+          v-if="can_edit_project"
+          @click="more_options = !more_options"
+        >
+          +
+        </button>
 
         <template v-if="more_options">
           <button

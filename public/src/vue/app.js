@@ -596,6 +596,13 @@ let vm = new Vue({
         };
       });
     },
+    setProjectKeywordFilter(newKeywordFilter) {
+      if (this.settings.project_filter.keyword !== newKeywordFilter) {
+        this.settings.project_filter.keyword = newKeywordFilter;
+      } else {
+        this.settings.project_filter.keyword = "";
+      }
+    },
     canSeeFolder: function ({ type, slugFolderName }) {
       if (!this.store[type].hasOwnProperty(slugFolderName)) return false;
 
