@@ -68,7 +68,6 @@
             :key="'pinned_' + index"
             :chat="chat"
           /> -->
-          <label>{{ $t("linked_to_project") }}</label>
           <ChatRow
             v-for="(chat, index) in linked_chats"
             :key="'nonpinned_' + index"
