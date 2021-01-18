@@ -348,7 +348,7 @@ let vm = new Vue({
       }
 
       const deviceDetector = new DeviceDetector();
-      const device = deviceDetector.parse(navigator.userAgent);
+      const device = deviceDetector.parse(window.navigator.userAgent);
       this.$socketio.socket.emit("updateClientInfo", { device });
 
       this.$eventHub.$once("socketio.authentificated", () => {

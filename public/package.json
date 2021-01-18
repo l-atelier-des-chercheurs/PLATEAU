@@ -24,7 +24,7 @@
     "alertify.js": "^1.0.12",
     "axios": "^0.21.0",
     "debounce": "^1.2.0",
-    "device-detector-js": "^2.2.1",
+    "device-detector-js": "^2.2.7",
     "draggabilly": "^2.2.0",
     "i18n": "^0.13.2",
     "imagetracerjs": "^1.2.6",
