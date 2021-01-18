@@ -176,6 +176,7 @@ export default {
   beforeDestroy() {
     this.$eventHub.$off("project.refresh_panes_order", this.refreshPanes);
     this.$eventHub.$off("project.set_pane_size", this.setPaneSize);
+    this.$root.closeChat();
   },
   watch: {
     "$root.settings.project_panes_in_order": {
