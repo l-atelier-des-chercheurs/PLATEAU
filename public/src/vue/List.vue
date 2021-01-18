@@ -47,7 +47,9 @@
 
       <div class="m_list">
         <template v-if="!$root.current_author">
-          {{ $t("login_to_open_project") }}
+          <div class="m_list--loginToAccess">
+            {{ $t("login_to_open_project") }}
+          </div>
         </template>
         <template v-else>
           <div class="m_list--filters">
@@ -357,6 +359,7 @@ export default {
   overflow-y: auto;
   padding: calc(10vh + 2.55em) 0 var(--spacing);
 
+  .m_list--loginToAccess,
   .m_list--filters {
     padding: calc(var(--spacing) / 1.5) calc(var(--spacing));
     // margin: calc(var(--spacing) / 2) calc(var(--spacing));
