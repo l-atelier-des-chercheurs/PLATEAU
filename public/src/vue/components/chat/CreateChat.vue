@@ -14,7 +14,7 @@
     <!-- <template slot="sidebar"> -->
     <!-- Human name -->
     <div class="margin-bottom-small">
-      <label>{{ $t("chat_name") }}</label>
+      <label>{{ $t("name") }}</label>
       <input type="text" v-model.trim="chatdata.name" required autofocus />
     </div>
 
