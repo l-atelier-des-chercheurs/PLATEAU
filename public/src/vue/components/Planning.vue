@@ -165,15 +165,29 @@ export default {
   computed: {
     sorted_planning_medias: {
       get() {
-        return this.planning_slugs_in_order.reduce((acc, { metaFileName }) => {
-          const _planning_media = this.planning_medias.find(
-            (pm) => pm.metaFileName === metaFileName
-          );
-          if (_planning_media && this.$root.filterMedia(_planning_media)) {
-            acc.push(_planning_media);
+        // check if in this.planning_slugs_in_order
+        let _list = this.planning_slugs_in_order.reduce(
+          (acc, { metaFileName }) => {
+            const _planning_media = this.planning_medias.find(
+              (pm) => pm.metaFileName === metaFileName
+            );
+            if (_planning_media && this.$root.filterMedia(_planning_media)) {
+              acc.push(_planning_media);
+            }
+            return acc;
+          },
+          []
+        );
+
+        // if missing in this.planning_slugs_in_order, add to the end
+        this.planning_medias.map((p) => {
+          if (!_list.find((_p) => p.metaFileName === _p.metaFileName)) {
+            _list.push(p);
           }
-          return acc;
-        }, []);
+        });
+        // _list
+
+        return _list;
       },
       set(v) {
         const planning_slugs_in_order = v.map((m) => ({
