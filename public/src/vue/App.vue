@@ -272,6 +272,7 @@ body {
     &.is--active {
       // color: var(--c-vrt) !important;
       font-weight: 700;
+      border: 1px solid var(--c-noir);
       &::before {
         filter: invert(1);
       }
