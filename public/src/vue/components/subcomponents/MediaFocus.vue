@@ -16,45 +16,83 @@
       :media="media"
     />
 
-    <div class="margin-bottom-small">
-      <label>{{ $t("caption") }}</label>
-      <MediaField
-        :value="media.caption"
-        :show_edit_button="true"
-        :add_instructions="$t('add_caption')"
-        :edit_instructions="$t('edit_caption')"
-        :read_only="false"
-        :plain_text="true"
-        @updateField="(value) => updateMediaPubliMeta({ caption: value })"
-      />
+    <div class="m_mediaFocus--fullscreenButtons">
+      <button type="button" @click="enterFullscreen" v-if="!is_fullscreen">
+        <svg
+          width="18px"
+          height="18px"
+          viewBox="0 0 18 18"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <polygon
+            points="10 3 13.6 3 9.6 7 11 8.4 15 4.4 15 8 17 8 17 1 10 1"
+          ></polygon>
+          <polygon
+            points="7 9.6 3 13.6 3 10 1 10 1 17 8 17 8 15 4.4 15 8.4 11"
+          ></polygon>
+        </svg>
+      </button>
+      <button type="button" cl @click="exitFullscreen" v-if="is_fullscreen">
+        <svg
+          width="18px"
+          height="18px"
+          viewBox="0 0 18 18"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <polygon
+            points="1 12 4.6 12 0.6 16 2 17.4 6 13.4 6 17 8 17 8 10 1 10"
+          ></polygon>
+          <polygon
+            points="16 0.6 12 4.6 12 1 10 1 10 8 17 8 17 6 13.4 6 17.4 2"
+          ></polygon>
+        </svg>
+      </button>
     </div>
 
-    <div class="margin-bottom-small">
-      <label>{{ $t("keywords") }}</label>
-      <TagsInput
-        :keywords="media.keywords"
-        :read_only="false"
-        :type="'medias'"
-        @tagsChanged="(newTags) => updateMediaPubliMeta({ keywords: newTags })"
-      />
-    </div>
+    <div class="m_mediaFocus--options">
+      <div class="margin-bottom-small m_mediaFocus--options--caption">
+        <label>{{ $t("caption") }}</label>
+        <MediaField
+          class="_caption"
+          :value="media.caption"
+          :show_edit_button="true"
+          :add_instructions="$t('add_caption')"
+          :edit_instructions="$t('edit_caption')"
+          :read_only="false"
+          :plain_text="true"
+          @updateField="(value) => updateMediaPubliMeta({ caption: value })"
+        />
+      </div>
 
-    <div class="m_mediaFocus--buttons">
-      <a
-        class="button"
-        :download="media.media_filename"
-        :href="mediaFocusDownloadURL"
-        target="_blank"
-        >{{ $t("download") }}</a
-      >
-      <button type="button" @click="removeMedia(show_media_detail_for)">
-        {{ $t("remove") }}
-      </button>
-      <button type="button" @click="toggleMediaModal()">
-        {{ $t("close") }}
-      </button>
-      <button type="button" @click="$emit('prevMedia')">←</button>
-      <button type="button" @click="$emit('nextMedia')">→</button>
+      <div class="margin-bottom-small">
+        <label>{{ $t("keywords") }}</label>
+        <TagsInput
+          :keywords="media.keywords"
+          :read_only="false"
+          :type="'medias'"
+          @tagsChanged="
+            (newTags) => updateMediaPubliMeta({ keywords: newTags })
+          "
+        />
+      </div>
+
+      <div class="m_mediaFocus--buttons">
+        <a
+          class="button"
+          :download="media.media_filename"
+          :href="mediaFocusDownloadURL"
+          target="_blank"
+          >{{ $t("download") }}</a
+        >
+        <button type="button" @click="removeMedia(show_media_detail_for)">
+          {{ $t("remove") }}
+        </button>
+        <button type="button" @click="toggleMediaModal()">
+          {{ $t("close") }}
+        </button>
+        <button type="button" @click="$emit('prevMedia')">←</button>
+        <button type="button" @click="$emit('nextMedia')">→</button>
+      </div>
     </div>
   </div>
 </template>
@@ -77,6 +115,7 @@ export default {
   data() {
     return {
       edit_caption: false,
+      is_fullscreen: false,
     };
   },
   created() {},
@@ -113,6 +152,23 @@ export default {
         // this.media_focus_is_dragged = false;
         this.$root.settings.media_being_dragged = false;
       }, 500);
+    },
+    enterFullscreen() {
+      let elem = this.$el;
+      elem
+        .requestFullscreen()
+        .then(() => {
+          this.is_fullscreen = true;
+        })
+        .catch((err) => {
+          alert(
+            `Error attempting to enable full-screen mode: ${err.message} (${err.name})`
+          );
+        });
+    },
+    exitFullscreen() {
+      window.document.exitFullscreen();
+      this.is_fullscreen = false;
     },
     updateMediaPubliMeta(val) {
       this.$root
@@ -158,12 +214,17 @@ export default {
 
   display: flex;
   flex-flow: column nowrap;
+  overflow: auto;
 
   // box-shadow: 0 10px 23px rgba(0, 0, 0, 0.4);
+  // background-color: rgba(51, 51, 51, 0);
+  background-color: var(--c-orange);
 
   .mediaContainer {
     position: relative;
-    flex: 1 1 auto;
+    flex: 1 0 150px;
+
+    // background: linear-gradient(var(--c-noir), transparent);
 
     > * {
       position: absolute;
@@ -171,6 +232,33 @@ export default {
       height: 100%;
       object-fit: contain;
       object-position: center;
+    }
+  }
+  .m_mediaFocus--options {
+    button {
+      // padding: 0;
+    }
+
+    .m_mediaFocus--options--caption {
+      ._caption {
+        padding: 0 calc(var(--spacing) / 2);
+        // background-color: rgba(51, 51, 51, 0.2);
+
+        // padding: 0 calc(var(--spacing) / 2);
+        background-color: rgba(255, 255, 255, 0.2);
+
+        font-size: 70%;
+      }
+    }
+
+    > * {
+      margin: 0 calc(var(--spacing) / 1);
+      // padding: calc(var(--spacing) / 2) 0;
+      background-color: var(--c-orange);
+
+      &:not(:last-child) {
+        border-bottom: 1px solid black;
+      }
     }
   }
 
@@ -188,6 +276,30 @@ export default {
 
     > * {
       pointer-events: auto;
+    }
+
+    button,
+    a {
+      text-decoration: none;
+    }
+  }
+}
+
+.m_mediaFocus--fullscreenButtons {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  button {
+    display: block;
+    line-height: 0;
+    border-radius: 4px;
+    margin: calc(var(--spacing) / 4);
+    padding: calc(var(--spacing) / 2);
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+      fill: white;
     }
   }
 }

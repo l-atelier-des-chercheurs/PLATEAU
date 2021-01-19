@@ -14,7 +14,7 @@
     <!-- <template slot="sidebar"> -->
     <!-- Human name -->
     <div class="margin-bottom-small">
-      <label>{{ $t("chat_name") }}</label>
+      <label>{{ $t("name") }}</label>
       <input type="text" v-model.trim="chatdata.name" required autofocus />
     </div>
 
@@ -153,18 +153,18 @@ export default {
     newChat: function (event) {
       console.log("newChat");
 
-      if (
-        Object.values(this.$root.store.chats).some(
-          ({ name }) => name === this.chatdata.name
-        )
-      ) {
-        this.$alertify
-          .closeLogOnClick(true)
-          .delay(4000)
-          .error(this.$t("notifications.name_already_exists"));
+      // if (
+      //   Object.values(this.$root.store.chats).some(
+      //     ({ name }) => name === this.chatdata.name
+      //   )
+      // ) {
+      //   this.$alertify
+      //     .closeLogOnClick(true)
+      //     .delay(4000)
+      //     .error(this.$t("notifications.name_already_exists"));
 
-        return false;
-      }
+      //   return false;
+      // }
 
       this.is_sending_content_to_server = true;
 

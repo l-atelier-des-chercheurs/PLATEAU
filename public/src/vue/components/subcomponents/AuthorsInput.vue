@@ -17,7 +17,7 @@
       :disabled="read_only"
       @click="toggleAuthorName(author_slug)"
     >
-      {{ $root.getAuthor(author_slug).name }}
+      <span>{{ $root.getAuthor(author_slug).name }}</span>
     </button>
     <button
       type="button"

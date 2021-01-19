@@ -71,6 +71,7 @@
             <label>{{ $t("select_username") }}</label>
             <div>
               <select v-model="login_author">
+                <option value=""></option>
                 <option
                   v-for="author in sorted_authors"
                   :value="author"
