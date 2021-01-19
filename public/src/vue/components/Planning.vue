@@ -390,6 +390,10 @@ export default {
   margin-left: -1px;
   margin-right: -1px;
   border: 1px solid black;
+
+  .m_planningItem {
+    padding: calc(var(--spacing) / 2) calc(var(--spacing) / 1);
+  }
 }
 
 .m_planning--slickItem--handle {

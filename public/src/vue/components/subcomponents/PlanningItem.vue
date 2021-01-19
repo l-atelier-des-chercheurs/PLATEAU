@@ -1,7 +1,7 @@
 <template>
   <form
     class="m_planningItem"
-    :class="{ 'is--editable': edit_mode }"
+    :class="{ 'is--editable': edit_mode, 'is--expanded': mode === 'expanded' }"
     @submit.prevent="sendEdits"
   >
     <div class="m_planningItem--topbar">
@@ -361,10 +361,18 @@ export default {
   display: flex;
   flex-flow: column nowrap;
   // align-items: stretch;
-  padding: calc(var(--spacing) / 2) calc(var(--spacing) / 1);
 
   &.is--active {
     color: #999;
+  }
+
+  &.is--expanded {
+    .m_planningItem--topbar {
+      padding: calc(var(--spacing) / 2) calc(var(--spacing) / 1);
+    }
+    .m_planningItem--options {
+      padding: 0 calc(var(--spacing) / 1);
+    }
   }
 }
 
