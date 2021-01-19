@@ -596,13 +596,17 @@ textarea {
   width: 2px;
   height: 20px;
 
-  transition: all 0.4s;
+  transition: transform 0.4s;
   background-color: #000;
   opacity: 1;
   z-index: 11;
 }
+.splitpanes__splitter:hover {
+  border-color: #fff;
+}
 .splitpanes__splitter:hover:after {
   opacity: 1;
+  background-color: #fff;
   transform: rotate(90deg);
 }
 
