@@ -26,13 +26,14 @@ module.exports = (function () {
       open: "Ouvrir",
       back: "Retour",
       login_to_open_project:
-        "Identifiez-vous pour consulter la liste des projets",
+        "Identifiez-vous pour consulter la liste des projets.",
       at: "à",
       select_username: "Sélectionnez votre nom de compte",
       edit: "Modifier",
       cover_image: "Image de couverture",
       show_all_users: "Afficher tous les utilisateurs inscrits",
       hide_users_list: "Masquer la liste des inscrits",
+      show_all_authors: "Afficher tous les utilisateurs",
 
       only_my_projects: "Afficher seulement mes projets",
       "by_keyword:": "Par mot-clé&nbsp;:",
@@ -55,7 +56,8 @@ module.exports = (function () {
       new_project: "Nouveau Projet",
       project: "Projet",
       copy_of: "Copie de",
-      only_author_can_access: "Accès possible uniquement pour les auteurs",
+      only_author_can_access:
+        "Accès possible uniquement pour les contributeurs",
       protectd_by_pass: "Protégé par un mot de passe",
       onion_skin: "Onion skin",
       keyword: "Mot-clé",
