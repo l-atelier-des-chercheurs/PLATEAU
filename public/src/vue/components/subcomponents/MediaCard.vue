@@ -207,6 +207,7 @@ export default {
   background-color: rgba(193, 154, 0, 0.4);
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
+  overflow: hidden;
   /* border: 2px solid black; */
   // width: var(--media-width);
   // height: var(--media-width);
