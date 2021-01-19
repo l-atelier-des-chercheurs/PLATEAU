@@ -342,7 +342,7 @@ export default {
 
 .m_panes--rightPane {
   flex: 1 1 66%;
-  background-color: var(--c-gris);
+  // background-color: var(--c-gris);
 
   position: relative;
 
