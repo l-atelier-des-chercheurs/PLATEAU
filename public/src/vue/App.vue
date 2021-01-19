@@ -497,6 +497,11 @@ textarea {
   }
 }
 
+textarea {
+  line-height: 1.41;
+  min-height: 5em;
+}
+
 .margin-bottom-small {
   margin-bottom: ~"calc(var(--spacing) / 2)";
 }

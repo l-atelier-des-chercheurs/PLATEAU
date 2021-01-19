@@ -624,6 +624,6 @@ export default {
   width: 100%;
   z-index: 1000;
   padding: var(--spacing);
-  background-color: #f9ca00;
+  background-color: var(--c-orange);
 }
 </style>

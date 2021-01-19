@@ -16,45 +16,50 @@
       :media="media"
     />
 
-    <div class="margin-bottom-small">
-      <label>{{ $t("caption") }}</label>
-      <MediaField
-        :value="media.caption"
-        :show_edit_button="true"
-        :add_instructions="$t('add_caption')"
-        :edit_instructions="$t('edit_caption')"
-        :read_only="false"
-        :plain_text="true"
-        @updateField="(value) => updateMediaPubliMeta({ caption: value })"
-      />
-    </div>
+    <div class="m_mediaFocus--options">
+      <div class="margin-bottom-small m_mediaFocus--options--caption">
+        <label>{{ $t("caption") }}</label>
+        <MediaField
+          class="_caption"
+          :value="media.caption"
+          :show_edit_button="true"
+          :add_instructions="$t('add_caption')"
+          :edit_instructions="$t('edit_caption')"
+          :read_only="false"
+          :plain_text="true"
+          @updateField="(value) => updateMediaPubliMeta({ caption: value })"
+        />
+      </div>
 
-    <div class="margin-bottom-small">
-      <label>{{ $t("keywords") }}</label>
-      <TagsInput
-        :keywords="media.keywords"
-        :read_only="false"
-        :type="'medias'"
-        @tagsChanged="(newTags) => updateMediaPubliMeta({ keywords: newTags })"
-      />
-    </div>
+      <div class="margin-bottom-small">
+        <label>{{ $t("keywords") }}</label>
+        <TagsInput
+          :keywords="media.keywords"
+          :read_only="false"
+          :type="'medias'"
+          @tagsChanged="
+            (newTags) => updateMediaPubliMeta({ keywords: newTags })
+          "
+        />
+      </div>
 
-    <div class="m_mediaFocus--buttons">
-      <a
-        class="button"
-        :download="media.media_filename"
-        :href="mediaFocusDownloadURL"
-        target="_blank"
-        >{{ $t("download") }}</a
-      >
-      <button type="button" @click="removeMedia(show_media_detail_for)">
-        {{ $t("remove") }}
-      </button>
-      <button type="button" @click="toggleMediaModal()">
-        {{ $t("close") }}
-      </button>
-      <button type="button" @click="$emit('prevMedia')">←</button>
-      <button type="button" @click="$emit('nextMedia')">→</button>
+      <div class="m_mediaFocus--buttons">
+        <a
+          class="button"
+          :download="media.media_filename"
+          :href="mediaFocusDownloadURL"
+          target="_blank"
+          >{{ $t("download") }}</a
+        >
+        <button type="button" @click="removeMedia(show_media_detail_for)">
+          {{ $t("remove") }}
+        </button>
+        <button type="button" @click="toggleMediaModal()">
+          {{ $t("close") }}
+        </button>
+        <button type="button" @click="$emit('prevMedia')">←</button>
+        <button type="button" @click="$emit('nextMedia')">→</button>
+      </div>
     </div>
   </div>
 </template>
@@ -161,10 +166,13 @@ export default {
   overflow: auto;
 
   // box-shadow: 0 10px 23px rgba(0, 0, 0, 0.4);
+  background-color: rgba(51, 51, 51, 0);
 
   .mediaContainer {
     position: relative;
     flex: 1 0 150px;
+
+    // background: linear-gradient(var(--c-noir), transparent);
 
     > * {
       position: absolute;
@@ -172,6 +180,33 @@ export default {
       height: 100%;
       object-fit: contain;
       object-position: center;
+    }
+  }
+  .m_mediaFocus--options {
+    button {
+      // padding: 0;
+    }
+
+    .m_mediaFocus--options--caption {
+      ._caption {
+        padding: 0 calc(var(--spacing) / 2);
+        // background-color: rgba(51, 51, 51, 0.2);
+
+        // padding: 0 calc(var(--spacing) / 2);
+        background-color: rgba(255, 255, 255, 0.2);
+
+        font-size: 70%;
+      }
+    }
+
+    > * {
+      margin: 0 calc(var(--spacing) / 1);
+      // padding: calc(var(--spacing) / 2) 0;
+      background-color: var(--c-orange);
+
+      &:not(:last-child) {
+        border-bottom: 1px solid black;
+      }
     }
   }
 
