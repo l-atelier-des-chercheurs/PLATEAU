@@ -158,12 +158,13 @@ export default {
 
   display: flex;
   flex-flow: column nowrap;
+  overflow: auto;
 
   // box-shadow: 0 10px 23px rgba(0, 0, 0, 0.4);
 
   .mediaContainer {
     position: relative;
-    flex: 1 1 auto;
+    flex: 1 0 150px;
 
     > * {
       position: absolute;

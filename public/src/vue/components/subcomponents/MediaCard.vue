@@ -334,6 +334,10 @@ export default {
   font-size: 70%;
   padding: 0 calc(var(--spacing) / 4);
   white-space: pre-line;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .m_media--date {
   font-size: 70%;
