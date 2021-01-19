@@ -16,6 +16,39 @@
       :media="media"
     />
 
+    <div class="m_mediaFocus--fullscreenButtons">
+      <button type="button" @click="enterFullscreen" v-if="!is_fullscreen">
+        <svg
+          width="18px"
+          height="18px"
+          viewBox="0 0 18 18"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <polygon
+            points="10 3 13.6 3 9.6 7 11 8.4 15 4.4 15 8 17 8 17 1 10 1"
+          ></polygon>
+          <polygon
+            points="7 9.6 3 13.6 3 10 1 10 1 17 8 17 8 15 4.4 15 8.4 11"
+          ></polygon>
+        </svg>
+      </button>
+      <button type="button" cl @click="exitFullscreen" v-if="is_fullscreen">
+        <svg
+          width="18px"
+          height="18px"
+          viewBox="0 0 18 18"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <polygon
+            points="1 12 4.6 12 0.6 16 2 17.4 6 13.4 6 17 8 17 8 10 1 10"
+          ></polygon>
+          <polygon
+            points="16 0.6 12 4.6 12 1 10 1 10 8 17 8 17 6 13.4 6 17.4 2"
+          ></polygon>
+        </svg>
+      </button>
+    </div>
+
     <div class="m_mediaFocus--options">
       <div class="margin-bottom-small m_mediaFocus--options--caption">
         <label>{{ $t("caption") }}</label>
@@ -82,6 +115,7 @@ export default {
   data() {
     return {
       edit_caption: false,
+      is_fullscreen: false,
     };
   },
   created() {},
@@ -118,6 +152,23 @@ export default {
         // this.media_focus_is_dragged = false;
         this.$root.settings.media_being_dragged = false;
       }, 500);
+    },
+    enterFullscreen() {
+      let elem = this.$el;
+      elem
+        .requestFullscreen()
+        .then(() => {
+          this.is_fullscreen = true;
+        })
+        .catch((err) => {
+          alert(
+            `Error attempting to enable full-screen mode: ${err.message} (${err.name})`
+          );
+        });
+    },
+    exitFullscreen() {
+      window.document.exitFullscreen();
+      this.is_fullscreen = false;
     },
     updateMediaPubliMeta(val) {
       this.$root
@@ -166,7 +217,8 @@ export default {
   overflow: auto;
 
   // box-shadow: 0 10px 23px rgba(0, 0, 0, 0.4);
-  background-color: rgba(51, 51, 51, 0);
+  // background-color: rgba(51, 51, 51, 0);
+  background-color: var(--c-orange);
 
   .mediaContainer {
     position: relative;
@@ -224,6 +276,30 @@ export default {
 
     > * {
       pointer-events: auto;
+    }
+
+    button,
+    a {
+      text-decoration: none;
+    }
+  }
+}
+
+.m_mediaFocus--fullscreenButtons {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  button {
+    display: block;
+    line-height: 0;
+    border-radius: 4px;
+    margin: calc(var(--spacing) / 4);
+    padding: calc(var(--spacing) / 2);
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.1);
+      fill: white;
     }
   }
 }
