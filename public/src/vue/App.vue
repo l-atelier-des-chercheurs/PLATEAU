@@ -550,14 +550,10 @@ textarea {
   position: relative;
   background-color: transparent;
   // border-left: 1px solid #eee;
-  cursor: pointer;
-  cursor: -webkit-grab;
-  cursor: -moz-grab;
   z-index: 100;
-}
-.splitpanes--dragging .splitpanes__splitter {
-  cursor: -webkit-grabbing;
-  cursor: -moz-grabbing;
+  border: 0px;
+
+  pointer-events: none;
 }
 
 .splitpanes--vertical > .splitpanes__splitter {
@@ -573,25 +569,37 @@ textarea {
 .splitpanes__splitter:before {
   content: "";
   position: absolute;
-  left: 0;
-  top: 0;
+  width: 30px;
+  height: 30px;
+
+  left: ~"calc(50% - 15px)";
+  top: ~"calc(50% - 15px)";
+
   transition: opacity 0.4s;
-  background-color: rgba(255, 255, 255, 1);
-  opacity: 0;
+  // background-color: rgba(255, 255, 0, 1);
+  opacity: 1;
   z-index: 10;
+  pointer-events: auto;
+  cursor: pointer;
+  cursor: -webkit-grab;
+  cursor: -moz-grab;
 }
+
+.splitpanes--dragging .splitpanes__splitter {
+  border-style: dashed;
+}
+
+.splitpanes--dragging .splitpanes__splitter::before {
+  cursor: -webkit-grabbing;
+  cursor: -moz-grabbing;
+}
+
 .splitpanes__splitter:hover:before {
   // opacity: 1;
 }
 .splitpanes--vertical > .splitpanes__splitter::before {
-  left: -10px;
-  right: -10px;
-  height: 100%;
 }
 .splitpanes--horizontal > .splitpanes__splitter::before {
-  top: -10px;
-  bottom: -10px;
-  width: 100%;
 }
 
 .splitpanes__splitter:after {
@@ -614,11 +622,10 @@ textarea {
   z-index: 11;
 }
 .splitpanes__splitter:hover {
-  border-color: #fff;
+  border-style: dashed;
 }
 .splitpanes__splitter:hover:after {
   opacity: 1;
-  background-color: #fff;
   transform: rotate(90deg);
 }
 

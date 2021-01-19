@@ -181,7 +181,10 @@ export default {
 
         // if missing in this.planning_slugs_in_order, add to the end
         this.planning_medias.map((p) => {
-          if (!_list.find((_p) => p.metaFileName === _p.metaFileName)) {
+          if (
+            !_list.find((_p) => p.metaFileName === _p.metaFileName) &&
+            this.$root.filterMedia(p)
+          ) {
             _list.push(p);
           }
         });
@@ -391,20 +394,27 @@ export default {
 
 .m_planning--slickItem--handle {
   display: block;
-  flex: 0 0 auto;
-  width: 28px;
+  flex: 0 0 40px;
+  // width: 28px;
   margin: 0;
   border-radius: 0;
   margin-right: -1px;
 
   border: none;
   border-right: 1px solid black;
+  padding: var(--spacing);
 
   background-color: #fff;
+
+  cursor: row-resize;
 
   display: flex;
   align-items: center;
   justify-content: center;
+
+  &:before {
+    transform: rotate(0deg);
+  }
 }
 
 .m_planning--slickItem--item {
