@@ -217,7 +217,7 @@ body {
   position: relative;
   margin-bottom: 0;
 
-  .font-verysmall;
+  .font-small;
   letter-spacing: 0.04em;
   display: flex;
   flex-flow: row wrap;
@@ -244,13 +244,16 @@ body {
     align-items: center;
     min-height: 0;
     border-radius: 4px !important;
-    background-color: var(--c-gris) !important;
+    text-decoration: none;
+    font-variant: none;
     // color: white !important;
+    font-weight: 400;
+    background-color: var(--c-vert) !important;
     color: var(--c-noir);
     font-size: inherit !important;
     // .padding-sides-verysmall !important;
     // .padding-vert-verysmall !important;
-    padding: ~"calc(var(--spacing)/4)" ~"calc(var(--spacing)/2)";
+    padding: ~"calc(var(--spacing)/8)" ~"calc(var(--spacing)/4)";
 
     text-transform: initial;
     font-weight: inherit;
@@ -262,26 +265,29 @@ body {
 
     transition: all 0.06s cubic-bezier(0.19, 1, 0.22, 1);
 
+    &[disabled] {
+      opacity: 1;
+    }
+
     &.is--active {
-      background-color: var(--c-noir) !important;
-      color: var(--c-vert) !important;
-      // font-weight: 700;
+      // color: var(--c-vrt) !important;
+      font-weight: 700;
       &::before {
         filter: invert(1);
       }
     }
     &::before {
-      content: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2084%2084%22%3E%0A%20%20%3Ctitle%3Etext%20copie%2010%3C/title%3E%0A%20%20%3Cg%20id%3D%22Calque_6%22%20data-name%3D%22Calque%206%22%3E%0A%20%20%20%20%3Cg%20id%3D%22flc%22%3E%0A%20%20%20%20%20%20%3Cpath%20d%3D%22M64%2C56.53a18.29%2C18.29%2C0%2C0%2C0-10.06-8.09s-3.44-1.71-12.28-1.71-12.27%2C1.71-12.27%2C1.71a18.31%2C18.31%2C0%2C0%2C0-10.07%2C8.09c-1%2C1.47-1.47%2C4.66-1.71%2C6.37v2.45c0%2C3.19%2C2.2%2C5.89%2C4.9%2C5.89H60.56c2.7%2C0%2C4.91-2.7%2C4.91-5.89V62.9A10.5%2C10.5%2C0%2C0%2C0%2C64%2C56.53M28.41%2C24.91c0%2C7.36%2C4.66%2C18.39%2C13.5%2C18.39%2C8.59%2C0%2C13.5-11%2C13.5-18.39a13.44%2C13.44%2C0%2C0%2C0-13.5-13.47%2C13.29%2C13.29%2C0%2C0%2C0-13.5%2C13.47%22/%3E%0A%20%20%20%20%3C/g%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E%0A");
+      // content: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2084%2084%22%3E%0A%20%20%3Ctitle%3Etext%20copie%2010%3C/title%3E%0A%20%20%3Cg%20id%3D%22Calque_6%22%20data-name%3D%22Calque%206%22%3E%0A%20%20%20%20%3Cg%20id%3D%22flc%22%3E%0A%20%20%20%20%20%20%3Cpath%20d%3D%22M64%2C56.53a18.29%2C18.29%2C0%2C0%2C0-10.06-8.09s-3.44-1.71-12.28-1.71-12.27%2C1.71-12.27%2C1.71a18.31%2C18.31%2C0%2C0%2C0-10.07%2C8.09c-1%2C1.47-1.47%2C4.66-1.71%2C6.37v2.45c0%2C3.19%2C2.2%2C5.89%2C4.9%2C5.89H60.56c2.7%2C0%2C4.91-2.7%2C4.91-5.89V62.9A10.5%2C10.5%2C0%2C0%2C0%2C64%2C56.53M28.41%2C24.91c0%2C7.36%2C4.66%2C18.39%2C13.5%2C18.39%2C8.59%2C0%2C13.5-11%2C13.5-18.39a13.44%2C13.44%2C0%2C0%2C0-13.5-13.47%2C13.29%2C13.29%2C0%2C0%2C0-13.5%2C13.47%22/%3E%0A%20%20%20%20%3C/g%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E%0A");
       display: inline-block;
-      vertical-align: baseline;
+      vertical-align: middle;
       width: 20px;
       height: 20px;
-      opacity: 0.2;
+      opacity: 0.4;
       transform: scale(0.8);
     }
     &.is--loggedInAuthor {
       &::before {
-        opacity: 0.6;
+        opacity: 0.8;
       }
     }
 
@@ -439,15 +445,15 @@ button,
 
   &[disabled] {
     cursor: not-allowed;
-    filter: grayscale(100%);
-    opacity: 0.5;
+    // filter: grayscale(100%);
+    opacity: 0.6;
   }
   &:focus {
     outline: 0;
   }
 
   &.is--active {
-    background-color: --color-noir;
+    background-color: var(--color-noir);
   }
 }
 
@@ -826,7 +832,7 @@ svg.inline-svg {
   align-items: flex-start;
   text-transform: initial;
 
-  font-family: "Fira Mono";
+  // font-family: "Fira Mono";
 
   > .input {
     border: none !important;
@@ -940,6 +946,8 @@ svg.inline-svg {
     align-items: center;
     min-height: 0;
     border-radius: 4px !important;
+    text-decoration: none;
+    font-variant: none;
     // background-color: @c-bleuvert_clair !important;
     background-color: var(--c-noir);
     // color: white !important;
