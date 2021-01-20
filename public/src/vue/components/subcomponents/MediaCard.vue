@@ -370,9 +370,13 @@ export default {
   padding: 0 calc(var(--spacing) / 4);
   white-space: pre-line;
 
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
+  // text-overflow: ellipsis;
+  // white-space: nowrap;
+  // overflow: hidden;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 .m_media--date {
   font-size: 70%;
