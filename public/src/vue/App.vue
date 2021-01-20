@@ -14,13 +14,18 @@
       :slugProjectName="$root.do_navigation.current_slugProjectName"
     />
     <div v-else>
-      <PlanningItem
-        v-for="media in planning_items"
-        :key="media.metaFileName"
-        :media="media"
-        :slugFolderName="$root.do_navigation.current_slugProjectName"
-        :mode="'expanded'"
-      />
+      <template v-for="(media, index) in planning_items">
+        <PlanningItem
+          :key="media.metaFileName"
+          :media="media"
+          :slugFolderName="$root.do_navigation.current_slugProjectName"
+          :mode="'expanded'"
+        />
+        <hr
+          v-if="planning_items.length - 1 !== index"
+          :key="`hr_${media.metaFileName}`"
+        />
+      </template>
     </div>
 
     <portal-target name="modal_container" />
