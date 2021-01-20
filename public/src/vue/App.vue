@@ -512,6 +512,20 @@ textarea {
   }
 }
 
+.m_favButton {
+  border-radius: 15px;
+  width: 30px;
+  height: 30px;
+  // padding-top: 5px;
+
+  svg {
+  }
+
+  &.is--active {
+    background-color: var(--c-rouge);
+  }
+}
+
 .font-small {
   font-size: 0.9em;
   line-height: 1.25;
@@ -1472,7 +1486,6 @@ body {
   }
 }
 // if no preview, then sidebar takes the whole width
-
 .m_modal--preview {
   .mediaContainer {
     height: 100%;

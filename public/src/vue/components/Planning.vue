@@ -10,7 +10,7 @@
         <SlickItem
           v-for="(item, index) in sorted_planning_medias"
           :index="index"
-          :key="item.key"
+          :key="item.metaFileName"
         >
           <div class="m_planning--slickItem">
             <div v-handle class="m_planning--slickItem--handle handle" />

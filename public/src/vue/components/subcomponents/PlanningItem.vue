@@ -6,6 +6,34 @@
   >
     <div class="m_planningItem--topbar">
       <div class="m_planningItem--editButtons" v-if="!edit_mode">
+        <button
+          type="button"
+          class="m_favButton"
+          @click="toggleFav"
+          :class="{ 'is--active': media.fav }"
+        >
+          <svg
+            version="1.1"
+            class="inline-svg"
+            xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+            x="0px"
+            y="0px"
+            width="78.5px"
+            height="106.4px"
+            viewBox="0 0 78.5 106.4"
+            style="enable-background: new 0 0 78.5 106.4"
+            xml:space="preserve"
+          >
+            <polygon
+              class="st0"
+              points="60.4,29.7 78.5,7.3 78.5,7.3 12.7,7.3 12.7,52 78.5,52 78.5,52 	"
+            />
+            <polygon class="st0" points="9.6,106.4 0,106.4 0,2 9.6,0 " />
+          </svg>
+        </button>
+
         <button type="button" @click="edit_mode = !edit_mode" title="edit">
           <svg
             version="1.1"
@@ -88,13 +116,15 @@
           <TagsInput
             :keywords="media.keywords"
             :read_only="false"
-            :type="'medias'"
             @tagsChanged="(newTags) => (edited_media_infos.keywords = newTags)"
           />
         </template>
       </div>
 
-      <div class="m_planningItem--options--start">
+      <div
+        class="m_planningItem--options--start"
+        v-if="media.planning_info_start || edit_mode"
+      >
         <label>{{ $t("date") }}</label>
         <span v-if="!edit_mode && media.planning_info_start">
           {{
@@ -113,7 +143,10 @@
         -->
       </div>
       <!-- <span v-if="(!edit_mode && media_duration) || edit_mode">→</span> -->
-      <div class="m_planningItem--options--duration">
+      <div
+        class="m_planningItem--options--duration"
+        v-if="edit_mode || media.planning_info_duration !== '00:00'"
+      >
         <label>{{ $t("duration") }}</label>
 
         <span v-if="!edit_mode && media_duration">
@@ -301,8 +334,6 @@ export default {
 
       const checkIfValueChanged = (key, val) => val !== this.media[key];
 
-      debugger;
-
       Object.keys(this.edited_media_infos).map((k) => {
         if (checkIfValueChanged(k, this.edited_media_infos[k])) {
           data[k] = this.edited_media_infos[k];
@@ -333,6 +364,21 @@ export default {
           },
           () => {}
         );
+    },
+    toggleFav() {
+      let fav = true;
+      if (this.media.fav) {
+        fav = false;
+      }
+
+      this.$root.editMedia({
+        type: "projects",
+        slugFolderName: this.slugFolderName,
+        slugMediaName: this.media.metaFileName,
+        data: {
+          fav,
+        },
+      });
     },
     closePlanning() {
       if (window.state.dev_mode === "debug")
@@ -422,7 +468,7 @@ export default {
   // padding: 0.4em;
   // line-height: 1;
   border-radius: 1em;
-  font-size: 70%;
+  font-size: 80%;
 
   // display: flex;
   // flex-flow: row wrap;

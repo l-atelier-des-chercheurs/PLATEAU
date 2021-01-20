@@ -54,6 +54,33 @@
                 "HH:mm"
               )
             }}
+            <button
+              type="button"
+              class="m_media--fav m_favButton"
+              v-if="media.fav"
+              :class="{ 'is--active': media.fav }"
+            >
+              <svg
+                version="1.1"
+                class="inline-svg"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+                x="0px"
+                y="0px"
+                width="78.5px"
+                height="106.4px"
+                viewBox="0 0 78.5 106.4"
+                style="enable-background: new 0 0 78.5 106.4"
+                xml:space="preserve"
+              >
+                <polygon
+                  class="st0"
+                  points="60.4,29.7 78.5,7.3 78.5,7.3 12.7,7.3 12.7,52 78.5,52 78.5,52 	"
+                />
+                <polygon class="st0" points="9.6,106.4 0,106.4 0,2 9.6,0 " />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -201,6 +228,12 @@ export default {
   },
 };
 </script>
+<style lang="scss" scoped>
+.m_favButton {
+  width: 1.5em !important;
+  height: 1.5em !important;
+}
+</style>
 <style lang="scss">
 .m_media {
   position: relative;
@@ -337,9 +370,13 @@ export default {
   padding: 0 calc(var(--spacing) / 4);
   white-space: pre-line;
 
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
+  // text-overflow: ellipsis;
+  // white-space: nowrap;
+  // overflow: hidden;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 .m_media--date {
   font-size: 70%;

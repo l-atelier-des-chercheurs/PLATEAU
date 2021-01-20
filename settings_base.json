@@ -112,6 +112,10 @@
           "original_media_filename": {
             "type": "string"
           },
+          "fav": {
+            "type": "boolean",
+            "default": false
+          },
           "type": {
             "type": "string",
             "options": [
