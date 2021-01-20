@@ -116,13 +116,15 @@
           <TagsInput
             :keywords="media.keywords"
             :read_only="false"
-            :type="'medias'"
             @tagsChanged="(newTags) => (edited_media_infos.keywords = newTags)"
           />
         </template>
       </div>
 
-      <div class="m_planningItem--options--start">
+      <div
+        class="m_planningItem--options--start"
+        v-if="media.planning_info_start || edit_mode"
+      >
         <label>{{ $t("date") }}</label>
         <span v-if="!edit_mode && media.planning_info_start">
           {{
@@ -141,7 +143,10 @@
         -->
       </div>
       <!-- <span v-if="(!edit_mode && media_duration) || edit_mode">→</span> -->
-      <div class="m_planningItem--options--duration">
+      <div
+        class="m_planningItem--options--duration"
+        v-if="edit_mode || media.planning_info_duration !== '00:00'"
+      >
         <label>{{ $t("duration") }}</label>
 
         <span v-if="!edit_mode && media_duration">
@@ -329,8 +334,6 @@ export default {
 
       const checkIfValueChanged = (key, val) => val !== this.media[key];
 
-      debugger;
-
       Object.keys(this.edited_media_infos).map((k) => {
         if (checkIfValueChanged(k, this.edited_media_infos[k])) {
           data[k] = this.edited_media_infos[k];
@@ -465,7 +468,7 @@ export default {
   // padding: 0.4em;
   // line-height: 1;
   border-radius: 1em;
-  font-size: 70%;
+  font-size: 80%;
 
   // display: flex;
   // flex-flow: row wrap;

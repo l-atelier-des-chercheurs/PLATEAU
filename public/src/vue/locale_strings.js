@@ -25,6 +25,8 @@ module.exports = (function () {
       last_read_message: "Dernier message lu",
       open: "Ouvrir",
       back: "Retour",
+      all_tags: "Tous les mots-clés",
+      show_all_keywords: "Afficher tous les mots-clés",
       login_to_open_project:
         "Identifiez-vous pour consulter la liste des projets.",
       at: "à",

@@ -389,8 +389,6 @@ export default {
       if (!this.author_is_connected || this.$root.unique_clients.length === 0)
         return false;
 
-      debugger;
-
       return this.$root.unique_clients.filter(
         (c) =>
           c.data &&

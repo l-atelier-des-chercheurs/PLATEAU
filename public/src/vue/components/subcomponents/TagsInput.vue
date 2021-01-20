@@ -132,6 +132,7 @@ export default {
             new RegExp(this.tag, "i").test(i.text) &&
             !this.tags.find((t) => t.text === i.text)
         );
+
       return fitting_keywords.slice(0, 2);
       // return fitting_keywords;
       // return this.$root.allKeywords.filter(i => i.text.toLowerCase().startsWith(this.tag.toLowerCase()) && !this.tags.find(t => t.text === i.text));

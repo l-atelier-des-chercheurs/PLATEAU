@@ -107,7 +107,6 @@
         <TagsInput
           :keywords="media.keywords"
           :read_only="false"
-          :type="'medias'"
           @tagsChanged="
             (newTags) => updateMediaPubliMeta({ keywords: newTags })
           "
