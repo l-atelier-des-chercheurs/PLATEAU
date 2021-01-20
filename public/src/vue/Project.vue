@@ -283,6 +283,10 @@ export default {
   padding: 0 calc(var(--spacing) / 2);
 
   display: flex;
+
+  > button {
+    text-decoration: none;
+  }
 }
 .m_tagsAndAuthorFilters {
   display: flex;

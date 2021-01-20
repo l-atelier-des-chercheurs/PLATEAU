@@ -13,7 +13,17 @@
           :key="item.metaFileName"
         >
           <div class="m_planning--slickItem">
-            <div v-handle class="m_planning--slickItem--handle handle" />
+            <div
+              v-handle
+              class="m_planning--slickItem--handle handle"
+              v-if="!enable_export_mode"
+            />
+            <div v-else class="m_planning--slickItem--handle">
+              <input
+                type="checkbox"
+                @change="toggleSelectionInExport(item.metaFileName)"
+              />
+            </div>
             <PlanningItem
               class="m_planning--slickItem--item"
               :key="item.metaFileName"
@@ -67,12 +77,33 @@
           </div>
         </form>
 
-        <a
-          class="button js--openInBrowser"
-          :href="`projects/${slugFolderName}/full_planning`"
-          target="_blank"
-          >Exporter au format HTML</a
-        >
+        <button
+          type="button"
+          @click="enable_export_mode = !enable_export_mode"
+          :class="{
+            'is--active': enable_export_mode,
+          }"
+          v-html="!enable_export_mode ? $t('export_as_html') : $t('cancel')"
+        />
+
+        <div v-if="enable_export_mode" class="margin-sides-medium">
+          <small v-if="export_pads_selection.length == 0">
+            Selectionnez des entrées du journal en cochant les cases dans la
+            colonne de gauche.
+          </small>
+          <template v-else>
+            <small
+              >{{ export_pads_selection.length }} entrées sélectionnées.</small
+            >
+            <a
+              class="button js--openInBrowser"
+              :href="export_pads_URL"
+              target="_blank"
+            >
+              Ouvrir la sélection dans un nouvel onglet
+            </a>
+          </template>
+        </div>
 
         <div class="m_planningPanes">
           <div
@@ -136,6 +167,9 @@ export default {
       show_planning_section: false,
 
       planning_slugs_in_order: [],
+
+      enable_export_mode: false,
+      export_pads_selection: [],
     };
   },
 
@@ -160,9 +194,20 @@ export default {
         ? this.project.planning_slugs_in_order
         : [];
     },
+    enable_export_mode() {
+      if (!this.enable_export_mode) {
+        this.export_pads_selection = [];
+      }
+    },
   },
 
   computed: {
+    export_pads_URL() {
+      return (
+        `projects/${this.slugFolderName}/full_planning?pads=` +
+        encodeURI(this.export_pads_selection.join(",").replace(/\./g, "*"))
+      );
+    },
     sorted_planning_medias: {
       get() {
         // check if in this.planning_slugs_in_order
@@ -225,6 +270,15 @@ export default {
   methods: {
     textChange(delta, oldDelta, source) {
       // if source === 'user'
+    },
+    toggleSelectionInExport(metaFileName) {
+      if (this.export_pads_selection.includes(metaFileName)) {
+        this.export_pads_selection = this.export_pads_selection.filter(
+          (m) => m !== metaFileName
+        );
+      } else {
+        this.export_pads_selection.push(metaFileName);
+      }
     },
     toggleOpenItem(item_meta) {
       if (window.state.dev_mode === "debug") {

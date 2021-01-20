@@ -20,6 +20,7 @@ module.exports = (function () {
       post_a_message: "Poster un message",
       protected_by_pass: "Protégé par un mot de passe",
       rename: "Renommer",
+      export_as_html: "Exporter en HTML",
       filters: "Filtres",
       take_picture: "Prendre une photo",
       channels_list: "Discussions en lien avec ce projet",

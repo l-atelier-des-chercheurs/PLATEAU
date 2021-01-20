@@ -163,16 +163,40 @@ module.exports = function (app) {
     const type = req.param("type");
     const slugFolderName = req.param("slugFolderName");
 
+    let pads = req.query.pads;
+    if (!pads) return false;
+    pads = pads.replace(/\*/g, ".").split(",");
+
     generatePageData(req).then((pageData) => {
       dev.logverbose(`Generated slugFolderName pageData`);
       dev.logverbose(
         `Now getting data for type = ${type} and slugFolderName = ${slugFolderName}`
       );
 
-      exporter.loadFolder({ type, slugFolderName, pageData }).then((medias) => {
+      exporter.loadFolder({ type, slugFolderName, pageData }).then((folder) => {
         pageData.slugFolderName = slugFolderName;
-        pageData.store.projects[slugFolderName] =
-          medias.publiAndMediaData[slugFolderName];
+
+        const all_projects_medias =
+          folder.publiAndMediaData[slugFolderName].medias;
+
+        const folder_meta = folder.publiAndMediaData[slugFolderName];
+        delete folder_meta.medias;
+        folder_meta.medias = {};
+
+        // in folder_meta.medias, delete all medias that are not in pads
+        // Object.keys(folder_meta.medias).map((k) => {
+        //   debugger;
+        //   if (!pads.includes(k)) {
+        //     delete folder_meta.medias[k];
+        //   }
+        // });
+
+        pads.map((pad_metaFileName) => {
+          folder_meta.medias[pad_metaFileName] =
+            all_projects_medias[pad_metaFileName];
+        });
+
+        pageData.store.projects[slugFolderName] = folder_meta;
         pageData.mode = "export_planning";
         res.render("index", pageData);
       });
