@@ -1,7 +1,7 @@
 <template>
   <form
     class="m_planningItem"
-    :class="{ 'is--editable': edit_mode }"
+    :class="{ 'is--editable': edit_mode, 'is--expanded': mode === 'expanded' }"
     @submit.prevent="sendEdits"
   >
     <div class="m_planningItem--topbar">
@@ -63,11 +63,39 @@
     </div>
 
     <div
-      class="m_planningItem--date"
+      class="m_planningItem--options"
       v-if="edit_mode || media.planning_info_start || media_duration"
       :title="$moment(media.planning_info_start).format('l LTS')"
     >
-      <div class="m_planningItem--date--start">
+      <div
+        class="m_planningItem--options--keywords"
+        v-if="media.keywords || edit_mode"
+      >
+        <label>{{ $t("keywords") }}</label>
+        <template v-if="!edit_mode">
+          <div class="m_keywordField">
+            <button
+              v-for="keyword in media.keywords"
+              :key="keyword.text"
+              :class="[keyword.classes]"
+            >
+              {{ keyword.title }}
+            </button>
+          </div>
+        </template>
+
+        <template v-else>
+          <TagsInput
+            :keywords="media.keywords"
+            :read_only="false"
+            :type="'medias'"
+            @tagsChanged="(newTags) => (edited_media_infos.keywords = newTags)"
+          />
+        </template>
+      </div>
+
+      <div class="m_planningItem--options--start">
+        <label>{{ $t("date") }}</label>
         <span v-if="!edit_mode && media.planning_info_start">
           {{
             $root.format_date_to_human(media.planning_info_start) +
@@ -75,17 +103,17 @@
             $moment(media.planning_info_start).format("HH:mm:ss")
           }}
         </span>
-        <!-- <DateTime
+        <DateTime
           v-else-if="edit_mode"
           v-model="edited_media_infos.planning_info_start"
           :twowaybinding="true"
           :read_only="false"
-        />-->
+        />
         <!-- <span v-if="!media.planning_info_start">début</span>
         -->
       </div>
       <!-- <span v-if="(!edit_mode && media_duration) || edit_mode">→</span> -->
-      <div class="m_planningItem--date--duration">
+      <div class="m_planningItem--options--duration">
         <label>{{ $t("duration") }}</label>
 
         <span v-if="!edit_mode && media_duration">
@@ -100,7 +128,7 @@
               })
             "
           >
-            start timer
+            {{ $t("start_timer") }}
           </button>
         </span>
         <vue-timepicker
@@ -205,6 +233,15 @@ export default {
       edit_notes: this.mode === "expanded",
       show_full_notes: false,
       duration_picker_data: "00:00",
+
+      edited_media_infos: {
+        name: this.media.name,
+        planning_info_start: this.media.planning_info_start,
+        keywords: this.media.keywords,
+        planning_info_duration: !!this.media.planning_info_duration
+          ? this.media.planning_info_duration
+          : "00:00",
+      },
     };
   },
   created() {},
@@ -222,6 +259,7 @@ export default {
         this.edited_media_infos = {
           name: this.media.name,
           planning_info_start: this.media.planning_info_start,
+          keywords: this.media.keywords,
           planning_info_duration: !!this.media.planning_info_duration
             ? this.media.planning_info_duration
             : "00:00",
@@ -262,6 +300,8 @@ export default {
       // }
 
       const checkIfValueChanged = (key, val) => val !== this.media[key];
+
+      debugger;
 
       Object.keys(this.edited_media_infos).map((k) => {
         if (checkIfValueChanged(k, this.edited_media_infos[k])) {
@@ -325,6 +365,15 @@ export default {
   &.is--active {
     color: #999;
   }
+
+  &.is--expanded {
+    .m_planningItem--topbar {
+      padding: calc(var(--spacing) / 2) calc(var(--spacing) / 1);
+    }
+    .m_planningItem--options {
+      padding: 0 calc(var(--spacing) / 1);
+    }
+  }
 }
 
 .m_planningItem--topbar {
@@ -333,8 +382,6 @@ export default {
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
-  line-height: 1;
-  margin: calc(var(--spacing) / 1) 0;
 }
 
 .m_planningItem--editButtons {
@@ -358,6 +405,7 @@ export default {
   margin: 0;
   font-weight: 500;
   font-family: "Work Sans";
+  line-height: 1.4;
 
   span {
     cursor: pointer;
@@ -368,28 +416,44 @@ export default {
   }
 }
 
-.m_planningItem--date {
+.m_planningItem--options {
   // background-color: #eee;
   // color: white;
   // padding: 0.4em;
   // line-height: 1;
   border-radius: 1em;
-  font-size: 75%;
+  font-size: 70%;
 
-  display: flex;
-  flex-flow: row wrap;
-  align-items: center;
+  // display: flex;
+  // flex-flow: row wrap;
+  // align-items: center;
+
+  button {
+    margin-top: calc(var(--spacing) / 4);
+    // padding: 0;
+  }
 
   > * {
     flex: 0 1 auto;
+
+    display: flex;
+    align-items: center;
+    // margin-right: calc(var(--spacing) / 2);
+  }
+  label {
     margin-right: calc(var(--spacing) / 2);
+  }
+
+  .m_planningItem--options--keywords {
   }
 }
 
-.m_planningItem--date--start {
+.m_planningItem--options--start {
 }
-.m_planningItem--date--duration {
+.m_planningItem--options--duration {
   button {
+    margin: 0;
+    padding: 0;
     &:hover {
       opacity: 0.3;
     }

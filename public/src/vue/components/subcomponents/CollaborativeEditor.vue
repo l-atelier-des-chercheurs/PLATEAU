@@ -767,6 +767,18 @@ export default {
           Quill.sources.USER
         );
         // this.editor.setSelection(index + 1, Quill.sources.SILENT);
+      } else if (media.type === "audio") {
+        this.editor.insertEmbed(
+          index,
+          "media",
+          {
+            type: media.type,
+            caption: media.caption,
+            src: mediaURL,
+            metaFileName: media.metaFileName,
+          },
+          Quill.sources.USER
+        );
       } else {
         this.$alertify
           .closeLogOnClick(true)

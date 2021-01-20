@@ -60,12 +60,15 @@ export default {
 </script>
 <style lang="scss">
 .m_panelist {
-  width: 500px;
+  flex-basis: 300px;
+
   height: auto;
   display: flex;
-  flex-flow: row wrap;
-  justify-content: flex-end;
+  flex-flow: row nowrap;
+  // justify-content: flex-end;
   white-space: nowrap;
+
+  overflow: auto;
 
   > * {
     flex: 0 0 auto;

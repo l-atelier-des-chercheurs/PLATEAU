@@ -1,6 +1,6 @@
 <template>
   <div class="m_project">
-    <div class="m_filters" style="" v-if="false">
+    <div class="m_filters" style="">
       <button
         type="button"
         class="button-nostyle text-uc _toggle_filters"
@@ -279,6 +279,8 @@ export default {
 .m_filters {
   background-color: #fff;
   border-bottom: 1px solid black;
+  // margin: calc(var(--spacing) / 2);
+  padding: 0 calc(var(--spacing) / 2);
 }
 ._toggle_filters {
   line-height: 1;

@@ -34,6 +34,7 @@ module.exports = (function () {
       show_all_users: "Afficher tous les utilisateurs inscrits",
       hide_users_list: "Masquer la liste des inscrits",
       show_all_authors: "Afficher tous les utilisateurs",
+      start_timer: "Démarrer le compte à rebours",
 
       only_my_projects: "Afficher seulement mes projets",
       "by_keyword:": "Par mot-clé&nbsp;:",
