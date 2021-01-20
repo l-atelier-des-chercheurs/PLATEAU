@@ -53,7 +53,7 @@
     </div>
     <div
       v-if="allKeywords && allKeywords.length > 0"
-      class="padding-sides-small"
+      class="padding-sides-small m_tagsAndAuthorFilters--keywords"
     >
       <label>{{ $t("keywords") }}</label>
       <div class="m_keywordField margin-bottom-none font-large">

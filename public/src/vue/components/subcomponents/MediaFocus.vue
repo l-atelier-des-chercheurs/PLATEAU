@@ -16,8 +16,41 @@
       :media="media"
     />
 
-    <div class="m_mediaFocus--fullscreenButtons">
-      <button type="button" @click="enterFullscreen" v-if="!is_fullscreen">
+    <div class="m_mediaFocus--toprightButtons">
+      <button
+        type="button"
+        class="m_favButton"
+        @click="toggleFav"
+        :class="{ 'is--active': media.fav }"
+      >
+        <svg
+          version="1.1"
+          class="inline-svg"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+          x="0px"
+          y="0px"
+          width="78.5px"
+          height="106.4px"
+          viewBox="0 0 78.5 106.4"
+          style="enable-background: new 0 0 78.5 106.4"
+          xml:space="preserve"
+        >
+          <polygon
+            class="st0"
+            points="60.4,29.7 78.5,7.3 78.5,7.3 12.7,7.3 12.7,52 78.5,52 78.5,52 	"
+          />
+          <polygon class="st0" points="9.6,106.4 0,106.4 0,2 9.6,0 " />
+        </svg>
+      </button>
+
+      <button
+        type="button"
+        class="_fsButtons"
+        @click="enterFullscreen"
+        v-if="!is_fullscreen"
+      >
         <svg
           width="18px"
           height="18px"
@@ -32,7 +65,12 @@
           ></polygon>
         </svg>
       </button>
-      <button type="button" cl @click="exitFullscreen" v-if="is_fullscreen">
+      <button
+        type="button"
+        class="_fsButtons"
+        @click="exitFullscreen"
+        v-if="is_fullscreen"
+      >
         <svg
           width="18px"
           height="18px"
@@ -64,7 +102,7 @@
         />
       </div>
 
-      <div class="margin-bottom-small">
+      <div class="margin-bottom-small m_mediaFocus--options--keywords">
         <label>{{ $t("keywords") }}</label>
         <TagsInput
           :keywords="media.keywords"
@@ -135,6 +173,21 @@ export default {
         );
       }
       this.$eventHub.$emit("library.toggleMedia", false);
+    },
+    toggleFav() {
+      let fav = true;
+      if (this.media.fav) {
+        fav = false;
+      }
+
+      this.$root.editMedia({
+        type: "projects",
+        slugFolderName: this.slugProjectName,
+        slugMediaName: this.media.metaFileName,
+        data: {
+          fav,
+        },
+      });
     },
     startMediaDrag(media, $event) {
       console.log(`METHODS • MediaLibrary / startMediaDrag`);
@@ -285,22 +338,39 @@ export default {
   }
 }
 
-.m_mediaFocus--fullscreenButtons {
+.m_mediaFocus--toprightButtons {
   position: absolute;
   top: 0;
   right: 0;
 
+  display: flex;
+
   button {
     display: block;
     line-height: 0;
-    border-radius: 4px;
     margin: calc(var(--spacing) / 4);
     padding: calc(var(--spacing) / 2);
+  }
 
+  ._fsButtons {
+    border-radius: 4px;
     &:hover {
       background-color: rgba(0, 0, 0, 0.1);
       fill: white;
     }
+  }
+}
+
+.m_mediaFocus--options--keywords {
+  display: flex;
+  padding: calc(var(--spacing) / 4) 0;
+
+  label {
+    margin-right: calc(var(--spacing) / 2);
+  }
+
+  .m_keywordField > * {
+    margin-top: calc(var(--spacing) / 4) !important;
   }
 }
 </style>

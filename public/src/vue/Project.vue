@@ -281,7 +281,25 @@ export default {
   border-bottom: 1px solid black;
   // margin: calc(var(--spacing) / 2);
   padding: 0 calc(var(--spacing) / 2);
+
+  display: flex;
 }
+.m_tagsAndAuthorFilters {
+  display: flex;
+  align-items: center;
+
+  > * {
+    padding: 0 calc(var(--spacing) / 2);
+  }
+  label {
+    margin-right: calc(var(--spacing) / 2);
+  }
+
+  .m_tagsAndAuthorFilters--keywords {
+    display: flex;
+  }
+}
+
 ._toggle_filters {
   line-height: 1;
 }
