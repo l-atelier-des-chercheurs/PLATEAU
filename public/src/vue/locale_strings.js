@@ -21,6 +21,7 @@ module.exports = (function () {
       protected_by_pass: "Protégé par un mot de passe",
       rename: "Renommer",
       filters: "Filtres",
+      take_picture: "Prendre une photo",
       channels_list: "Discussions en lien avec ce projet",
       last_read_message: "Dernier message lu",
       open: "Ouvrir",
