@@ -1143,11 +1143,13 @@ let vm = new Vue({
         slugFolderName: slugProjectName,
       });
 
-      history.pushState(
-        { slugProjectName },
-        this.store.projects[slugProjectName].name,
-        "/" + slugProjectName
-      );
+      if (this.state.mode !== "export_planning") {
+        history.pushState(
+          { slugProjectName },
+          this.store.projects[slugProjectName].name,
+          "/" + slugProjectName
+        );
+      }
     },
     closeProject: function () {
       if (window.state.dev_mode === "debug") {

@@ -5,7 +5,10 @@
     @submit.prevent="sendEdits"
   >
     <div class="m_planningItem--topbar">
-      <div class="m_planningItem--editButtons" v-if="!edit_mode">
+      <div
+        class="m_planningItem--editButtons"
+        v-if="!edit_mode && $root.state.mode !== 'export_planning'"
+      >
         <button
           type="button"
           class="m_favButton"
@@ -77,7 +80,11 @@
           </svg>
         </button>
       </div>
-      <button type="button" v-if="mode === 'expanded'" @click="closePlanning">
+      <button
+        type="button"
+        v-if="mode === 'expanded' && $root.state.mode !== 'export_planning'"
+        @click="closePlanning"
+      >
         {{ $t("back") }}
       </button>
       <div class="m_planningItem--name">
@@ -550,7 +557,7 @@ export default {
   }
 }
 
-.m_planningItem--notes--editNotes {
+body:not([data-mode="export_planning"]) .m_planningItem--notes--editNotes {
   position: absolute;
   top: 0;
   bottom: 0;

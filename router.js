@@ -171,7 +171,8 @@ module.exports = function (app) {
 
       exporter.loadFolder({ type, slugFolderName, pageData }).then((medias) => {
         pageData.slugFolderName = slugFolderName;
-        pageData.store.projects[slugFolderName] = { medias };
+        pageData.store.projects[slugFolderName] =
+          medias.publiAndMediaData[slugFolderName];
         pageData.mode = "export_planning";
         res.render("index", pageData);
       });

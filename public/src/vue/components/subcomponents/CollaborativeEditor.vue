@@ -1110,6 +1110,7 @@ html[lang="fr"] .ql-tooltip::before {
 
     body[data-mode="export_planning"] & {
       padding: 0 var(--spacing);
+      position: relative;
     }
 
     &[contenteditable="false"] {
