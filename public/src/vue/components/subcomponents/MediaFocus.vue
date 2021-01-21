@@ -65,6 +65,12 @@
           ></polygon>
         </svg>
       </button>
+      <button type="button" @click="$emit('prevMedia')">←</button>
+      <button type="button" @click="$emit('nextMedia')">→</button>
+      <button type="button" @click="toggleMediaModal()">
+        {{ $t("close") }}
+      </button>
+
       <button
         type="button"
         class="_fsButtons"
@@ -114,21 +120,49 @@
       </div>
 
       <div class="m_mediaFocus--buttons">
+        <button
+          type="button"
+          @click="showCopyToProjectOptions = !showCopyToProjectOptions"
+        >
+          {{ $t("duplicate") }}
+        </button>
+
+        <div
+          v-if="showCopyToProjectOptions"
+          class="margin-bottom-small m_mediaFocus--buttons--duplicate"
+        >
+          <label v-html="$t('add_to_project')" />
+          <div class="input-group">
+            <select v-model="upload_to_folder">
+              <option
+                v-for="project in all_projects"
+                :key="project.slugFolderName"
+                :value="project.slugFolderName"
+              >
+                {{ project.name }}
+              </option>
+            </select>
+            <button
+              type="button"
+              @click="copyMediaToProject(upload_to_folder)"
+              :disabled="upload_to_folder === ''"
+              v-html="$t('copy')"
+              class="bg-bleuvert"
+            />
+          </div>
+        </div>
+
         <a
           class="button"
           :download="media.media_filename"
           :href="mediaFocusDownloadURL"
           target="_blank"
-          >{{ $t("download") }}</a
         >
+          {{ $t("download") }}
+        </a>
         <button type="button" @click="removeMedia(show_media_detail_for)">
           {{ $t("remove") }}
         </button>
-        <button type="button" @click="toggleMediaModal()">
-          {{ $t("close") }}
-        </button>
-        <button type="button" @click="$emit('prevMedia')">←</button>
-        <button type="button" @click="$emit('nextMedia')">→</button>
       </div>
     </div>
   </div>
@@ -153,6 +187,8 @@ export default {
     return {
       edit_caption: false,
       is_fullscreen: false,
+
+      showCopyToProjectOptions: false,
     };
   },
   created() {},
@@ -162,6 +198,9 @@ export default {
   computed: {
     mediaFocusDownloadURL() {
       return `/${this.slugProjectName}/${this.media.media_filename}`;
+    },
+    all_projects() {
+      return this.$root.projects_that_are_accessible;
     },
   },
   methods: {
@@ -173,6 +212,18 @@ export default {
       }
       this.$eventHub.$emit("library.toggleMedia", false);
     },
+    copyMediaToProject(to_slugFolderName) {
+      console.log("copyMediaToProject " + to_slugFolderName);
+      this.$socketio.copyMediaToFolder({
+        type: "projects",
+        from_slugFolderName: this.slugProjectName,
+        to_slugFolderName,
+        slugMediaName: this.media.metaFileName,
+      });
+
+      this.showCopyToProjectOptions = false;
+    },
+
     toggleFav() {
       let fav = true;
       if (this.media.fav) {
@@ -323,8 +374,9 @@ export default {
     pointer-events: none;
 
     display: flex;
+    flex-flow: row wrap;
     justify-content: flex-end;
-    align-items: flex-end;
+    align-items: center;
 
     > * {
       pointer-events: auto;
@@ -334,6 +386,12 @@ export default {
     a {
       text-decoration: none;
     }
+  }
+
+  .m_mediaFocus--buttons--duplicate {
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto;
   }
 }
 
@@ -349,6 +407,7 @@ export default {
     line-height: 0;
     margin: calc(var(--spacing) / 4);
     padding: calc(var(--spacing) / 2);
+    text-decoration: none;
   }
 
   ._fsButtons {
@@ -370,6 +429,14 @@ export default {
 
   .m_keywordField > * {
     margin-top: calc(var(--spacing) / 4) !important;
+  }
+
+  .m_keywordField {
+    align-content: flex-start;
+  }
+
+  > div {
+    display: flex;
   }
 }
 </style>

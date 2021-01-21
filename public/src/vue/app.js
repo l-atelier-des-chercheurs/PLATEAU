@@ -536,9 +536,16 @@ let vm = new Vue({
     projects_that_are_accessible() {
       const type = "projects";
       return Object.values(this.store[type]).filter((p) =>
-        this.canAccessFolder({ type, slugFolderName: p.slugFolderName })
+        this.canSeeFolder({ type, slugFolderName: p.slugFolderName })
       );
     },
+    projects_that_are_editable() {
+      const type = "projects";
+      return Object.values(this.store[type]).filter((p) =>
+        this.canEditFolder({ type, slugFolderName: p.slugFolderName })
+      );
+    },
+
     allAuthors() {
       let allAuthors = [];
       for (let slugAuthorName in this.store.authors) {
@@ -1068,40 +1075,136 @@ let vm = new Vue({
       }
       this.$socketio.editMedia(mdata);
     },
-    canAccessFolder: function ({ type, slugFolderName }) {
+    copyMediaToFolder: function (mdata) {
+      return new Promise((resolve, reject) => {
+        if (window.state.dev_mode === "debug")
+          console.log(
+            `ROOT EVENT: copyMediaToFolder: ${JSON.stringify(mdata, null, 4)}`
+          );
+
+        mdata.id =
+          Math.random().toString(36).substring(2, 15) +
+          Math.random().toString(36).substring(2, 15);
+
+        this.$socketio.copyMediaToFolder(mdata);
+
+        const catchMediaCopy = (d) => {
+          if (mdata.id === d.id) {
+            this.$nextTick(() => {
+              return resolve(d);
+            });
+          } else {
+            this.$eventHub.$once(
+              `socketio.media_created_or_updated`,
+              catchMediaCopy
+            );
+          }
+        };
+        this.$eventHub.$once(
+          `socketio.media_created_or_updated`,
+          catchMediaCopy
+        );
+      });
+    },
+
+    canSeeFolder: function ({ type, slugFolderName }) {
       if (!this.store[type].hasOwnProperty(slugFolderName)) return false;
 
-      // if folder doesn’t have a password set
-      if (this.store[type][slugFolderName].password !== "has_pass") {
+      if (this.current_author_is_admin) return true;
+
+      // if folder has pass, and user doesn’t have it
+      const folder = this.store[type][slugFolderName];
+
+      if (
+        folder.hasOwnProperty("viewing_limited_to") &&
+        folder.viewing_limited_to === "everybody"
+      ) {
         return true;
       }
 
-      const has_reference_to_folder = this.state.list_authorized_folders.filter(
-        (i) => {
-          if (
+      if (
+        folder.hasOwnProperty("viewing_limited_to") &&
+        folder.viewing_limited_to === "only_authors"
+      ) {
+        if (!folder.authors || folder.authors.length === 0) return false;
+
+        return folder.authors.some(
+          (a) => a.slugFolderName === this.current_author.slugFolderName
+        );
+      }
+
+      return this.canEditFolder({ type, slugFolderName });
+    },
+    canEditFolder: function ({ type, slugFolderName }) {
+      if (!this.store[type].hasOwnProperty(slugFolderName)) return false;
+
+      const folder = this.store[type][slugFolderName];
+
+      // if admin
+      if (this.current_author_is_admin) return true;
+
+      if (
+        folder.hasOwnProperty("editing_limited_to") &&
+        folder.editing_limited_to === "nobody"
+      )
+        return false;
+
+      // if no password && no editing limits
+      if (
+        folder.password !== "has_pass" &&
+        (!folder.hasOwnProperty("editing_limited_to") ||
+          folder.editing_limited_to === "" ||
+          folder.editing_limited_to === "with_password")
+      )
+        return true;
+
+      // if explicit edit authorized
+      if (
+        folder.hasOwnProperty("editing_limited_to") &&
+        folder.editing_limited_to === "everybody"
+      )
+        return true;
+
+      // if password is set
+      if (
+        folder.password === "has_pass" &&
+        (!folder.hasOwnProperty("editing_limited_to") ||
+          folder.editing_limited_to === "" ||
+          folder.editing_limited_to === "with_password")
+      ) {
+        return this.state.list_authorized_folders.some((i) => {
+          return (
             !!i &&
             i.hasOwnProperty("type") &&
             i.type === type &&
             i.hasOwnProperty("allowed_slugFolderNames") &&
             i.allowed_slugFolderNames.indexOf(slugFolderName) >= 0
-          )
-            return true;
-          return false;
-        }
-      );
-
-      if (has_reference_to_folder.length > 0) {
-        return true;
+          );
+        });
       }
+
+      // if editing_limited_to === 'only_authors'
+      if (
+        folder.hasOwnProperty("editing_limited_to") &&
+        folder.editing_limited_to === "only_authors"
+      ) {
+        if (!folder.authors || folder.authors.length === 0) return false;
+
+        return folder.authors.some(
+          (a) => a.slugFolderName === this.current_author.slugFolderName
+        );
+      }
+
       return false;
     },
+
     openProject: function (slugProjectName) {
       if (window.state.dev_mode === "debug") {
         console.log(`ROOT EVENT: openProject: ${slugProjectName}`);
       }
       if (
         !this.store.projects.hasOwnProperty(slugProjectName) ||
-        !this.canAccessFolder({
+        !this.canSeeFolder({
           type: "projects",
           slugFolderName: slugProjectName,
         })

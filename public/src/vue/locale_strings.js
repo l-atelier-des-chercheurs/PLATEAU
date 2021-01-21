@@ -18,6 +18,10 @@ module.exports = (function () {
       remove: "Supprimer",
       close: "Fermer",
       save: "Enregistrer",
+      add_to_project: "Ajouter au projet&nbsp;:",
+      duplicate: "Dupliquer",
+      copy: "Copier",
+
       post_a_message: "Poster un message",
       protected_by_pass: "Protégé par un mot de passe",
       rename: "Renommer",
@@ -29,7 +33,8 @@ module.exports = (function () {
       open: "Ouvrir",
       back: "Retour",
       all_tags: "Tous les mots-clés",
-      show_all_keywords: "Afficher tous les mots-clés",
+      show_all_keywords: "Afficher les suggestions",
+      hide_all_keywords: "Masquer les suggestions",
       login_to_open_project:
         "Identifiez-vous pour consulter la liste des projets.",
       at: "à",
