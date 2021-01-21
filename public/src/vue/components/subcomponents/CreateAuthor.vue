@@ -24,6 +24,25 @@
       </small>
     </div>
 
+    <!-- Keywords -->
+    <div class="margin-bottom-small">
+      <label>
+        <button
+          type="button"
+          class="button-nostyle text-uc button-triangle"
+          :class="{ 'is--active': show_keywords }"
+          @click="show_keywords = !show_keywords"
+        >
+          {{ $t("keywords") }}
+        </button>
+      </label>
+      <div v-if="show_keywords">
+        <TagsInput
+          @tagsChanged="(newTags) => (authordata.keywords = newTags)"
+        />
+      </div>
+    </div>
+
     <!-- Role -->
     <div class="margin-bottom-small" v-if="mode !== 'simple_login'">
       <label>{{ $t("role") }}</label>
@@ -160,6 +179,7 @@
 </template>
 <script>
 import ImageSelect from "../subcomponents/ImageSelect.vue";
+import TagsInput from "../subcomponents/TagsInput.vue";
 
 export default {
   props: {
@@ -168,12 +188,15 @@ export default {
   },
   components: {
     ImageSelect,
+    TagsInput,
   },
   data() {
     return {
       show_password: true,
       show_image: false,
       show_nfc: false,
+      show_keywords: false,
+
       possible_roles: ["contributor", "admin"],
       authordata: {
         name: "",
@@ -181,6 +204,7 @@ export default {
         password: "",
         role: "contributor",
         nfc_tag: "",
+        keywords: [],
       },
       preview: undefined,
       login_after_creation: true,

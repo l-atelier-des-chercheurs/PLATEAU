@@ -36,6 +36,14 @@
           <div class="m_author--email" v-if="author.email">
             {{ author.email }}
           </div>
+          <div class="m_keywordField">
+            <span
+              v-for="keyword in author.keywords"
+              :key="keyword.title"
+              :class="['tagcolorid_' + (parseInt(keyword.title, 36) % 2)]"
+              >{{ keyword.title }}</span
+            >
+          </div>
         </div>
         <div class="m_author--role" v-if="author.role">
           <label>{{ $t(author.role) }}</label>

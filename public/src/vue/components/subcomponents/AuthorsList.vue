@@ -87,6 +87,7 @@
           </div>
         </div>
       </div>
+
       <div key="authors_list">
         <button type="button" @click="show_author_list = !show_author_list">
           <template v-if="!show_author_list">{{
@@ -94,12 +95,28 @@
           }}</template>
           <template v-else>{{ $t("hide_users_list") }}</template>
         </button>
-        <div
-          v-if="show_author_list"
-          v-for="author in sorted_authors"
-          :key="author.slugFolderName"
-        >
-          <Author :author="author" @close="$emit('close')" />
+        <div v-if="show_author_list">
+          <label>
+            {{ $t("filters") }}
+          </label>
+          <div class="m_keywordField">
+            <button
+              type="button"
+              v-for="keyword in authors_keywords"
+              :key="keyword.title"
+              :class="[
+                'tagcolorid_' + (parseInt(keyword.title, 36) % 2),
+                { 'is--active': keyword_filter === keyword.title },
+              ]"
+              @click="setKeywordFilter(keyword.title)"
+            >
+              {{ keyword.title }}
+            </button>
+          </div>
+
+          <div v-for="author in filtered_authors" :key="author.slugFolderName">
+            <Author :author="author" @close="$emit('close')" />
+          </div>
         </div>
       </div>
     </transition-group>
@@ -164,6 +181,8 @@ export default {
 
       login_author: "",
       login_author_password: "",
+
+      keyword_filter: false,
     };
   },
 
@@ -220,6 +239,28 @@ export default {
 
       return sorted_authors;
     },
+    filtered_authors() {
+      return this.sorted_authors.filter(
+        (a) =>
+          !this.keyword_filter ||
+          (a.keywords &&
+            Array.isArray(a.keywords) &&
+            a.keywords.find((k) => k.title === this.keyword_filter))
+      );
+    },
+
+    authors_keywords() {
+      return Object.values(this.authors).reduce((acc, a) => {
+        if (a.keywords && Array.isArray(a.keywords)) {
+          a.keywords.map((k) => {
+            if (!acc.find((_k) => _k.title === k.title)) {
+              acc.push(k);
+            }
+          });
+        }
+        return acc;
+      }, []);
+    },
     connected_clients_and_authors() {
       return this.$root.state.clients.map((c) => {
         if (
@@ -247,7 +288,15 @@ export default {
       return this.$root.state.clients;
     },
   },
-  methods: {},
+  methods: {
+    setKeywordFilter(kwd) {
+      if (this.keyword_filter === kwd) {
+        this.keyword_filter = false;
+      } else {
+        this.keyword_filter = kwd;
+      }
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>

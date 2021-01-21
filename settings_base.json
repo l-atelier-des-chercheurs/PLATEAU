@@ -184,6 +184,9 @@
           "type": "string",
           "show_only_to": ["self", "admin"]
         },
+        "keywords": {
+          "type": "array"
+        },
         "role": {
           "type": "string",
           "options": ["contributor", "admin"],

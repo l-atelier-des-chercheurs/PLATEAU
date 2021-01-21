@@ -17,6 +17,7 @@ module.exports = (function () {
       create: "Créer",
       remove: "Supprimer",
       close: "Fermer",
+      save: "Enregistrer",
       post_a_message: "Poster un message",
       protected_by_pass: "Protégé par un mot de passe",
       rename: "Renommer",
