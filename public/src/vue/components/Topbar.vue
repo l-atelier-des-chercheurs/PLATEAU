@@ -301,6 +301,10 @@ export default {
     text-transform: uppercase;
     letter-spacing: 0.03em;
 
+    svg {
+      margin-right: 0.5em;
+    }
+
     display: flex;
     flex-flow: row nowrap;
     align-items: center;

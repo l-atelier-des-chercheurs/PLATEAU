@@ -17,6 +17,26 @@
       <small>{{ $t("email_instructions") }}</small>
     </div>
 
+    <!-- Keywords -->
+    <div class="margin-bottom-small">
+      <label>
+        <button
+          type="button"
+          class="button-nostyle text-uc button-triangle"
+          :class="{ 'is--active': show_keywords }"
+          @click="show_keywords = !show_keywords"
+        >
+          {{ $t("keywords") }}
+        </button>
+      </label>
+      <template v-if="show_keywords">
+        <TagsInput
+          :keywords="authordata.keywords"
+          @tagsChanged="(newTags) => (authordata.keywords = newTags)"
+        />
+      </template>
+    </div>
+
     <!-- Role -->
     <div
       class="margin-bottom-small"
@@ -143,6 +163,7 @@
 </template>
 <script>
 import ImageSelect from "../subcomponents/ImageSelect.vue";
+import TagsInput from "../subcomponents/TagsInput.vue";
 
 export default {
   props: {
@@ -151,12 +172,14 @@ export default {
   },
   components: {
     ImageSelect,
+    TagsInput,
   },
   data() {
     return {
       show_image: !!this.author.preview,
       show_nfc: !!this.author.nfc_tag,
       show_password: false,
+      show_keywords: false,
 
       possible_roles: ["contributor", "admin"],
 
@@ -166,6 +189,7 @@ export default {
         role: this.author.role,
         password: "",
         _old_password: "",
+        keywords: this.author.keywords,
         nfc_tag: this.author.nfc_tag,
       },
       preview: undefined,
