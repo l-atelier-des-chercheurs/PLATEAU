@@ -14,8 +14,11 @@
         v-if="show_filters"
         :allKeywords="mediaKeywords"
         :keywordFilter="$root.settings.media_filter.keyword"
+        :allAuthors="mediaAuthors"
+        :authorFilter="$root.settings.media_filter.author"
         :favFilter="$root.settings.media_filter.fav"
         @setKeywordFilter="(a) => $root.setMediaKeywordFilter(a)"
+        @setAuthorFilter="(a) => $root.setMediaAuthorFilter(a)"
         @setFavFilter="(a) => $root.setFavFilter(a)"
       />
     </div>
@@ -205,6 +208,9 @@ export default {
     mediaKeywords() {
       return this.$root.getAllKeywordsFrom(this.project.medias);
     },
+    mediaAuthors() {
+      return this.$root.getAllAuthorsFrom(this.project.medias);
+    },
     composition_medias() {
       return Object.values(this.project.medias).filter(
         (m) => m.hasOwnProperty("type") && m.type === "composition"
@@ -282,7 +288,7 @@ export default {
   // margin: calc(var(--spacing) / 2);
   padding: 0 calc(var(--spacing) / 2);
 
-  display: flex;
+  // display: flex;
 
   > button {
     text-decoration: none;
@@ -291,6 +297,7 @@ export default {
 .m_tagsAndAuthorFilters {
   display: flex;
   align-items: center;
+  flex-flow: row wrap;
 
   > * {
     padding: 0 calc(var(--spacing) / 2);

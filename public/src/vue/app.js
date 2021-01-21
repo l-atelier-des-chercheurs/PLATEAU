@@ -625,11 +625,9 @@ let vm = new Vue({
       let uniqueAuthors = [];
       Object.values(base).map((meta) => {
         if (!meta["authors"]) return;
-        if (typeof meta.authors === "string") {
-          meta.authors = [{ name: meta.authors }];
-        }
         meta.authors.map((k) => {
-          if (uniqueAuthors.indexOf(k.name) == -1) uniqueAuthors.push(k.name);
+          if (uniqueAuthors.indexOf(k.slugFolderName) == -1)
+            uniqueAuthors.push(k.slugFolderName);
         });
       });
       uniqueAuthors = uniqueAuthors.sort(function (a, b) {
@@ -637,7 +635,7 @@ let vm = new Vue({
       });
       return uniqueAuthors.map((kw) => {
         return {
-          name: kw,
+          slugFolderName: kw,
         };
       });
     },
@@ -1353,6 +1351,14 @@ let vm = new Vue({
         this.settings.media_filter.keyword = "";
       }
     },
+    setMediaAuthorFilter(newAuthorFilter) {
+      if (this.settings.media_filter.author !== newAuthorFilter) {
+        this.settings.media_filter.author = newAuthorFilter;
+      } else {
+        this.settings.media_filter.author = "";
+      }
+    },
+
     getFolderPassword({ type, slugFolderName }) {
       const folders_password = this.$auth.getFoldersPasswords();
       if (
