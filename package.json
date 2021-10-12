@@ -80,7 +80,7 @@
     "ws": "^6.2.1"
   },
   "devDependencies": {
-    "electron": "^2.0.16",
+    "electron": "^11.5.0",
     "electron-builder": "^20.39.0",
     "electron-packager": "^13.1.1",
     "electron-prebuilt": "^1.4.13",
