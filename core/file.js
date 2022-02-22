@@ -477,38 +477,40 @@ module.exports = (function () {
           });
       });
     },
-    removeFolder: ({ type, slugFolderName }) => {
-      return new Promise(function (resolve, reject) {
+    removeFolder: async ({ type, slugFolderName }) => {
+      dev.logfunction(
+        `COMMON — removeFolder : will remove folder: ${slugFolderName}`
+      );
+
+      if (!global.settings.structure.hasOwnProperty(type))
+        throw `Missing type ${type} in global.settings.json`;
+
+      const mainFolderPath = api.getFolderPath(
+        global.settings.structure[type].path
+      );
+
+      const thisFolderPath = path.join(mainFolderPath, slugFolderName);
+      const movedFolderPath = path.join(
+        mainFolderPath,
+        global.settings.deletedFolderName,
+        slugFolderName
+      );
+
+      try {
+        await fs.move(thisFolderPath, movedFolderPath, { overwrite: true });
         dev.logfunction(
-          `COMMON — removeFolder : will remove folder: ${slugFolderName}`
+          `COMMON — removeFolder : folder ${slugFolderName} has been moved to ${movedFolderPath}`
         );
+        await thumbs.removeFolderThumbs(slugFolderName, type);
+        cache.del({ type, slugFolderName });
 
-        if (!global.settings.structure.hasOwnProperty(type)) {
-          reject(`Missing type ${type} in global.settings.json`);
-        }
-        const baseFolderPath = global.settings.structure[type].path;
-        const mainFolderPath = api.getFolderPath(baseFolderPath);
+        // await hyperplateau ? par exemple :
+        // await hyperdrive.remove({ slugFolderName });
 
-        const thisFolderPath = path.join(mainFolderPath, slugFolderName);
-        const movedFolderPath = path.join(
-          mainFolderPath,
-          global.settings.deletedFolderName,
-          slugFolderName
-        );
-
-        fs.move(thisFolderPath, movedFolderPath, { overwrite: true })
-          .then(() => thumbs.removeFolderThumbs(slugFolderName, type))
-          .then(() => {
-            dev.logfunction(
-              `COMMON — removeFolder : folder ${slugFolderName} has been moved to ${movedFolderPath}`
-            );
-            cache.del({ type, slugFolderName });
-            resolve();
-          })
-          .catch((err) => {
-            reject(err);
-          });
-      });
+        return;
+      } catch (err) {
+        throw err;
+      }
     },
     copyFolder: ({
       type,
