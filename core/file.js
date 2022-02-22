@@ -213,109 +213,59 @@ module.exports = (function () {
         });
       });
     },
-    createFolder: ({ type, data }) => {
-      return new Promise(function (resolve, reject) {
-        dev.logfunction(
-          `COMMON — createFolder : will create a new folder for type = ${type} with: ${JSON.stringify(
-            data,
-            null,
-            4
-          )}`
-        );
+    createFolder: async ({ type, data }) => {
+      dev.logfunction(
+        `COMMON — createFolder : will create a new folder 
+        for type = ${type} with: ${JSON.stringify(data)}`
+      );
 
-        if (!data.hasOwnProperty("name")) {
-          data.name = "Untitled Folder";
-        }
+      if (!data.hasOwnProperty("name")) data.name = "Untitled Folder";
+      if (!global.settings.structure.hasOwnProperty(type))
+        return reject(`Missing type ${type} in global.settings.json`);
 
-        if (!global.settings.structure.hasOwnProperty(type)) {
-          return reject(`Missing type ${type} in global.settings.json`);
-        }
+      const base_path = api.getFullPath({ type });
 
-        const baseFolderPath = global.settings.structure[type].path;
-        const mainFolderPath = api.getFolderPath(baseFolderPath);
+      let folder_name = data.hasOwnProperty("desired_foldername")
+        ? api.slug(data.desired_foldername)
+        : api.slug(data.name);
+      if (folder_name === "") folder_name = api.slug(`untitled-${type}`);
 
-        _getFolderSlugs(mainFolderPath).then((folders) => {
-          const reference_name = data.hasOwnProperty("desired_foldername")
-            ? data.desired_foldername
-            : data.name;
-          let slugFolderName = api.slug(reference_name);
-          if (slugFolderName === "") {
-            slugFolderName = "untitled";
-          }
-
-          if (folders.length > 0) {
-            let index = 0;
-            let newSlugFolderName = slugFolderName;
-            while (folders.indexOf(newSlugFolderName) !== -1) {
-              index++;
-              newSlugFolderName = `${slugFolderName}-${index}`;
-            }
-            slugFolderName = newSlugFolderName;
-            dev.logverbose(`Proposed slug: ${slugFolderName}`);
-          }
-
-          const thisFolderPath = path.join(mainFolderPath, slugFolderName);
-          dev.logverbose(`Making a new folder at path ${thisFolderPath}`);
-
-          fs.ensureDir(thisFolderPath)
-            .then(() => {
-              let tasks = [];
-
-              if (
-                data.hasOwnProperty("preview_rawdata") &&
-                global.settings.structure[type].hasOwnProperty("preview")
-              ) {
-                tasks.push(
-                  _storeFoldersPreview(
-                    slugFolderName,
-                    type,
-                    data.preview_rawdata
-                  )
-                );
-              }
-
-              tasks.push(
-                new Promise(function (resolve, reject) {
-                  data = _makeDefaultMetaFromStructure({
-                    type,
-                    method: "create",
-                    existing: data,
-                  });
-
-                  const metaFolderPath = path.join(
-                    thisFolderPath,
-                    global.settings.folderMetaFilename +
-                      global.settings.metaFileext
-                  );
-
-                  api
-                    .storeData(metaFolderPath, data, "create")
-                    .then(function (meta) {
-                      dev.logverbose(
-                        `New folder meta file created at path: ${metaFolderPath} with meta: ${JSON.stringify(
-                          meta,
-                          null,
-                          4
-                        )}`
-                      );
-                      resolve();
-                    })
-                    .catch((err) => {
-                      reject(err);
-                    });
-                })
-              );
-
-              Promise.all(tasks).then(() => {
-                resolve(slugFolderName);
-              });
-            })
-            .catch((err) => {
-              dev.error(`Failed to create folder ${slugFolderName}: ${err}`);
-              reject(err);
-            });
-        });
+      folder_name = await _preventFolderOverride({
+        path: base_path,
+        folder_name,
       });
+
+      const folder_path = path.join(base_path, folder_name);
+      dev.logverbose(`Making a new folder at path ${folder_path}`);
+
+      await fs.ensureDir(folder_path);
+
+      if (
+        data.hasOwnProperty("preview_rawdata") &&
+        global.settings.structure[type].hasOwnProperty("preview")
+      )
+        await _storeFoldersPreview(folder_name, type, data.preview_rawdata);
+
+      data = _makeDefaultMetaFromStructure({
+        type,
+        method: "create",
+        existing: data,
+      });
+
+      const meta_path = path.join(folder_path, "meta.txt");
+
+      const meta = await api
+        .storeData(meta_path, data, "create")
+        .catch((err) => {
+          throw err;
+        });
+
+      dev.logverbose(
+        `New folder meta file created at path: ${meta_path} 
+        with meta: ${JSON.stringify(meta)}`
+      );
+
+      return folder_name;
     },
     editFolder: ({ type, slugFolderName, foldersData, newFoldersData }) => {
       return new Promise(function (resolve, reject) {
@@ -1204,7 +1154,9 @@ module.exports = (function () {
           type: type + "/" + "medias",
           slugFolderName: slugFolderName + "/" + metaFileName,
         });
-        cache.del({ type, slugFolderName });
+
+        /* Should not be necessary, need to test */
+        // cache.del({ type, slugFolderName });
 
         return thumbs.removeMediaThumbs(slugFolderName, type, mediaFileName);
       } catch (err) {
@@ -1787,6 +1739,23 @@ module.exports = (function () {
         return resolve(folders);
       });
     });
+  }
+
+  async function _preventFolderOverride({ path, folder_name }) {
+    const all_folders_names = await _getFolderSlugs(path);
+
+    if (all_folders_names.length > 0) {
+      let index = 0;
+      let new_folder_name = folder_name;
+      while (all_folders_names.indexOf(new_folder_name) !== -1) {
+        index++;
+        new_folder_name = `${folder_name}-${index}`;
+      }
+      folder_name = new_folder_name;
+      dev.logverbose(`Proposed slug: ${folder_name}`);
+    }
+
+    return folder_name;
   }
 
   function _storeFoldersPreview(slugFolderName, type, preview_rawdata) {
