@@ -11,7 +11,6 @@
 
   "thumbExt": ".jpeg",
   "thumbFormat": "jpeg",
-  "folderMetaFilename": "meta",
   "folderPreviewFilename": "meta_preview",
 
   "privateKeyPath": "",
