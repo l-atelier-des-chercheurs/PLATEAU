@@ -840,6 +840,7 @@ module.exports = (function () {
                 case ".mp3":
                 case ".wav":
                 case ".m4a":
+                case ".ogg":
                   additionalMeta.type = "audio";
                   break;
                 case ".md":
@@ -1210,6 +1211,7 @@ module.exports = (function () {
                   meta.type === "planning" ||
                   meta.type === "composition" ||
                   meta.type === "embed" ||
+                  meta.type === "link" ||
                   meta.type === "code") &&
                 data.hasOwnProperty("content")
               ) {
@@ -1807,6 +1809,7 @@ module.exports = (function () {
                 mediaData.type === "planning" ||
                 mediaData.type === "composition" ||
                 mediaData.type === "embed" ||
+                mediaData.type === "link" ||
                 mediaData.type === "code") &&
               mediaData.hasOwnProperty("media_filename")
             ) {
