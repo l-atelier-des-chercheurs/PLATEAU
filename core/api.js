@@ -98,7 +98,7 @@ module.exports = (function () {
       fileNameWithoutExtension = slug(fileNameWithoutExtension);
 
       let newFileName = `${fileNameWithoutExtension}${fileExtension}`;
-      let newMetaFileName = `${newFileName}${global.settings.metaFileext}`;
+      let newMetaFileName = `${newFileName}.txt`;
       let newPathToFile = path.join(thisPath, newFileName);
       let newPathToMeta = path.join(thisPath, newMetaFileName);
       let index = 0;

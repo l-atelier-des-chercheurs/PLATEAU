@@ -75,11 +75,7 @@ module.exports = (function () {
               allFoldersData.push(
                 new Promise((resolve, reject) => {
                   dev.logverbose(`Finding meta for folder = ${thisFolderPath}`);
-                  const metaFolderPath = path.join(
-                    thisFolderPath,
-                    global.settings.folderMetaFilename +
-                      global.settings.metaFileext
-                  );
+                  const metaFolderPath = path.join(thisFolderPath, "meta.txt");
 
                   readMetaFile(metaFolderPath)
                     .then((meta) => {
@@ -368,10 +364,7 @@ module.exports = (function () {
           // overwrite stored obj with new informations
           Object.assign(foldersData, newFoldersData);
 
-          const metaFolderPath = path.join(
-            thisFolderPath,
-            global.settings.folderMetaFilename + global.settings.metaFileext
-          );
+          const metaFolderPath = path.join(thisFolderPath, "meta.txt");
 
           api.storeData(metaFolderPath, foldersData, "update").then(
             function (meta) {
@@ -435,10 +428,7 @@ module.exports = (function () {
             existing: foldersData,
           });
 
-          const metaFolderPath = path.join(
-            thisFolderPath,
-            global.settings.folderMetaFilename + global.settings.metaFileext
-          );
+          const metaFolderPath = path.join(thisFolderPath, "meta.txt");
 
           api.storeData(metaFolderPath, foldersData, "update").then(
             function (meta) {
@@ -604,11 +594,9 @@ module.exports = (function () {
                 _metaFileName
               ) &&
               // endswith global.settings.metaFileext
-              _metaFileName.endsWith(global.settings.metaFileext) &&
+              _metaFileName.endsWith(".txt") &&
               // not meta.txt
-              _metaFileName !==
-                global.settings.folderMetaFilename +
-                  global.settings.metaFileext &&
+              _metaFileName !== "meta.txt" &&
               // not a folder preview
               _metaFileName !==
                 global.settings.folderPreviewFilename +
@@ -700,20 +688,20 @@ module.exports = (function () {
             path.join(global.settings.structure[type].path, slugFolderName)
           );
           mediaPath = path.join(slugFolderPath, mediaName);
-          metaFileName = mediaName + global.settings.metaFileext;
+          metaFileName = mediaName + ".txt";
         } else if (additionalMeta.hasOwnProperty("desired_filename")) {
           let randomString = (
             Math.random().toString(36) + "00000000000000000"
           ).slice(2, 3 + 2);
           metaFileName = `${api.slug(
             additionalMeta.desired_filename
-          )}-${randomString}${global.settings.metaFileext}`;
+          )}-${randomString}.txt`;
         } else {
           let timeCreated = api.getCurrentDate();
           let randomString = (
             Math.random().toString(36) + "00000000000000000"
           ).slice(2, 3 + 2);
-          metaFileName = `${timeCreated}-${randomString}${global.settings.metaFileext}`;
+          metaFileName = `${timeCreated}-${randomString}.txt`;
         }
 
         let slugFolderPath = api.getFolderPath(

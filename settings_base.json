@@ -8,7 +8,7 @@
 
   "contentDirname": "user",
   "cacheDirname": "plateau_cache",
-  "metaFileext": ".txt",
+
   "thumbExt": ".jpeg",
   "thumbFormat": "jpeg",
   "folderMetaFilename": "meta",
