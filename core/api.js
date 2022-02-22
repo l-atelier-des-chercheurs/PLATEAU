@@ -18,6 +18,8 @@ ffmpeg.setFfmpegPath(pathToFfmpeg);
 module.exports = (function () {
   const API = {
     getFolderPath: (slugFolderName = "") => getFolderPath(slugFolderName),
+    getFullPath: ({ slugFolderName = "", type = false }) =>
+      getFullPath({ slugFolderName, type }),
     findFirstFilenameNotTaken: (thisPath, fileName) =>
       findFirstFilenameNotTaken(thisPath, fileName),
     getCurrentDate: (format = global.settings.metaDateFormat) =>
@@ -51,6 +53,10 @@ module.exports = (function () {
 
   function getFolderPath(slugFolderName = "") {
     return path.join(_getUserPath(), slugFolderName);
+  }
+  function getFullPath({ type }) {
+    const baseFolderPath = global.settings.structure[type].path;
+    return getFolderPath(baseFolderPath);
   }
 
   function getCurrentDate(f) {
