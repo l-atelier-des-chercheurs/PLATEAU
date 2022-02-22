@@ -205,9 +205,8 @@ module.exports = (function () {
   }
   async function onEditFolder(socket, { type, slugFolderName, data, id }) {
     dev.logfunction(
-      `EVENT - onEditFolder for type = ${type}, slugFolderName = ${slugFolderName}, data = ${JSON.stringify(
-        data
-      )}`
+      `EVENT - onEditFolder for type = ${type}, 
+      slugFolderName = ${slugFolderName}, data = ${JSON.stringify(data)}`
     );
 
     const foldersData = await file.getFolder({ type, slugFolderName });
@@ -325,16 +324,7 @@ module.exports = (function () {
     dev.logfunction(
       `EVENT - updateFolderModified for type = ${type}, slugFolderName = ${slugFolderName}`
     );
-
-    const foldersData = await file.getFolder({ type, slugFolderName });
-
-    await file.updateFolderEdited({
-      type,
-      slugFolderName,
-      foldersData: Object.values(foldersData)[0],
-    });
-
-    await sendFolders({ type, slugFolderName });
+    onEditFolder(undefined, { type, slugFolderName, data: {} });
   }
 
   async function onRemoveFolder(socket, { type, slugFolderName }) {
@@ -465,7 +455,7 @@ module.exports = (function () {
         throw err;
       });
 
-    onEditFolder(undefined, { type, slugFolderName, data: {} });
+    updateFolderModified({ type, slugFolderName });
 
     changelog.append({
       author: undefined,
@@ -526,7 +516,7 @@ module.exports = (function () {
         throw err;
       });
 
-    onEditFolder(socket, { type, slugFolderName, data: {} });
+    updateFolderModified({ type, slugFolderName });
 
     changelog.append({
       author: auth.getSocketAuthors(socket),
@@ -680,7 +670,7 @@ module.exports = (function () {
         reject(err);
       });
 
-    await onEditFolder(socket, { type, slugFolderName, data: {} });
+    updateFolderModified({ type, slugFolderName });
 
     changelog.append({
       author: auth.getSocketAuthors(socket),

@@ -278,6 +278,7 @@ module.exports = (function () {
         throw `Missing type ${type} in global.settings.json`;
 
       if (
+        newFoldersData &&
         newFoldersData.hasOwnProperty("preview_rawdata") &&
         global.settings.structure[type].hasOwnProperty("preview")
       )
@@ -319,70 +320,7 @@ module.exports = (function () {
         meta,
       };
     },
-    updateFolderEdited: ({ type, slugFolderName, foldersData }) => {
-      return new Promise(function (resolve, reject) {
-        dev.logfunction(
-          `COMMON — updateFolderEdited : will update folder with type = ${type} and slugFolderName = ${slugFolderName}
-          with existing data ${JSON.stringify(foldersData, null, 4)}`
-        );
 
-        if (!global.settings.structure.hasOwnProperty(type)) {
-          return reject(`Missing type ${type} in global.settings.json`);
-        }
-        const baseFolderPath = global.settings.structure[type].path;
-        const mainFolderPath = api.getFolderPath(baseFolderPath);
-
-        const thisFolderPath = path.join(mainFolderPath, slugFolderName);
-        let tasks = [];
-
-        let updateFoldersMeta = new Promise((resolve, reject) => {
-          dev.logverbose("Updating folders meta");
-          // cleaning up stored meta
-          foldersData = _makeDefaultMetaFromStructure({
-            type,
-            method: "create",
-            existing: foldersData,
-          });
-
-          const metaFolderPath = path.join(thisFolderPath, "meta.txt");
-
-          api.storeData(metaFolderPath, foldersData, "update").then(
-            function (meta) {
-              dev.logverbose(
-                `Update folder meta file at path: ${metaFolderPath} with meta: ${JSON.stringify(
-                  meta,
-                  null,
-                  4
-                )}`
-              );
-              resolve(meta);
-            },
-            function (err) {
-              reject(`Couldn't update folder meta: ${err}`);
-            }
-          );
-        });
-        tasks.push(updateFoldersMeta);
-
-        Promise.all(tasks)
-          .then((metas) => {
-            dev.logverbose(
-              `COMMON — editFolder : now resolving with meta ${JSON.stringify(
-                metas[0] ? metas[0] : metas[1]
-              )}`
-            );
-            // only deleting from cache because a specific getFolder with slugFolderName is coming right after
-            cache.del({ type, slugFolderName });
-            resolve({ slugFolderName, meta: metas[0] ? metas[0] : metas[1] });
-          })
-          .catch((err) => {
-            dev.error(
-              `Failed to edit folder slugFolderName = ${slugFolderName}: ${err}`
-            );
-            reject(err);
-          });
-      });
-    },
     removeFolder: async ({ type, slugFolderName }) => {
       dev.logfunction(
         `COMMON — removeFolder : will remove folder: ${slugFolderName}`
