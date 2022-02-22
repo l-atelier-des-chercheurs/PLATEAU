@@ -18,8 +18,16 @@ ffmpeg.setFfmpegPath(pathToFfmpeg);
 module.exports = (function () {
   const API = {
     getFolderPath: (slugFolderName = "") => getFolderPath(slugFolderName),
-    getFullPath: ({ slugFolderName = "", type = false }) =>
-      getFullPath({ slugFolderName, type }),
+    getFullPath: ({ type, folder_name = "", file_name = "" }) => {
+      if (!global.settings.structure.hasOwnProperty(type))
+        throw `Missing type ${type} in global.settings.json`;
+
+      const base_path = path.join(
+        global.pathToUserContent,
+        global.settings.structure[type].path
+      );
+      return path.join(base_path, folder_name, file_name);
+    },
     findFirstFilenameNotTaken: (thisPath, fileName) =>
       findFirstFilenameNotTaken(thisPath, fileName),
     getCurrentDate: (format = global.settings.metaDateFormat) =>
@@ -47,16 +55,8 @@ module.exports = (function () {
     makeStopmotionFromImageSequence: (d) => makeStopmotionFromImageSequence(d),
   };
 
-  function _getUserPath() {
-    return global.pathToUserContent;
-  }
-
   function getFolderPath(slugFolderName = "") {
-    return path.join(_getUserPath(), slugFolderName);
-  }
-  function getFullPath({ type }) {
-    const baseFolderPath = global.settings.structure[type].path;
-    return getFolderPath(baseFolderPath);
+    return path.join(global.pathToUserContent, slugFolderName);
   }
 
   function getCurrentDate(f) {

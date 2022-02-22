@@ -221,7 +221,7 @@ module.exports = (function () {
 
       if (!data.hasOwnProperty("name")) data.name = "Untitled Folder";
       if (!global.settings.structure.hasOwnProperty(type))
-        return reject(`Missing type ${type} in global.settings.json`);
+        throw `Missing type ${type} in global.settings.json`;
 
       const base_path = api.getFullPath({ type });
 
@@ -267,91 +267,57 @@ module.exports = (function () {
 
       return folder_name;
     },
-    editFolder: ({ type, slugFolderName, foldersData, newFoldersData }) => {
-      return new Promise(function (resolve, reject) {
-        dev.logfunction(
-          `COMMON — editFolder : will edit folder with type = ${type} and slugFolderName = ${slugFolderName}
-          with ${JSON.stringify(newFoldersData, null, 4)} 
-          with existing data ${JSON.stringify(foldersData, null, 4)}`
-        );
+    editFolder: async ({ type, folder_name, foldersData, newFoldersData }) => {
+      dev.logfunction(
+        `COMMON — editFolder : will edit folder with type = ${type} and folder_name = ${folder_name}
+          with ${JSON.stringify(newFoldersData)} 
+          with existing data ${JSON.stringify(foldersData)}`
+      );
 
-        if (!global.settings.structure.hasOwnProperty(type)) {
-          return reject(`Missing type ${type} in global.settings.json`);
-        }
-        const baseFolderPath = global.settings.structure[type].path;
-        const mainFolderPath = api.getFolderPath(baseFolderPath);
+      if (!global.settings.structure.hasOwnProperty(type))
+        throw `Missing type ${type} in global.settings.json`;
 
-        const thisFolderPath = path.join(mainFolderPath, slugFolderName);
-        let tasks = [];
+      if (
+        newFoldersData.hasOwnProperty("preview_rawdata") &&
+        global.settings.structure[type].hasOwnProperty("preview")
+      )
+        _storeFoldersPreview(folder_name, type, newFoldersData.preview_rawdata);
 
-        if (
-          newFoldersData.hasOwnProperty("preview_rawdata") &&
-          global.settings.structure[type].hasOwnProperty("preview")
-        ) {
-          dev.logverbose("Updating folders preview");
-          let preview_rawdata = newFoldersData.preview_rawdata;
-          // store preview with sharp
-          tasks.push(
-            _storeFoldersPreview(slugFolderName, type, preview_rawdata)
-          );
-        }
-
-        let updateFoldersMeta = new Promise((resolve, reject) => {
-          dev.logverbose("Updating folders meta");
-          // cleaning up stored meta
-          foldersData = _makeDefaultMetaFromStructure({
-            type,
-            method: "create",
-            existing: foldersData,
-          });
-
-          newFoldersData = _makeDefaultMetaFromStructure({
-            type,
-            method: "update",
-            existing: newFoldersData,
-          });
-
-          // overwrite stored obj with new informations
-          Object.assign(foldersData, newFoldersData);
-
-          const metaFolderPath = path.join(thisFolderPath, "meta.txt");
-
-          api.storeData(metaFolderPath, foldersData, "update").then(
-            function (meta) {
-              dev.logverbose(
-                `Update folder meta file at path: ${metaFolderPath} with meta: ${JSON.stringify(
-                  meta,
-                  null,
-                  4
-                )}`
-              );
-              resolve(meta);
-            },
-            function (err) {
-              reject(`Couldn't update folder meta: ${err}`);
-            }
-          );
-        });
-        tasks.push(updateFoldersMeta);
-
-        Promise.all(tasks)
-          .then((metas) => {
-            dev.logverbose(
-              `COMMON — editFolder : now resolving with meta ${JSON.stringify(
-                metas[0] ? metas[0] : metas[1]
-              )}`
-            );
-            // only deleting from cache because a specific getFolder with slugFolderName is coming right after
-            cache.del({ type, slugFolderName });
-            resolve({ slugFolderName, meta: metas[0] ? metas[0] : metas[1] });
-          })
-          .catch((err) => {
-            dev.error(
-              `Failed to edit folder slugFolderName = ${slugFolderName}: ${err}`
-            );
-            reject(err);
-          });
+      foldersData = _makeDefaultMetaFromStructure({
+        type,
+        method: "create",
+        existing: foldersData,
       });
+      newFoldersData = _makeDefaultMetaFromStructure({
+        type,
+        method: "update",
+        existing: newFoldersData,
+      });
+
+      // overwrite stored obj with new informations
+      Object.assign(foldersData, newFoldersData);
+
+      const meta_path = api.getFullPath({
+        type,
+        folder_name,
+        file_name: "meta.txt",
+      });
+
+      const meta = await api
+        .storeData(meta_path, foldersData, "update")
+        .catch((err) => {
+          throw err;
+        });
+
+      dev.logverbose(
+        `COMMON — editFolder : now resolving with meta ${JSON.stringify(meta)}`
+      );
+
+      cache.del({ type, slugFolderName: folder_name });
+
+      return {
+        meta,
+      };
     },
     updateFolderEdited: ({ type, slugFolderName, foldersData }) => {
       return new Promise(function (resolve, reject) {
