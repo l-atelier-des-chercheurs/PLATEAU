@@ -485,22 +485,11 @@ module.exports = (function () {
       if (!global.settings.structure.hasOwnProperty(type))
         throw `Missing type ${type} in global.settings.json`;
 
-      const mainFolderPath = api.getFolderPath(
-        global.settings.structure[type].path
-      );
-
-      const thisFolderPath = path.join(mainFolderPath, slugFolderName);
-      const movedFolderPath = path.join(
-        mainFolderPath,
-        global.settings.deletedFolderName,
-        slugFolderName
-      );
-
       try {
-        await fs.move(thisFolderPath, movedFolderPath, { overwrite: true });
-        dev.logfunction(
-          `COMMON — removeFolder : folder ${slugFolderName} has been moved to ${movedFolderPath}`
-        );
+        if (global.settings.removePermanently === true)
+          await _removeFolder({ type, slugFolderName });
+        else await _moveFolderToBin({ type, slugFolderName });
+
         await thumbs.removeFolderThumbs(slugFolderName, type);
         cache.del({ type, slugFolderName });
 
@@ -1154,29 +1143,11 @@ module.exports = (function () {
                 dev.logverbose(`New content: ${data.content}`);
 
                 let updateTextMedia = new Promise((resolve, reject) => {
-                  function getMediaFilename(meta, metaFileName) {
-                    if (
-                      global.settings.structure[
-                        type
-                      ].medias.fields.hasOwnProperty("media_filename")
-                    ) {
-                      if (meta.hasOwnProperty("media_filename")) {
-                        return meta.media_filename;
-                      }
-                      // Legacy : if no filename in meta file when it is expected in blueprint
-                      // then it means its in the name of the text file
-                      else {
-                        const metaFileName_without_ext = new RegExp(
-                          global.settings.regexpRemoveFileExtension,
-                          "i"
-                        ).exec(metaFileName)[1];
-
-                        if (metaFileName_without_ext.includes("."))
-                          return metaFileName_without_ext;
-                      }
-                    }
-                  }
-                  let mediaFileName = getMediaFilename(meta, metaFileName);
+                  let mediaFileName = _legacyGetMediaFilename({
+                    type,
+                    meta,
+                    metaFileName,
+                  });
 
                   let slugFolderPath = api.getFolderPath(
                     path.join(
@@ -1212,86 +1183,45 @@ module.exports = (function () {
           });
       });
     },
-    removeMedia: ({ type, slugFolderName, metaFileName }) => {
-      return new Promise(function (resolve, reject) {
-        dev.logfunction(
-          `COMMON — removeMedia : will remove media at path: ${slugFolderName}/${metaFileName}`
-        );
+    removeMedia: async ({ type, slugFolderName, metaFileName }) => {
+      dev.logfunction(
+        `COMMON — removeMedia : will remove media at path: ${slugFolderName}/${metaFileName}`
+      );
 
-        readMediaMeta({ type, slugFolderName, metaFileName }).then((meta) => {
-          // Legacy : if no filename in meta file when it is expected in blueprint
-          // then it means its in the name of the text file
-          function getMediaFilename(meta, metaFileName) {
-            if (
-              global.settings.structure[type].medias.fields.hasOwnProperty(
-                "media_filename"
-              )
-            ) {
-              if (meta.hasOwnProperty("media_filename")) {
-                return meta.media_filename;
-              } else {
-                const metaFileName_without_ext = new RegExp(
-                  global.settings.regexpRemoveFileExtension,
-                  "i"
-                ).exec(metaFileName)[1];
-
-                if (metaFileName_without_ext.includes("."))
-                  return metaFileName_without_ext;
-              }
-            } else {
-              return "";
-            }
-          }
-          let mediaFileName = getMediaFilename(meta, metaFileName);
-
-          let slugFolderPath = api.getFolderPath(
-            path.join(global.settings.structure[type].path, slugFolderName)
-          );
-
-          let mediaMetaPath = path.join(slugFolderPath, metaFileName);
-          let movedMediaMetaPath = path.join(
-            slugFolderPath,
-            global.settings.deletedFolderName,
-            metaFileName
-          );
-
-          fs.move(mediaMetaPath, movedMediaMetaPath, { overwrite: true })
-            .then(() => {
-              if (mediaFileName === "") {
-                return resolve();
-              }
-              let mediaPath = path.join(slugFolderPath, mediaFileName);
-              let movedMediaPath = path.join(
-                slugFolderPath,
-                global.settings.deletedFolderName,
-                mediaFileName
-              );
-              return fs.move(mediaPath, movedMediaPath, {
-                overwrite: true,
-              });
-            })
-            .catch((err) => {
-              dev.error(`Failed to delete/move media: ${err}`);
-              return;
-            })
-            .then(() => {
-              cache.del({
-                type: type + "/" + "medias",
-                slugFolderName: slugFolderName + "/" + metaFileName,
-              });
-              cache.del({ type, slugFolderName });
-
-              return thumbs.removeMediaThumbs(
-                slugFolderName,
-                type,
-                mediaFileName
-              );
-            })
-            .then(() => {
-              resolve();
-            });
-        });
+      const meta = await readMediaMeta({
+        type,
+        slugFolderName,
+        metaFileName,
       });
+
+      let mediaFileName = _legacyGetMediaFilename({ type, meta, metaFileName });
+
+      try {
+        if (global.settings.removePermanently === true)
+          await _removeMedia({
+            type,
+            slugFolderName,
+            metaFileName,
+            mediaFileName,
+          });
+        else
+          await _moveMediaToBin({
+            type,
+            slugFolderName,
+            metaFileName,
+            mediaFileName,
+          });
+
+        cache.del({
+          type: type + "/" + "medias",
+          slugFolderName: slugFolderName + "/" + metaFileName,
+        });
+        cache.del({ type, slugFolderName });
+
+        return thumbs.removeMediaThumbs(slugFolderName, type, mediaFileName);
+      } catch (err) {
+        throw err;
+      }
     },
     createMedia: ({
       type,
@@ -1721,22 +1651,13 @@ module.exports = (function () {
               meta: mediaData,
             });
 
-            // Legacy : if no filename in meta file when it is expected in blueprint
-            // then it means its in the name of the text file
-            if (
-              !mediaData.hasOwnProperty("media_filename") &&
-              global.settings.structure[type].medias.fields.hasOwnProperty(
-                "media_filename"
-              )
-            ) {
-              const metaFileName_without_ext = new RegExp(
-                global.settings.regexpRemoveFileExtension,
-                "i"
-              ).exec(metaFileName)[1];
+            const _metaFileName = _legacyGetMediaFilename({
+              type,
+              meta: mediaData,
+              metaFileName,
+            });
 
-              if (metaFileName_without_ext.includes("."))
-                mediaData.media_filename = metaFileName_without_ext;
-            }
+            mediaData.media_filename = _metaFileName;
 
             if (
               (mediaData.type === "text" ||
@@ -2386,6 +2307,114 @@ module.exports = (function () {
         resolve({ _meta });
       });
     });
+  }
+
+  async function _removeFolder({ type, slugFolderName }) {
+    const mainFolderPath = api.getFolderPath(
+      global.settings.structure[type].path
+    );
+    const thisFolderPath = path.join(mainFolderPath, slugFolderName);
+
+    try {
+      await fs.remove(thisFolderPath);
+    } catch (err) {
+      throw err;
+    }
+  }
+  async function _moveFolderToBin({ type, slugFolderName }) {
+    const mainFolderPath = api.getFolderPath(
+      global.settings.structure[type].path
+    );
+
+    const thisFolderPath = path.join(mainFolderPath, slugFolderName);
+    const movedFolderPath = path.join(
+      mainFolderPath,
+      global.settings.deletedFolderName,
+      slugFolderName
+    );
+
+    try {
+      await fs.move(thisFolderPath, movedFolderPath, { overwrite: true });
+      dev.logfunction(
+        `COMMON — removeFolder : folder ${slugFolderName} has been moved to ${movedFolderPath}`
+      );
+      return;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async function _removeMedia({
+    type,
+    slugFolderName,
+    metaFileName,
+    mediaFileName,
+  }) {
+    const slugFolderPath = api.getFolderPath(
+      path.join(global.settings.structure[type].path, slugFolderName)
+    );
+    const mediaMetaPath = path.join(slugFolderPath, metaFileName);
+
+    try {
+      await fs.remove(mediaMetaPath);
+      if (mediaFileName === "") return;
+      await fs.remove(path.join(slugFolderPath, mediaFileName));
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async function _moveMediaToBin({
+    type,
+    slugFolderName,
+    metaFileName,
+    mediaFileName,
+  }) {
+    const slugFolderPath = api.getFolderPath(
+      path.join(global.settings.structure[type].path, slugFolderName)
+    );
+
+    const mediaMetaPath = path.join(slugFolderPath, metaFileName);
+    const movedMediaMetaPath = path.join(
+      slugFolderPath,
+      global.settings.deletedFolderName,
+      metaFileName
+    );
+
+    try {
+      await fs.move(mediaMetaPath, movedMediaMetaPath, { overwrite: true });
+      if (mediaFileName === "") return;
+
+      const mediaPath = path.join(slugFolderPath, mediaFileName);
+      const movedMediaPath = path.join(
+        slugFolderPath,
+        global.settings.deletedFolderName,
+        mediaFileName
+      );
+      await fs.move(mediaPath, movedMediaPath, {
+        overwrite: true,
+      });
+    } catch (err) {
+      dev.error(`Failed to delete/move media: ${err}`);
+      return;
+    }
+  }
+
+  // Legacy: if no filename in meta file when it is expected in blueprint
+  // then it means its in the name of the text file
+  function _legacyGetMediaFilename({ type, meta, metaFileName }) {
+    if (global.settings.structure[type].medias.fields.media_filename) {
+      if (meta.media_filename) return meta.media_filename;
+      else {
+        const metaFileName_without_ext = new RegExp(
+          global.settings.regexpRemoveFileExtension,
+          "i"
+        ).exec(metaFileName)[1];
+        if (metaFileName_without_ext.includes("."))
+          return metaFileName_without_ext;
+      }
+    }
+    return "";
   }
 
   return API;
