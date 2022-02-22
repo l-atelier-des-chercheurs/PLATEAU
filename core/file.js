@@ -1810,7 +1810,8 @@ module.exports = (function () {
                 mediaData.media_filename,
                 mediaData.type,
                 type,
-                "medias"
+                "medias",
+                mediaData
               )
               .then((thumbData) => {
                 mediaData.thumbs = thumbData;
