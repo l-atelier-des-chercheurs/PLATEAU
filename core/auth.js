@@ -88,12 +88,9 @@ module.exports = (function () {
 
         acc.push(async () => {
           // get all folders slugs and passwords
-          const foldersData = await file.getFolder({ type }).catch((err) => {
-            dev.error(`Failed to get folder data: ${err}`);
-            return [];
-          });
-
-          if (!foldersData) return [];
+          const foldersData = await file
+            .getFolders({ type })
+            .catch((err) => []);
 
           dev.logverbose(
             `AUTH — setAuthenticate : got folder data, now checking against user_folder_passwords[${type}]`
@@ -414,7 +411,8 @@ module.exports = (function () {
 
     const slugFolderName = Object.keys(folders_and_medias)[0];
 
-    if(!(await canSeeFolder(
+    if (
+      !(await canSeeFolder(
         socket,
         folders_and_medias[slugFolderName],
         type
@@ -608,7 +606,8 @@ module.exports = (function () {
     let is_admin = false;
 
     // get all session authors
-    const all_authors_informations = await file.getFolder({ type: "authors" });
+    const all_authors_informations = await file.getFolders({ type: "authors" });
+
     const admins_slugs = Object.values(all_authors_informations).reduce(
       (acc, a) => {
         if (a.role === "admin") acc.push(a.slugFolderName);

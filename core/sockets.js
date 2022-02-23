@@ -144,20 +144,19 @@ module.exports = (function () {
   }
 
   /**************************************************************** FOLDER ********************************/
-  async function onListFolders(socket, data) {
+  async function onListFolders(socket, { type }) {
     dev.logfunction(`EVENT - onListFolders`);
-    if (!data || !data.hasOwnProperty("type")) {
+    if (!type) {
       dev.error(`Missing type field`);
       return;
     }
-    const type = data.type;
     const hrstart = process.hrtime();
 
     await sendFolders({ type, socket });
 
     let hrend = process.hrtime(hrstart);
     dev.performance(
-      `PERFORMANCE — listFolders for type = ${data.type} : ${hrend[0]}s ${
+      `PERFORMANCE — listFolders for type = ${type} : ${hrend[0]}s ${
         hrend[1] / 1000000
       }ms`
     );
@@ -205,9 +204,8 @@ module.exports = (function () {
   }
   async function onEditFolder(socket, { type, slugFolderName, data, id }) {
     dev.logfunction(
-      `EVENT - onEditFolder for type = ${type}, slugFolderName = ${slugFolderName}, data = ${JSON.stringify(
-        data
-      )}`
+      `EVENT - onEditFolder for type = ${type}, 
+      slugFolderName = ${slugFolderName}, data = ${JSON.stringify(data)}`
     );
 
     const foldersData = await file.getFolder({ type, slugFolderName });
@@ -325,16 +323,7 @@ module.exports = (function () {
     dev.logfunction(
       `EVENT - updateFolderModified for type = ${type}, slugFolderName = ${slugFolderName}`
     );
-
-    const foldersData = await file.getFolder({ type, slugFolderName });
-
-    await file.updateFolderEdited({
-      type,
-      slugFolderName,
-      foldersData: Object.values(foldersData)[0],
-    });
-
-    await sendFolders({ type, slugFolderName });
+    onEditFolder(undefined, { type, slugFolderName, data: {} });
   }
 
   async function onRemoveFolder(socket, { type, slugFolderName }) {
@@ -465,7 +454,7 @@ module.exports = (function () {
         throw err;
       });
 
-    onEditFolder(undefined, { type, slugFolderName, data: {} });
+    updateFolderModified({ type, slugFolderName });
 
     changelog.append({
       author: undefined,
@@ -526,7 +515,7 @@ module.exports = (function () {
         throw err;
       });
 
-    onEditFolder(socket, { type, slugFolderName, data: {} });
+    updateFolderModified({ type, slugFolderName });
 
     changelog.append({
       author: auth.getSocketAuthors(socket),
@@ -680,7 +669,7 @@ module.exports = (function () {
         reject(err);
       });
 
-    await onEditFolder(socket, { type, slugFolderName, data: {} });
+    updateFolderModified({ type, slugFolderName });
 
     changelog.append({
       author: auth.getSocketAuthors(socket),
@@ -976,12 +965,15 @@ module.exports = (function () {
       `COMMON - sendFolders for type = ${type} and slugFolderName = ${slugFolderName}`
     );
 
-    let foldersData = await file
-      .getFolder({ type, slugFolderName })
-      .catch((err) => {
-        dev.error(`No folder found: ${err}`);
-        throw err;
-      });
+    let foldersData = {};
+    try {
+      foldersData = slugFolderName
+        ? await file.getFolder({ type, slugFolderName })
+        : await file.getFolders({ type });
+    } catch (err) {
+      dev.error(`Error listing folder(s): ${err}`);
+      throw err;
+    }
 
     // if folder creation, we get an ID to open the folder straight away
     if (foldersData !== undefined && slugFolderName && id) {
@@ -1029,10 +1021,12 @@ module.exports = (function () {
       `COMMON - sendMedias for type = ${type}, slugFolderName = ${slugFolderName}, metaFileName = ${metaFileName} and id = ${id}`
     );
 
-    let foldersData = await file.getFolder({ type, slugFolderName }).catch((err) => {
-      dev.error(`No folder found: ${err}`);
-      throw err;
-    });
+    let foldersData = await file
+      .getFolder({ type, slugFolderName })
+      .catch((err) => {
+        dev.error(`No folder found: ${err}`);
+        throw err;
+      });
 
     const list_metaFileName = await file.getMediaMetaNames({
       type,

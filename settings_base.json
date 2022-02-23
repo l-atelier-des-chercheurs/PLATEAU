@@ -8,11 +8,6 @@
 
   "contentDirname": "user",
   "cacheDirname": "plateau_cache",
-  "metaFileext": ".txt",
-  "thumbExt": ".jpeg",
-  "thumbFormat": "jpeg",
-  "folderMetaFilename": "meta",
-  "folderPreviewFilename": "meta_preview",
 
   "privateKeyPath": "",
   "certificatePath": "",
@@ -54,7 +49,8 @@
         },
         "date_modified": {
           "type": "date",
-          "default": "current"
+          "default": "current",
+          "override": true
         },
         "password": {
           "type": "string",
@@ -212,7 +208,8 @@
         },
         "date_modified": {
           "type": "date",
-          "default": "current"
+          "default": "current",
+          "override": true
         },
         "authors": {
           "type": "array"
