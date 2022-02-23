@@ -144,20 +144,19 @@ module.exports = (function () {
   }
 
   /**************************************************************** FOLDER ********************************/
-  async function onListFolders(socket, data) {
+  async function onListFolders(socket, { type }) {
     dev.logfunction(`EVENT - onListFolders`);
-    if (!data || !data.hasOwnProperty("type")) {
+    if (!type) {
       dev.error(`Missing type field`);
       return;
     }
-    const type = data.type;
     const hrstart = process.hrtime();
 
     await sendFolders({ type, socket });
 
     let hrend = process.hrtime(hrstart);
     dev.performance(
-      `PERFORMANCE — listFolders for type = ${data.type} : ${hrend[0]}s ${
+      `PERFORMANCE — listFolders for type = ${type} : ${hrend[0]}s ${
         hrend[1] / 1000000
       }ms`
     );
@@ -273,7 +272,7 @@ module.exports = (function () {
 
     const { meta } = await file.editFolder({
       type,
-      folder_name: slugFolderName,
+      slugFolderName,
       foldersData: Object.values(foldersData)[0],
       newFoldersData: data,
     });
@@ -966,12 +965,15 @@ module.exports = (function () {
       `COMMON - sendFolders for type = ${type} and slugFolderName = ${slugFolderName}`
     );
 
-    let foldersData = await file
-      .getFolder({ type, slugFolderName })
-      .catch((err) => {
-        dev.error(`No folder found: ${err}`);
-        throw err;
-      });
+    let foldersData = {};
+    try {
+      foldersData = slugFolderName
+        ? await file.getFolder({ type, slugFolderName })
+        : await file.getFolders({ type });
+    } catch (err) {
+      dev.error(`Error listing folder(s): ${err}`);
+      throw err;
+    }
 
     // if folder creation, we get an ID to open the folder straight away
     if (foldersData !== undefined && slugFolderName && id) {

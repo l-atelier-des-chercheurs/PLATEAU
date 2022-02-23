@@ -18,7 +18,7 @@ ffmpeg.setFfmpegPath(pathToFfmpeg);
 module.exports = (function () {
   const API = {
     getFolderPath: (slugFolderName = "") => getFolderPath(slugFolderName),
-    getFullPath: ({ type, folder_name = "", file_name = "" }) => {
+    getFullPath: ({ type, slugFolderName = "", file_name = "" }) => {
       if (!global.settings.structure.hasOwnProperty(type))
         throw `Missing type ${type} in global.settings.json`;
 
@@ -26,7 +26,7 @@ module.exports = (function () {
         global.pathToUserContent,
         global.settings.structure[type].path
       );
-      return path.join(base_path, folder_name, file_name);
+      return path.join(base_path, slugFolderName, file_name);
     },
     findFirstFilenameNotTaken: (thisPath, fileName) =>
       findFirstFilenameNotTaken(thisPath, fileName),
@@ -185,7 +185,7 @@ module.exports = (function () {
     }
     // dev.logpackets(
     //   `sendEventWithContent — sending packet with content = ${JSON.stringify(
-    //     eventAndContentJson['content'],
+    //     eventAndContentJson["content"],
     //     null,
     //     4
     //   )}`

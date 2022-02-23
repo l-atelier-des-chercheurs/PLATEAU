@@ -550,7 +550,7 @@ module.exports = (function () {
         `Looking/Making an image thumb for ${mediaPath} and resolution = ${thumbRes}`
       );
 
-      let thumbName = `${filename}.${thumbRes}${global.settings.thumbExt}`;
+      let thumbName = `${filename}.${thumbRes}.jpeg`;
       let thumbPath = path.join(thumbFolderPath, thumbName);
       let fullThumbPath = api.getFolderPath(thumbPath);
 
@@ -583,7 +583,7 @@ module.exports = (function () {
             })
             .flatten({ background: "white" })
             .withMetadata()
-            .toFormat(global.settings.thumbFormat, {
+            .toFormat("jpeg", {
               quality: global.settings.mediaThumbQuality,
             })
             .toFile(fullThumbPath)
