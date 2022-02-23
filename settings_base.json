@@ -9,10 +9,6 @@
   "contentDirname": "user",
   "cacheDirname": "plateau_cache",
 
-  "thumbExt": ".jpeg",
-  "thumbFormat": "jpeg",
-  "folderPreviewFilename": "meta_preview",
-
   "privateKeyPath": "",
   "certificatePath": "",
 
