@@ -43,7 +43,7 @@ module.exports = (function () {
         dev.logverbose(
           `COMMON — getFolder / returning cache instead of parsing files.`
         );
-        return cached;
+        return { [slugFolderName]: cached };
       }
 
       const folder_path = api.getFullPath({ type, slugFolderName });
