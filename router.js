@@ -137,6 +137,9 @@ module.exports = function (app) {
           pageData.slugFolderName = slugFolderName;
           pageData.mode = "print_folder";
           res.render("index", pageData);
+        })
+        .catch((err) => {
+          res.status(500).send(err);
         });
     });
   }

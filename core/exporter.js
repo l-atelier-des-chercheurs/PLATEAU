@@ -132,9 +132,8 @@ module.exports = (function () {
                                 );
                               }
 
-                              const fullPathToThumb = api.getFolderPath(
-                                thumb_path
-                              );
+                              const fullPathToThumb =
+                                api.getFolderPath(thumb_path);
                               const fullPathToThumb_cache = path.join(
                                 cachePath,
                                 thumb_path
@@ -164,9 +163,8 @@ module.exports = (function () {
                                   );
                                 }
 
-                                const fullPathToThumb = api.getFolderPath(
-                                  thumb_path
-                                );
+                                const fullPathToThumb =
+                                  api.getFolderPath(thumb_path);
                                 const fullPathToThumb_cache = path.join(
                                   cachePath,
                                   thumb_path
@@ -617,7 +615,7 @@ module.exports = (function () {
   function loadFolder({ type, slugFolderName }) {
     return new Promise((resolve, reject) => {
       dev.logfunction(
-        `EXPORTER — loadPublication with type = ${type} and slugFolderName = ${slugFolderName}`
+        `EXPORTER — loadFolder with type = ${type} and slugFolderName = ${slugFolderName}`
       );
 
       let _page_informations = {};
@@ -679,11 +677,16 @@ module.exports = (function () {
                       medias_list: list_of_linked_medias,
                     })
                     .then((folders_and_medias) => {
-                      _page_informations.folderAndMediaData = folders_and_medias;
+                      _page_informations.folderAndMediaData =
+                        folders_and_medias;
                       resolve(_page_informations);
                     });
                 });
             });
+        })
+        .catch(() => {
+          dev.error("EXPORTER — loadFolder failed");
+          return reject();
         });
     });
   }
