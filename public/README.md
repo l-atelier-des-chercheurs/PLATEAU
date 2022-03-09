@@ -1,10 +1,10 @@
-# dodoc2
+# Plateau
 
-> do•doc is a documentation tool for creativity.
+> plateau is a documentation tool for workshops.
 
 ## Build Setup
 
-``` bash
+```bash
 # install dependencies
 npm install
 
