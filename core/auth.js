@@ -538,15 +538,22 @@ module.exports = (function () {
       return true;
     }
 
-    if (!!pwd && String(pwd) === String(global.session_password)) {
+    if (!pwd) {
+      // no session password
+      dev.logverbose(`Session password is set but no password were submitted`);
+      return false;
+    }
+
+    if (String(pwd) === String(global.session_password)) {
       // has session password, is good
       dev.logverbose(`Has session password, is valid`);
       return true;
-    } else {
-      // has session password, is wrong
-      dev.logverbose(`Expected pwd: ${global.session_password}`);
-      dev.logverbose(`Submitted pwd: ${pwd}`);
     }
+
+    // has session password, is wrong
+    dev.logverbose(`Submitted session pwd not valid.`);
+    dev.logverbose(`Expected pwd: ${global.session_password}`);
+    dev.logverbose(`Submitted pwd: ${pwd}`);
     return false;
   }
 
@@ -606,7 +613,12 @@ module.exports = (function () {
     let is_admin = false;
 
     // get all session authors
-    const all_authors_informations = await file.getFolders({ type: "authors" });
+    const all_authors_informations = await file
+      .getFolders({ type: "authors" })
+      .catch((err) => {
+        dev.logverbose(`AUTH — isSocketLoggedInAsAdmin: ${is_admin}`);
+        return is_admin;
+      });
 
     const admins_slugs = Object.values(all_authors_informations).reduce(
       (acc, a) => {

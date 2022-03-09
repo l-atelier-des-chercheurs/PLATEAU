@@ -341,7 +341,6 @@ module.exports = (function () {
               !new RegExp(global.settings.regexpMatchFolderNames, "i").test(
                 _metaFileName
               ) &&
-              // endswith global.settings.metaFileext
               _metaFileName.endsWith(".txt") &&
               // not meta.txt
               _metaFileName !== "meta.txt" &&
