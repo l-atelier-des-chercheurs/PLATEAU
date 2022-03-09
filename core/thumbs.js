@@ -11,7 +11,7 @@ const path = require("path"),
 sharp.cache(false);
 
 const StlThumbnailer = require("node-stl-to-thumbnail");
-// const puppeteer = require("puppeteer");
+const puppeteer = require("puppeteer");
 
 const dev = require("./dev-log"),
   api = require("./api");
@@ -903,68 +903,6 @@ module.exports = (function () {
       fs.pathExists(fullScreenshotPath).then((exists) => {
         // if userDir folder doesn't exist yet at destination
         if (!exists) {
-          /* puppeteer version: can’t work for now because of missing extensions */
-          // let browser;
-          // let urlToPubli = `${global.appInfos.homeURL}/libs/stl/show_stl.html?mediaURL=/${slugFolderName}/${filename}`;
-          // puppeteer
-          //   .launch({
-          //     headless: true,
-          //     ignoreHTTPSErrors: true,
-          //     args: ["--no-sandbox", "--font-render-hinting=none"],
-          //   })
-          //   .then((_browser) => {
-          //     browser = _browser;
-          //     return browser.newPage();
-          //   })
-          //   .then((page) => {
-          //     page.setViewport({
-          //       width: 1800,
-          //       height: 1800,
-          //       deviceScaleFactor: 2,
-          //     });
-
-          //     dev.logverbose(
-          //       `THUMBS — _makeSTLScreenshot : loading URL ${urlToPubli}`
-          //     );
-
-          //     function delay(duration) {
-          //       return new Promise((resolve) => {
-          //         setTimeout(() => resolve(), duration);
-          //       });
-          //     }
-
-          //     page
-          //       .goto(urlToPubli, {
-          //         waitUntil: "domcontentloaded",
-          //       })
-          //       .then(() => delay(1500))
-          //       .then(() => {
-          //         page
-          //           .screenshot({
-          //             clip: {
-          //               x: 0,
-          //               y: 0,
-          //               width: 1800,
-          //               height: 1800,
-          //             },
-          //             path: fullScreenshotPath,
-          //           })
-          //           .then(() => {
-          //             dev.logverbose(
-          //               `THUMBS — _makeSTLScreenshot : created image at ${fullScreenshotPath}`
-          //             );
-          //             browser.close();
-          //             return resolve({ screenshotPath, screenshotName });
-          //           });
-          //       })
-          //       .catch((err) => {
-          //         browser.close();
-          //         dev.error(
-          //           `THUMBS — _makeSTLScreenshot : failed to make STL screenshot = ${err}`
-          //         );
-          //       });
-          //   });
-
           var thumbnailer = new StlThumbnailer({
             filePath: mediaPath,
             requestThumbnails: [
@@ -973,17 +911,377 @@ module.exports = (function () {
                 height: 1800,
               },
             ],
-          }).then(function (thumbnails) {
-            // thumbnails is an array (in matching order to your requests) of Canvas objects
-            // you can write them to disk, return them to web users, etc
-            // see node-canvas documentation at https://github.com/Automattic/node-canvas
-            thumbnails[0].toBuffer(function (err, buf) {
-              if (err) return reject();
+          })
+            .then(function (thumbnails) {
+              // thumbnails is an array (in matching order to your requests) of Canvas objects
+              // you can write them to disk, return them to web users, etc
+              // see node-canvas documentation at https://github.com/Automattic/node-canvas
+              thumbnails[0].toBuffer(function (err, buf) {
+                if (err) return reject();
 
-              fs.writeFileSync(fullScreenshotPath, buf);
-              return resolve({ screenshotPath, screenshotName });
+                fs.writeFileSync(fullScreenshotPath, buf);
+                return resolve({ screenshotPath, screenshotName });
+              });
+            })
+            .catch(function (err) {
+              return reject(err);
             });
+        } else {
+          dev.logverbose(
+            `Screenshots already exist at path ${fullScreenshotPath}`
+          );
+          resolve({ screenshotPath, screenshotName });
+        }
+      });
+    });
+  }
+
+  function _makePDFScreenshot({
+    slugFolderName,
+    thumbFolderPath,
+    filename,
+    page,
+  }) {
+    return new Promise(function (resolve, reject) {
+      dev.logfunction(
+        `THUMBS — _makePDFScreenshot: ${slugFolderName}/${filename}`
+      );
+
+      // todo : use page to get screenshots of each page
+      let screenshotName = `${filename}.${page}.png`;
+      let screenshotPath = path.join(thumbFolderPath, screenshotName);
+      let fullScreenshotPath = api.getFolderPath(screenshotPath);
+
+      // check first if it exists, resolve if it does
+      fs.pathExists(fullScreenshotPath).then((exists) => {
+        if (!exists) {
+          const url = `${global.appInfos.homeURL}/${slugFolderName}/${filename}`;
+
+          screenshotWebsite({
+            url,
+          })
+            .then((image) => {
+              fs.writeFile(fullScreenshotPath, image.toPNG(1.0), (error) => {
+                if (error) throw error;
+                dev.logverbose(
+                  `THUMBS — _makePDFScreenshot : created image at ${fullScreenshotPath}`
+                );
+                return resolve({ screenshotPath, screenshotName });
+              });
+            })
+            .catch((err) => {
+              dev.error(
+                `THUMBS — _makePDFScreenshot / Failed to make stl thumbs with error ${err}`
+              );
+              return reject();
+            });
+        } else {
+          dev.logverbose(
+            `Screenshots already exist at path ${fullScreenshotPath}`
+          );
+          return resolve({ screenshotPath, screenshotName });
+        }
+      });
+    });
+  }
+
+  async function _getLinkOpenGraph({
+    slugFolderName,
+    thumbFolderPath,
+    filename,
+    mediaData,
+  }) {
+    dev.logfunction(
+      `THUMBS — _getLinkOpenGraph: ${slugFolderName}/${filename}`
+    );
+
+    let url = mediaData.content;
+    if (!url) {
+      dev.error(`THUMBS — _getLinkOpenGraph / no URL`);
+      throw `no url`;
+    }
+
+    function addhttp(url) {
+      if (!/^(?:f|ht)tps?\:\/\//.test(url)) url = "http://" + url;
+      return url;
+    }
+    url = addhttp(url);
+
+    let meta_cache_filename = `${api.slug(url)}.sitemeta.json`;
+    let meta_cache_path = path.join(thumbFolderPath, meta_cache_filename);
+    let meta_cache_fullpath = api.getFolderPath(meta_cache_path);
+
+    if (await fs.pathExists(meta_cache_fullpath)) {
+      dev.logverbose(
+        `Site metadata already exist at path ${meta_cache_fullpath}`
+      );
+
+      try {
+        const results = await fs.readFileSync(
+          meta_cache_fullpath,
+          global.settings.textEncoding
+        );
+        return JSON.parse(results);
+      } catch (err) {
+        dev.error(`Err while reading stored opengraph meta: ${err}`);
+        return {};
+      }
+    }
+
+    let results = {};
+
+    const _metadata = await _getPageMetadata({ url }).catch((err) => {
+      dev.error(`THUMBS — _getLinkOpenGraph / failed loading meta ${err}`);
+    });
+
+    if (_metadata && _metadata.hasOwnProperty("title"))
+      results.title = _metadata.title;
+    if (_metadata && _metadata.hasOwnProperty("description"))
+      results.description = _metadata.description;
+
+    if (_metadata && _metadata.hasOwnProperty("image")) {
+      let image_url;
+      if (typeof _metadata.image === "string") image_url = _metadata.image;
+      else if (
+        typeof _metadata.image === "object" &&
+        _metadata.image.hasOwnProperty("name")
+      )
+        image_url = _metadata.image.name;
+
+      if (image_url) results.image = image_url;
+    }
+
+    if (!results.image) {
+      function endsWithAny(suffixes, string) {
+        return suffixes.some(function (suffix) {
+          return string.endsWith(suffix);
+        });
+      }
+
+      if (endsWithAny([".jpg", ".jpeg", ".png", ".gif"], url))
+        results.image = url;
+    }
+
+    if (results.image) {
+      try {
+        results.local_image = await _fetchImage({
+          thumbFolderPath,
+          site_url: url,
+          image_url: results.image,
+        });
+      } catch (err) {
+        dev.error(
+          `Couldn’t download site image ${url} to ${thumbFolderPath} : ${err}`
+        );
+      }
+    }
+
+    try {
+      await fs.writeFileSync(meta_cache_fullpath, JSON.stringify(results));
+      dev.logverbose(
+        `THUMBS — _getLinkOpenGraph : stored meta ${JSON.stringify(
+          results
+        )} at ${meta_cache_fullpath}`
+      );
+      return results;
+    } catch (err) {
+      dev.error(
+        `THUMBS — _getLinkOpenGraph : failed storing meta at ${meta_cache_fullpath} : ${err}`
+      );
+      throw err;
+    }
+  }
+
+  function _getPageMetadata({ url }) {
+    return new Promise((resolve, reject) => {
+      dev.logfunction(`THUMBS — _getPageMetadata : ${url}`);
+      let browser;
+
+      puppeteer
+        .launch({
+          headless: true,
+          ignoreHTTPSErrors: true,
+          args: ["--no-sandbox", "--font-render-hinting=none"],
+        })
+        .then((_browser) => {
+          browser = _browser;
+          return browser.newPage();
+        })
+        .then(async (page) => {
+          page.setViewport({
+            width: 1800,
+            height: 1800,
+            deviceScaleFactor: 2,
           });
+
+          dev.logverbose(`THUMBS — _getPageMetadata : loading URL ${url}`);
+
+          let page_timeout = setTimeout(() => {
+            clearTimeout(page_timeout);
+            dev.error(`THUMBS — _getPageMetadata : page timeout for ${url}`);
+            win.close();
+            return reject();
+          }, 10_000);
+
+          page
+            .goto(url, {
+              waitUntil: "domcontentloaded",
+            })
+            .then(async () => {
+              clearTimeout(page_timeout);
+              let html = await page.evaluate(
+                () => document.documentElement.innerHTML
+              );
+              browser.close();
+
+              dev.logverbose(
+                `THUMBS — _getPageMetadata : finished loading page`
+              );
+
+              // console.log(html); // will be your innherhtml
+              const parsed_meta = _parseHTMLMetaTags({ html });
+              return resolve(parsed_meta);
+            })
+            .catch((err) => {
+              clearTimeout(page_timeout);
+              browser.close();
+              dev.error(
+                `THUMBS — _getPageMetadata / Failed to load link page with error ${err.message}`
+              );
+              return reject(err.message);
+            });
+        });
+    });
+  }
+
+  function _parseHTMLMetaTags({ html }) {
+    var $ = cheerio.load(html);
+    var page_meta = {};
+
+    dev.logverbose(
+      `THUMBS — _parseHTMLMetaTags : using cheerio to parse HTML tags`
+    );
+
+    if ($('meta[property="og:title"]').attr("content")) {
+      page_meta.title = $('meta[property="og:title"]').attr("content");
+    } else if ($("title").text()) {
+      page_meta.title = $("title").text();
+    }
+
+    if ($('meta[property="og:description"]').attr("content")) {
+      page_meta.description = $('meta[property="og:description"]').attr(
+        "content"
+      );
+    } else if ($('meta[name="description"]').attr("content")) {
+      page_meta.description = $('meta[name="description"]').attr("content");
+    }
+
+    if ($('meta[property="og:image"]').attr("content")) {
+      page_meta.image = $('meta[property="og:image"]').attr("content");
+    } else if ($('meta[name="og:image"]').attr("content")) {
+      page_meta.image = $('meta[name="og:image"]').attr("content");
+    } else if ($('link[rel="shortcut icon"]').attr("href")) {
+      page_meta.image = $('link[rel="shortcut icon"][type="image/png"]').attr(
+        "href"
+      );
+    }
+    // see https://gist.github.com/waltir/82c94c834de630f9030f95f1d8ba81cf#file-cheerio_meta-js
+    //   let post = {
+    //     title: $('h1').text(),
+    //     canonical: $('link[rel="canonical"]').attr('href'),
+    //     description: $('meta[name="description"]').attr('content'),
+    //     // Get OG Values
+    //     og_title: $('meta[property="og:title"]').attr('content'),
+    //     og_url: $('meta[property="og:url"]').attr('content'),
+    //     og_img: $('meta[property="og:image"]').attr('content'),
+    //     og_type: $('meta[property="og:type"]').attr('content'),
+    //     // Get Twitter Values
+    //     twitter_site: $('meta[name="twitter:site"]').attr('content'),
+    //     twitter_domain: $('meta[name="twitter:domain"]').attr('content'),
+    //     twitter_img_src: $('meta[name="twitter:image:src"]').attr('content'),
+    //     // Get Facebook Values
+    //     fb_appid: $('meta[property="fb:app_id"]').attr('content'),
+    //     fb_pages: $('meta[property="fb:pages"]').attr('content'),
+    // }
+    // keys.forEach(function (key) {
+    //   if (
+    //     meta[key].attribs &&
+    //     meta[key].attribs.property &&
+    //     meta[key].attribs.property.indexOf("og") == 0
+    //   ) {
+    //     var og = meta[key].attribs.property.split(":");
+
+    //     if (og.length > 2) {
+    //       if (result[og[1]]) {
+    //         if (
+    //           typeof result[og[1]] == "string" ||
+    //           result[og[1]] instanceof String
+    //         ) {
+    //           var set = {};
+    //           set["name"] = result[og[1]];
+    //           set[og[2]] = meta[key].attribs.content;
+    //           result[og[1]] = set;
+    //         } else {
+    //           ex_set = result[og[1]];
+    //           ex_set[og[2]] = meta[key].attribs.content;
+    //           result[og[1]] = ex_set;
+    //         }
+    //       } else {
+    //         var set = {};
+    //         set[og[2]] = meta[key].attribs.content;
+    //         result[og[1]] = set;
+    //       }
+    //     } else {
+    //       result[og[1]] = meta[key].attribs.content;
+    //     }
+    //   }
+    // });
+    return page_meta;
+  }
+
+  function _makeLinkThumb({
+    slugFolderName,
+    thumbFolderPath,
+    filename,
+    scroll,
+    mediaData,
+  }) {
+    return new Promise(function (resolve, reject) {
+      dev.logfunction(`THUMBS — _makeLinkThumb: ${slugFolderName}/${filename}`);
+      // todo : use scroll to get screenshots all around an stl
+
+      let screenshotName = `${filename}.${scroll}.png`;
+      let screenshotPath = path.join(thumbFolderPath, screenshotName);
+      let fullScreenshotPath = api.getFolderPath(screenshotPath);
+
+      // check first if it exists, resolve if it does
+      fs.pathExists(fullScreenshotPath).then((exists) => {
+        if (!exists) {
+          const url = mediaData.content;
+
+          if (!url) {
+            dev.error(`THUMBS — _makeLinkThumb / no URL`);
+            return reject(`no url`);
+          }
+
+          screenshotWebsite({
+            url,
+          })
+            .then((image) => {
+              fs.writeFile(fullScreenshotPath, image, (error) => {
+                if (error) throw error;
+                dev.logverbose(
+                  `THUMBS — _makeLinkThumb : created image at ${fullScreenshotPath}`
+                );
+                return resolve({ screenshotPath, screenshotName });
+              });
+            })
+            .catch((err) => {
+              dev.error(
+                `THUMBS — _makeLinkThumb / Failed to make link thumbs with error ${err}`
+              );
+              return reject(err);
+            });
         } else {
           dev.logverbose(
             `Screenshots already exist at path ${fullScreenshotPath}`
@@ -998,34 +1296,62 @@ module.exports = (function () {
     return new Promise(function (resolve, reject) {
       dev.logfunction(`THUMBS — screenshotWebsite url ${url}`);
 
-      const { BrowserWindow } = require("electron");
+      /* puppeteer version: can’t work for now because of missing extensions */
+      let browser;
 
-      let win = new BrowserWindow({
-        // width: 800,
-        // height: 600,
-        width: 1800,
-        height: 1800,
-        show: false,
-        webPreferences: {
-          contextIsolation: true,
-          allowRunningInsecureContent: true,
-        },
-      });
-      win.loadURL(url);
-
-      win.webContents.on("did-stop-loading", async () => {
-        dev.logverbose(`THUMBS — _makeSTLScreenshot : finished loading page`);
-        // Use default printing options
-        setTimeout(() => {
-          win.capturePage().then((image) => {
-            win.close();
-            return resolve(image);
+      puppeteer
+        .launch({
+          headless: true,
+          ignoreHTTPSErrors: true,
+          args: ["--no-sandbox", "--font-render-hinting=none"],
+        })
+        .then((_browser) => {
+          browser = _browser;
+          return browser.newPage();
+        })
+        .then(async (page) => {
+          page.setViewport({
+            width: 1800,
+            height: 1800,
+            deviceScaleFactor: 2,
           });
-        }, 1000);
-      });
-      win.webContents.on("did-fail-load", (err) => {
-        return reject(err);
-      });
+
+          dev.logverbose(`THUMBS — screenshotWebsite : loading URL ${url}`);
+
+          function delay(duration) {
+            return new Promise((resolve) => {
+              setTimeout(() => resolve(), duration);
+            });
+          }
+
+          page
+            .goto(url, {
+              waitUntil: "domcontentloaded",
+            })
+            .then(() => delay(1500))
+            .then(async () => {
+              const image = await page.screenshot({
+                type: "png",
+                clip: {
+                  x: 0,
+                  y: 0,
+                  width: 1800,
+                  height: 1800,
+                },
+              });
+
+              dev.logverbose(`THUMBS — screenshotWebsite : created image`);
+              browser.close();
+              return resolve(image);
+            })
+            .catch((err) => {
+              browser.close();
+              dev.error(
+                `THUMBS — screenshotWebsite : failed to make STL screenshot = ${err}`
+              );
+              return reject();
+            });
+        });
     });
   }
 
