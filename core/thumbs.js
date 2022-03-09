@@ -1,10 +1,12 @@
 const path = require("path"),
   fs = require("fs-extra"),
-  pathToFfmpeg = require("ffmpeg-static"),
-  ffprobestatic = require("ffprobe-static"),
+  { ffmpegPath, ffprobePath } = require("ffmpeg-ffprobe-static"),
   ffmpeg = require("fluent-ffmpeg"),
   exifReader = require("exif-reader"),
-  sharp = require("sharp");
+  sharp = require("sharp"),
+  cheerio = require("cheerio"),
+  fetch = require("node-fetch"),
+  https = require("https");
 
 sharp.cache(false);
 
@@ -14,13 +16,27 @@ const StlThumbnailer = require("node-stl-to-thumbnail");
 const dev = require("./dev-log"),
   api = require("./api");
 
-ffmpeg.setFfmpegPath(pathToFfmpeg);
-ffmpeg.setFfprobePath(ffprobestatic.path);
+ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfprobePath(ffprobePath);
 
 module.exports = (function () {
   const API = {
-    makeMediaThumbs: (slugFolderName, filename, mediaType, type, subtype) =>
-      makeMediaThumbs(slugFolderName, filename, mediaType, type, subtype),
+    makeMediaThumbs: (
+      slugFolderName,
+      filename,
+      mediaType,
+      type,
+      subtype,
+      mediaData
+    ) =>
+      makeMediaThumbs(
+        slugFolderName,
+        filename,
+        mediaType,
+        type,
+        subtype,
+        mediaData
+      ),
     removeMediaThumbs: (slugFolderName, type, filename) =>
       removeMediaThumbs(slugFolderName, type, filename),
     removeFolderThumbs: (slugFolderName, type) =>
@@ -33,12 +49,23 @@ module.exports = (function () {
 
   // this function is used both when creating a media and when all medias are listed.
   // this way, if thumbs are deleted or moved while the app is running, they will be recreated next time they are required
-  function makeMediaThumbs(slugFolderName, filename, mediaType, type, subtype) {
+  function makeMediaThumbs(
+    slugFolderName,
+    filename,
+    mediaType,
+    type,
+    subtype,
+    mediaData
+  ) {
     return new Promise(function (resolve, reject) {
       dev.logfunction(
         `THUMBS — makeMediaThumbs — Making thumbs for media with slugFolderName = ${slugFolderName}, filename = ${filename}, mediaType: ${mediaType}, type: ${type}, subtype: ${subtype}`
       );
-      if (!["image", "video", "audio", "stl"].includes(mediaType)) {
+      if (
+        !["image", "video", "audio", "stl", "document", "link"].includes(
+          mediaType
+        )
+      ) {
         dev.logverbose(
           `THUMBS — makeMediaThumbs — media is not of type image or video`
         );
@@ -85,7 +112,16 @@ module.exports = (function () {
             });
           } else if (mediaType === "video") {
             // make screenshot
-            let screenshotsTimemarks = [0];
+            let screenshotsTimemarks = [
+              {
+                key: "00:00:00",
+                filename_suffix: "0",
+              },
+              {
+                key: "50%",
+                filename_suffix: "50pc",
+              },
+            ];
             screenshotsTimemarks.forEach((timeMark) => {
               let makeScreenshot = new Promise((resolve, reject) => {
                 _makeVideoScreenshot(
@@ -129,7 +165,7 @@ module.exports = (function () {
                       makeThumbsFromScreenshot.push(makeThumbFromScreenshot);
                     });
                     Promise.all(makeThumbsFromScreenshot).then((thumbsData) => {
-                      resolve({ timeMark, thumbsData });
+                      resolve({ timeMark: timeMark.key, thumbsData });
                     });
                   })
                   .catch((err) => {
@@ -242,6 +278,143 @@ module.exports = (function () {
               });
               makeThumbs.push(makeSTLScreenshot);
             });
+          } else if (mediaType === "document") {
+            let screenshotsPages = [0];
+            screenshotsPages.forEach((page) => {
+              let makePDFScreenshot = new Promise((resolve, reject) => {
+                _makePDFScreenshot({
+                  slugFolderName,
+                  thumbFolderPath,
+                  filename,
+                  page,
+                })
+                  .then(({ screenshotPath, screenshotName }) => {
+                    // make screenshot, then make thumbs out of each screenshot and push this to thumbs
+                    // naming :
+                    // - mediaName.0.200.jpeg, mediaName.0.400.jpeg, etc.
+                    // - mediaName.5.200.jpeg, mediaName.10.400.jpeg, etc.
+
+                    let makeThumbsFromScreenshot = [];
+
+                    thumbResolutions.forEach((thumbRes) => {
+                      let makeThumbFromScreenshot = new Promise(
+                        (resolve, reject) => {
+                          _makeImageThumb(
+                            api.getFolderPath(screenshotPath),
+                            thumbFolderPath,
+                            screenshotName,
+                            thumbRes
+                          )
+                            .then((thumbPath) => {
+                              let thumbMeta = {
+                                path: thumbPath,
+                                size: thumbRes,
+                              };
+                              resolve(thumbMeta);
+                            })
+                            .catch((err) => {
+                              dev.error(
+                                `makeMediaThumbs / Failed to make pdf thumbs with error ${err}`
+                              );
+                              resolve();
+                            });
+                        }
+                      );
+                      makeThumbsFromScreenshot.push(makeThumbFromScreenshot);
+                    });
+                    Promise.all(makeThumbsFromScreenshot).then((thumbsData) => {
+                      resolve({ page, thumbsData });
+                    });
+                  })
+                  .catch((err) => {
+                    dev.error(`Couldn’t make pdf screenshots.`);
+                    resolve();
+                  });
+              });
+              makeThumbs.push(makePDFScreenshot);
+            });
+          } else if (mediaType === "link") {
+            // if link, we’ll get og: title, og: image and og: description from source page
+            // create a .txt file and a thumb for the og: image
+            let makeLinkCard = new Promise((resolve, reject) => {
+              _getLinkOpenGraph({
+                slugFolderName,
+                thumbFolderPath,
+                filename,
+                mediaData,
+              })
+                .then(({ title, description, image, local_image }) => {
+                  return resolve({
+                    siteData: {
+                      title,
+                      description,
+                      image,
+                      local_image,
+                    },
+                  });
+                })
+                .catch((err) => {
+                  dev.error(`Couldn’t make link og tags : ${err}`);
+                  return resolve();
+                });
+            });
+
+            makeThumbs.push(makeLinkCard);
+
+            // and store
+            // let screenshotsScroll = [0];
+            // screenshotsScroll.forEach((scroll) => {
+            //   let makeLinkScreenshot = new Promise((resolve, reject) => {
+            //     _makeLinkThumb({
+            //       slugFolderName,
+            //       thumbFolderPath,
+            //       filename,
+            //       scroll,
+            //       mediaData,
+            //     })
+            //       .then(({ screenshotPath, screenshotName }) => {
+            //         // make screenshot, then make thumbs out of each screenshot and push this to thumbs
+            //         // naming :
+            //         // - mediaName.0.200.jpeg, mediaName.0.400.jpeg, etc.
+            //         // - mediaName.5.200.jpeg, mediaName.10.400.jpeg, etc.
+            //         let makeThumbsFromScreenshot = [];
+            //         thumbResolutions.forEach((thumbRes) => {
+            //           let makeThumbFromScreenshot = new Promise(
+            //             (resolve, reject) => {
+            //               _makeImageThumb(
+            //                 api.getFolderPath(screenshotPath),
+            //                 thumbFolderPath,
+            //                 screenshotName,
+            //                 thumbRes
+            //               )
+            //                 .then((thumbPath) => {
+            //                   let thumbMeta = {
+            //                     path: thumbPath,
+            //                     size: thumbRes,
+            //                   };
+            //                   resolve(thumbMeta);
+            //                 })
+            //                 .catch((err) => {
+            //                   dev.error(
+            //                     `makeMediaThumbs / Failed to make link thumbs with error ${err}`
+            //                   );
+            //                   resolve();
+            //                 });
+            //             }
+            //           );
+            //           makeThumbsFromScreenshot.push(makeThumbFromScreenshot);
+            //         });
+            //         Promise.all(makeThumbsFromScreenshot).then((thumbsData) => {
+            //           resolve({ scroll, thumbsData });
+            //         });
+            //       })
+            //       .catch((err) => {
+            //         dev.error(`Couldn’t make stl screenshots.`);
+            //         resolve();
+            //       });
+            //   });
+            //   makeThumbs.push(makeLinkScreenshot);
+            // });
           }
 
           Promise.all(makeThumbs)
@@ -405,6 +578,8 @@ module.exports = (function () {
           }
 
           // get all thumbs that start with
+
+          // TODO : get all thumbs that match exactly (slugMediaName + . at the end)
           var thumbs = filenames.filter((name) => {
             return name.indexOf(slugMediaName) === 0;
           });
@@ -624,10 +799,10 @@ module.exports = (function () {
   ) {
     return new Promise(function (resolve, reject) {
       dev.logfunction(
-        `THUMBS — _makeVideoScreenshot — Looking to make a video screenshot for ${mediaPath} and timeMark = ${timeMark}`
+        `THUMBS — _makeVideoScreenshot — Looking to make a video screenshot for ${mediaPath} and timeMark = ${timeMark.key}`
       );
 
-      let screenshotName = `${filename}.${timeMark}.jpeg`;
+      let screenshotName = `${filename}.${timeMark.filename_suffix}.jpeg`;
       let screenshotPath = path.join(thumbFolderPath, screenshotName);
       let fullScreenshotPath = api.getFolderPath(screenshotPath);
 
@@ -648,8 +823,7 @@ module.exports = (function () {
               reject(err.message);
             })
             .screenshots({
-              count: 1,
-              timemarks: ["00:00:00"],
+              timemarks: [timeMark.key],
               filename: screenshotName,
               folder: api.getFolderPath(thumbFolderPath),
             });
@@ -814,8 +988,43 @@ module.exports = (function () {
           dev.logverbose(
             `Screenshots already exist at path ${fullScreenshotPath}`
           );
-          resolve({ screenshotPath, screenshotName });
+          return resolve({ screenshotPath, screenshotName });
         }
+      });
+    });
+  }
+
+  function screenshotWebsite({ url }) {
+    return new Promise(function (resolve, reject) {
+      dev.logfunction(`THUMBS — screenshotWebsite url ${url}`);
+
+      const { BrowserWindow } = require("electron");
+
+      let win = new BrowserWindow({
+        // width: 800,
+        // height: 600,
+        width: 1800,
+        height: 1800,
+        show: false,
+        webPreferences: {
+          contextIsolation: true,
+          allowRunningInsecureContent: true,
+        },
+      });
+      win.loadURL(url);
+
+      win.webContents.on("did-stop-loading", async () => {
+        dev.logverbose(`THUMBS — _makeSTLScreenshot : finished loading page`);
+        // Use default printing options
+        setTimeout(() => {
+          win.capturePage().then((image) => {
+            win.close();
+            return resolve(image);
+          });
+        }, 1000);
+      });
+      win.webContents.on("did-fail-load", (err) => {
+        return reject(err);
       });
     });
   }
@@ -832,6 +1041,43 @@ module.exports = (function () {
         }
       });
     });
+  }
+
+  async function _fetchImage({ thumbFolderPath, site_url, image_url }) {
+    dev.logfunction(`THUMBS — _fetchImage: ${thumbFolderPath} to ${image_url}`);
+
+    const url = new URL(image_url, site_url).href;
+
+    const image_ext = url.split(".").pop();
+    const image_filename = "preview." + image_ext;
+
+    let siteimage_cache_filename = api.slug(url) + "." + image_filename;
+    let siteimage_cache_path = path.join(
+      thumbFolderPath,
+      siteimage_cache_filename
+    );
+    let siteimage_cache_fullpath = api.getFolderPath(siteimage_cache_path);
+
+    let headers = {};
+    if (url.includes("https://"))
+      headers.agent = new https.Agent({
+        rejectUnauthorized: false,
+      });
+
+    try {
+      const fimg = await fetch(url, headers);
+      const fimgb = await fimg.buffer();
+      await _createOrGetImageThumb({
+        mediaPath: fimgb,
+        fullThumbPath: siteimage_cache_fullpath,
+        thumbRes: 1400,
+      });
+      dev.logverbose(`THUMBS — _fetchImage: image fetched`);
+      return siteimage_cache_path;
+    } catch (err) {
+      dev.error(`THUMBS — _fetchImage: ${err}`);
+      throw err;
+    }
   }
 
   return API;

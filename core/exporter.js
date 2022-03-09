@@ -1,6 +1,5 @@
 const path = require("path"),
-  pathToFfmpeg = require("ffmpeg-static"),
-  ffprobestatic = require("ffprobe-static"),
+  { ffmpegPath, ffprobePath } = require("ffmpeg-ffprobe-static"),
   ffmpeg = require("fluent-ffmpeg"),
   fs = require("fs-extra"),
   pad = require("pad-left");
@@ -15,8 +14,8 @@ const dev = require("./dev-log"),
   file = require("./file"),
   thumbs = require("./thumbs");
 
-ffmpeg.setFfmpegPath(pathToFfmpeg);
-ffmpeg.setFfprobePath(ffprobestatic.path);
+ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfprobePath(ffprobePath);
 
 module.exports = (function () {
   return {
@@ -25,7 +24,7 @@ module.exports = (function () {
     loadFolder: ({ type, slugFolderName }) =>
       loadFolder({ type, slugFolderName }),
 
-    copyFolderContent: ({ html, folders_and_medias = {}, slugFolderName }) => {
+    copyFolderContent: ({ html, all_medias = [], slugFolderName }) => {
       return new Promise(function (resolve, reject) {
         dev.logfunction(`EXPORTER — copyFolderContent = ${slugFolderName}`);
         // create cache folder that we will need to copy the content
@@ -76,83 +75,70 @@ module.exports = (function () {
               tasks.push(copyFrontEndFiles);
             });
 
-            Object.entries(folders_and_medias).forEach(
-              ([slugFolderName, folderMeta]) => {
-                const fullSlugFolderPath = api.getFolderPath(slugFolderName);
-                const slugFolderInCache = path.join(cachePath, slugFolderName);
+            // for each medias array and type, fetch and copy
 
-                const fullSlugFolderPath_inThumbs = api.getFolderPath(
-                  path.join(global.settings.thumbFolderName, slugFolderName)
-                );
-                const slugFolderInCache_thumbs = path.join(
-                  cachePath,
-                  global.settings.thumbFolderName,
-                  slugFolderName
-                );
+            all_medias.map(({ type, folders_and_medias }) => {
+              Object.entries(folders_and_medias).forEach(
+                ([slugFolderName, folderMeta]) => {
+                  const baseFolderPath = global.settings.structure[type].path;
+                  const mainFolderPath = api.getFolderPath(baseFolderPath);
 
-                Object.entries(folderMeta.medias).forEach(
-                  ([metaFileName, mediaMeta]) => {
-                    if (mediaMeta.hasOwnProperty("media_filename")) {
-                      const media_filename = mediaMeta.media_filename;
+                  const fullSlugFolderPath = path.join(
+                    mainFolderPath,
+                    slugFolderName
+                  );
+                  const slugFolderInCache = path.join(
+                    cachePath,
+                    baseFolderPath,
+                    slugFolderName
+                  );
 
-                      tasks.push(
-                        new Promise((resolve, reject) => {
-                          const fullPathToMedia = path.join(
-                            fullSlugFolderPath,
-                            media_filename
-                          );
-                          const fullPathToMedia_cache = path.join(
-                            slugFolderInCache,
-                            media_filename
-                          );
-                          fs.copy(fullPathToMedia, fullPathToMedia_cache)
-                            .then(() => {
-                              resolve();
-                            })
-                            .catch((err) => {
-                              dev.error(`Failed to copy medias files: ${err}`);
-                              reject(err);
-                            });
-                        })
-                      );
-                    }
-                    if (
-                      mediaMeta.hasOwnProperty("thumbs") &&
-                      typeof mediaMeta.thumbs !== "undefined"
-                    ) {
-                      mediaMeta.thumbs.map((t) => {
-                        if (t && t.hasOwnProperty("path")) {
-                          tasks.push(
-                            new Promise((resolve, reject) => {
-                              let thumb_path = t.path;
-                              if (thumb_path.indexOf("?") > 0) {
-                                thumb_path = thumb_path.substring(
-                                  0,
-                                  thumb_path.indexOf("?")
+                  // const fullSlugFolderPath_inThumbs = api.getFolderPath(
+                  //   path.join(global.settings.thumbFolderName, slugFolderName)
+                  // );
+                  // const slugFolderInCache_thumbs = path.join(
+                  //   cachePath,
+                  //   global.settings.thumbFolderName,
+                  //   slugFolderName
+                  // );
+
+                  Object.entries(folderMeta.medias).forEach(
+                    ([metaFileName, mediaMeta]) => {
+                      if (mediaMeta.hasOwnProperty("media_filename")) {
+                        const media_filename = mediaMeta.media_filename;
+
+                        tasks.push(
+                          new Promise((resolve) => {
+                            const fullPathToMedia = path.join(
+                              fullSlugFolderPath,
+                              media_filename
+                            );
+                            const fullPathToMedia_cache = path.join(
+                              slugFolderInCache,
+                              media_filename
+                            );
+                            fs.copy(fullPathToMedia, fullPathToMedia_cache)
+                              .then(() => {
+                                return resolve();
+                              })
+                              .catch((err) => {
+                                // can happen for placeholders in publi, where it doesnt matter really
+                                dev.error(
+                                  `Failed to copy medias files: ${err}`
                                 );
-                              }
+                                return resolve();
+                              });
+                          })
+                        );
+                      }
+                      if (
+                        mediaMeta.hasOwnProperty("thumbs") &&
+                        typeof mediaMeta.thumbs !== "undefined"
+                      ) {
+                        mediaMeta.thumbs.map((t) => {
+                          if (!t || typeof t !== "object") return;
 
-                              const fullPathToThumb =
-                                api.getFolderPath(thumb_path);
-                              const fullPathToThumb_cache = path.join(
-                                cachePath,
-                                thumb_path
-                              );
-
-                              fs.copy(fullPathToThumb, fullPathToThumb_cache)
-                                .then(() => {
-                                  resolve();
-                                })
-                                .catch((err) => {
-                                  dev.error(
-                                    `Failed to copy thumb files: ${err}`
-                                  );
-                                  reject(err);
-                                });
-                            })
-                          );
-                        } else if (t.hasOwnProperty("thumbsData")) {
-                          t.thumbsData.map((t) => {
+                          if (t.hasOwnProperty("path")) {
                             tasks.push(
                               new Promise((resolve, reject) => {
                                 let thumb_path = t.path;
@@ -182,14 +168,49 @@ module.exports = (function () {
                                   });
                               })
                             );
-                          });
-                        }
-                      });
+                          } else if (t.hasOwnProperty("thumbsData")) {
+                            t.thumbsData.map((t) => {
+                              tasks.push(
+                                new Promise((resolve, reject) => {
+                                  let thumb_path = t.path;
+                                  if (thumb_path.indexOf("?") > 0) {
+                                    thumb_path = thumb_path.substring(
+                                      0,
+                                      thumb_path.indexOf("?")
+                                    );
+                                  }
+
+                                  const fullPathToThumb =
+                                    api.getFolderPath(thumb_path);
+                                  const fullPathToThumb_cache = path.join(
+                                    cachePath,
+                                    thumb_path
+                                  );
+
+                                  fs.copy(
+                                    fullPathToThumb,
+                                    fullPathToThumb_cache
+                                  )
+                                    .then(() => {
+                                      resolve();
+                                    })
+                                    .catch((err) => {
+                                      dev.error(
+                                        `Failed to copy thumb files: ${err}`
+                                      );
+                                      reject(err);
+                                    });
+                                })
+                              );
+                            });
+                          }
+                        });
+                      }
                     }
-                  }
-                );
-              }
-            );
+                  );
+                }
+              );
+            });
 
             Promise.all(tasks)
               .then((d_array) => {
@@ -197,7 +218,7 @@ module.exports = (function () {
                 resolve(cachePath);
               })
               .catch((err) => {
-                dev.error(`Failed to create cache folder: ${err}`);
+                dev.error(`Failed to copy to cache folder: ${err}`);
                 reject(err);
               });
           })
@@ -407,7 +428,7 @@ module.exports = (function () {
           ? options.bitrate
           : "6000k";
 
-        loadPublication(slugPubliName)
+        loadFolder({ type: "publications", slugFolderName: slugPubliName })
           .then((pageData) => {
             publication_meta = pageData.publiAndMediaData[slugPubliName];
             return _loadMediaFilenameFromPublicationSlugs(
@@ -539,7 +560,9 @@ module.exports = (function () {
 
         fs.ensureDir(cachePath)
           .then(() => fs.ensureDir(imagesCachePath))
-          .then(() => loadPublication(slugPubliName))
+          .then(() =>
+            loadFolder({ type: "publications", slugFolderName: slugPubliName })
+          )
           .then((pageData) => {
             let ratio = _getMediaRatioFromFirstFilename(
               slugPubliName,
@@ -683,10 +706,6 @@ module.exports = (function () {
                     });
                 });
             });
-        })
-        .catch(() => {
-          dev.error("EXPORTER — loadFolder failed");
-          return reject();
         });
     });
   }
@@ -880,8 +899,10 @@ module.exports = (function () {
       dev.logfunction("EXPORTER — _applyVideoEffects");
 
       const videoPath = path.join(cachePath, videoName);
-
       const vm = medias_with_original_filepath.find((m) => m.type === "video");
+
+      // just handle a single effect for now — will handle multiple simultaneous effects at once later
+      const effect = effects[0];
 
       ffmpeg.ffprobe(vm.full_path, function (err, metadata) {
         const ffmpeg_cmd = new ffmpeg(global.settings.ffmpeg_options);
@@ -906,6 +927,7 @@ module.exports = (function () {
 
         if (temp_video_volume)
           ffmpeg_cmd.addOptions(["-af volume=" + temp_video_volume]);
+
         // We may need apad at this point, but it conflicts with the reverse effect.
         // please post on github with the video file if you get audio error with this recipe (and read this message…)
 
@@ -929,9 +951,6 @@ module.exports = (function () {
             outputs: "output",
           },
         ];
-
-        // just handle a single effect for now — will handle multiple simultaneous effects at once later
-        const effect = effects[0];
 
         if (effect.type === "black_and_white") {
           complexFilters.push({
@@ -1006,10 +1025,11 @@ module.exports = (function () {
           }
         } else if (effect.type === "rotate") {
           if (effect.rotation === "1" || effect.rotation === "2") {
+            complexFilters = [];
             complexFilters.push({
               filter: "transpose",
               options: effect.rotation,
-              inputs: "output",
+              inputs: "[0]",
               outputs: "output",
             });
             ffmpeg_cmd.withAudioCodec("copy").addOptions(["-map 0:a?"]);
@@ -1784,6 +1804,8 @@ module.exports = (function () {
                 "Setting output to duration: " + metadata.format.duration
               );
               ffmpeg_cmd.duration(metadata.format.duration);
+            } else {
+              dev.logverbose("No metadata found for input: " + vm.full_path);
             }
 
             // check if has audio track or not
@@ -1835,7 +1857,10 @@ module.exports = (function () {
                 ffmpeg.ffprobe(temp_video_path, function (err, _metadata) {
                   return resolve({
                     temp_video_path,
-                    duration: _metadata.format.duration,
+                    duration:
+                      _metadata && _metadata.format && _metadata.format.duration
+                        ? _metadata.format.duration
+                        : "",
                   });
                 });
               })
