@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    AH !
     <nav>
       <router-link to="/">Home</router-link> |
       <router-link to="/about">About</router-link>
@@ -9,8 +10,16 @@
 </template>
 
 <style lang="scss">
+body {
+  background: white;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Karla";
+  font-style: normal;
+  font-weight: 300;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
