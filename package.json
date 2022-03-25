@@ -5,6 +5,7 @@
   "description": "",
   "author": "L’Atelier des Chercheurs <https://latelier-des-chercheurs.fr/>",
   "homepage": "https://github.com/louis-ev/plateau.git",
+  "license": "AGPL-3.0-only",
   "main": "index.js",
   "private": true,
   "repository": {
