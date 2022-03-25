@@ -5,6 +5,7 @@
   "redirect_port": "",
   "userDirname": "plateau",
   "cache_content": true,
+  "removePermanently": false,
 
   "contentDirname": "user",
   "cacheDirname": "plateau_cache",
