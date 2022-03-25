@@ -98,6 +98,9 @@ html
 
 
     - if(mode !== 'export_publication')
-      script(src="/bundle.js")
+      if(global.frontEnd === 'public')
+        script(src='/dist/build.js')
+      else if(global.frontEnd === 'app')
+        script(src="/bundle.js")
     - else
       script(src='./_dist/build.js')
