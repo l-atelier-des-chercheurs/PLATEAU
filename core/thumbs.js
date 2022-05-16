@@ -1,6 +1,7 @@
 const path = require("path"),
   fs = require("fs-extra"),
-  { ffmpegPath, ffprobePath } = require("ffmpeg-ffprobe-static"),
+  ffmpegPath = require("ffmpeg-static"),
+  { path: ffprobePath } = require("ffprobe-static"),
   ffmpeg = require("fluent-ffmpeg"),
   exifReader = require("exif-reader"),
   sharp = require("sharp"),
@@ -963,6 +964,14 @@ module.exports = (function () {
       `${filename}-${page}`
     );
     await fs.ensureDir(_pdf_folder);
+
+    let PdfExtractor;
+    try {
+      PdfExtractor = require("pdf-extractor").PdfExtractor;
+    } catch (err) {
+      dev.error(`THUMBS — _makePDFScreenshot / No pdfextractor found ${err}`);
+      throw err;
+    }
 
     pdfExtractor = new PdfExtractor(_pdf_folder, {
       viewportScale: (width, height) => {
