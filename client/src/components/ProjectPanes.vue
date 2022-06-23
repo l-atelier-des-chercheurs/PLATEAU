@@ -1,11 +1,12 @@
 <template>
   <splitpanes
     watch-slots
-    @resized="resized()"
+    :dbl-click-splitter="false"
+    @resized="resized"
     :key="JSON.stringify(panes.map((p) => p.key))"
   >
     <template v-if="panes.filter((p) => p.enabled).length === 0">
-      <div><i>Aucune panneau n’est actif</i></div>
+      <pane><i>Aucune panneau n’est actif</i></pane>
     </template>
     <template v-else v-for="pane in panes">
       <pane
@@ -73,12 +74,12 @@ export default {
   watch: {},
   computed: {},
   methods: {
-    resized() {
+    resized(shown_panes) {
       console.log(`Project / methods: resized`);
-      this.$eventHub.$emit(`activity_panels_resized`);
-      setTimeout(() => {
-        // this.updateWidthInStore();
-      }, 500);
+      const enabled_panes = this.panes.slice().filter((p) => p.enabled);
+      enabled_panes.map(
+        (p, index) => (p.size_pc = Number(shown_panes[index].size.toFixed(2)))
+      );
     },
   },
 };

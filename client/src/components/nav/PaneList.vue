@@ -5,7 +5,6 @@
       axis="x"
       v-model="project_panes"
       :useDragHandle="true"
-      @sort-end="sortEnded"
     >
       <SlickItem
         v-for="(item, index) in project_panes"
@@ -52,44 +51,60 @@ export default {
         {
           key: "Journal",
           enabled: true,
+          size_pc: 50,
         },
         {
           key: "MediaLibrary",
           enabled: true,
+          size_pc: 50,
         },
         {
           key: "Capture",
           enabled: false,
+          size_pc: 0,
         },
         {
           key: "Team",
           enabled: false,
+          size_pc: 0,
         },
       ],
     };
   },
-  created() {},
-  mounted() {
-    if (this.panes.length === 0)
+  created() {
+    if (this.project_panes.length === 0)
       this.project_panes = this.default_project_panes.slice();
   },
+  mounted() {},
   beforeDestroy() {},
   watch: {
+    panes: {
+      handler() {
+        this.project_panes = this.panes.slice();
+      },
+      deep: true,
+      immediate: true,
+    },
     project_panes: {
       handler() {
-        this.$emit("update:panes", this.project_panes);
+        this.updateQuery({ panes: this.project_panes });
       },
       deep: true,
     },
   },
   computed: {},
   methods: {
-    sortEnded({ event, newIndex, oldIndex, collection }) {
-      event;
-      collection;
-      if (newIndex !== oldIndex) {
-        this.$eventHub.$emit("project.refresh_panes_order");
-      }
+    updateQuery({ panes }) {
+      console.log(`PaneList / methods: updateQuery`);
+
+      // only update if necessary
+      if (this.$route.query?.panes)
+        if (this.$route.query.panes === JSON.stringify(panes)) return false;
+
+      const query = {
+        panes: JSON.stringify(panes),
+      };
+      this.$router.replace({ query });
     },
   },
 };

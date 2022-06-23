@@ -6,8 +6,10 @@
         <div v-if="error.status === 404">Projet introuvable</div>
       </template>
       <template v-else>
-        <PaneList :panes.sync="panes" />
-        <h1>{{ project.title }}</h1>
+        <PaneList :panes="panes" />
+        <div>
+          <h1>{{ project.title }}</h1>
+        </div>
       </template>
     </div>
     <div class="_panes" v-if="!is_loading && !error">
@@ -55,7 +57,22 @@ export default {
   beforeDestroy() {
     this.$api.leave({ room: `projects/${this.project_slug}` });
   },
-  watch: {},
+  watch: {
+    $route: {
+      handler() {
+        let panes = this.$route.query?.panes;
+        if (panes) {
+          panes = JSON.parse(panes);
+          this.panes = panes;
+        }
+      },
+      immediate: true,
+    },
+    panes: {
+      handler() {},
+      deep: true,
+    },
+  },
   computed: {
     // project() {
     // return window.store.projects?.find((p) => p.slug === this.project_slug);
@@ -79,7 +96,6 @@ export default {
 }
 
 ._topbar {
-  background: blue;
 }
 
 ._panes {
