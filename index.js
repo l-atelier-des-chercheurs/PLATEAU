@@ -1,6 +1,7 @@
 const path = require("path");
 const packagejson = require("./package.json");
 const base_settings = require("./settings_base.json");
+const main = require("./core2/main2");
 
 global.appRoot = path.resolve(__dirname);
 global.appInfos = {
@@ -8,8 +9,6 @@ global.appInfos = {
   productName: packagejson.productName,
   version: packagejson.version,
 };
-
-global.frontEnd = "public";
 
 let settings = base_settings;
 try {
@@ -21,8 +20,4 @@ try {
 }
 global.settings = settings;
 
-const router = require("./router");
-
-require("./core/main")({
-  router,
-});
+main();

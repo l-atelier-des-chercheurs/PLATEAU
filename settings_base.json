@@ -13,9 +13,6 @@
   "privateKeyPath": "",
   "certificatePath": "",
 
-  "metaDateFormat": "YYYYMMDD_HHmmss",
-  "textEncoding": "UTF-8",
-  "thumbFolderName": "_thumbs",
   "deletedFolderName": "_bin",
 
   "ffmpeg_options": {
@@ -24,7 +21,7 @@
   },
 
   "mediaThumbQuality": 70,
-  "maxFileSizeForUpload": 100,
+  "maxFileSizeInMoForUpload": 10000,
 
   "regexpMatchFolderNames": "^([^.]+)$",
   "regexpGetFileExtension": "\\.[^.]*$",
@@ -301,6 +298,49 @@
           }
         }
       }
+    }
+  },
+  "schema": {
+    "projects": {
+      "cover": {
+        "width": 1200,
+        "height": 1200,
+        "thumbs": {
+          "resolutions": [50, 320, 640]
+        }
+      },
+      "fields": {
+        "title": {
+          "type": "string"
+        },
+        "keywords": {
+          "type": "array"
+        },
+        "description": {
+          "type": "string"
+        },
+        "folder": {
+          "type": "string"
+        }
+      },
+      "files": {
+        "thumbs": {
+          "resolutions": [180, 360, 1600]
+        },
+        "fields": {
+          "caption": {
+            "type": "string"
+          }
+        }
+      },
+      "children": {}
+    },
+    "publications": {
+      "children": [
+        {
+          "path": "medias"
+        }
+      ]
     }
   }
 }
