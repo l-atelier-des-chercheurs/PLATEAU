@@ -6,14 +6,14 @@
         <div v-if="error.status === 404">Projet introuvable</div>
       </template>
       <template v-else>
-        <PaneList :panes="panes" />
+        <PaneList :panes.sync="panes" />
         <div>
           <h1>{{ project.title }}</h1>
         </div>
       </template>
     </div>
     <div class="_panes" v-if="!is_loading && !error">
-      <ProjectPanes :panes="panes" :project="project" />
+      <ProjectPanes :panes.sync="panes" :project="project" />
     </div>
   </div>
 </template>
@@ -69,7 +69,9 @@ export default {
       immediate: true,
     },
     panes: {
-      handler() {},
+      handler() {
+        this.updateQuery({ panes: this.panes });
+      },
       deep: true,
     },
   },
@@ -79,9 +81,17 @@ export default {
     // },
   },
   methods: {
-    updatePanes(panes) {
-      panes;
-      debugger;
+    updateQuery({ panes }) {
+      console.log(`PaneList / methods: updateQuery`);
+
+      // only update if necessary
+      if (this.$route.query?.panes)
+        if (this.$route.query.panes === JSON.stringify(panes)) return false;
+
+      const query = {
+        panes: JSON.stringify(panes),
+      };
+      this.$router.replace({ query });
     },
   },
 };

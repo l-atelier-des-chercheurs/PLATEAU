@@ -87,26 +87,15 @@ export default {
     },
     project_panes: {
       handler() {
-        this.updateQuery({ panes: this.project_panes });
+        if (JSON.stringify(this.project_panes) === JSON.stringify(this.panes))
+          return false;
+        this.$emit("update:panes", this.project_panes);
       },
       deep: true,
     },
   },
   computed: {},
-  methods: {
-    updateQuery({ panes }) {
-      console.log(`PaneList / methods: updateQuery`);
-
-      // only update if necessary
-      if (this.$route.query?.panes)
-        if (this.$route.query.panes === JSON.stringify(panes)) return false;
-
-      const query = {
-        panes: JSON.stringify(panes),
-      };
-      this.$router.replace({ query });
-    },
-  },
+  methods: {},
 };
 </script>
 <style lang="scss">

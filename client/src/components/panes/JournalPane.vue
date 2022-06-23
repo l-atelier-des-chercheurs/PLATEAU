@@ -1,5 +1,5 @@
 <template>
-  <div>Journal</div>
+  <div class="_journal">Journal</div>
 </template>
 <script>
 export default {
@@ -16,4 +16,10 @@ export default {
   methods: {},
 };
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+._journal {
+  background: var(--color-Journal);
+  height: 100%;
+  overflow: auto;
+}
+</style>

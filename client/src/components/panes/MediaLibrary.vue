@@ -154,6 +154,7 @@ export default {
 ._mediaLibrary {
   background: var(--color-MediaLibrary);
   height: 100%;
+  overflow: auto;
 }
 
 ._mediaLibrary--lib {

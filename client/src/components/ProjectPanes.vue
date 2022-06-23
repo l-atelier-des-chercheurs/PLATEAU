@@ -13,6 +13,7 @@
         v-if="pane.key === 'Journal' && pane.enabled"
         :key="pane.key"
         min-size="5"
+        :size="pane.size_pc"
         ref="Journal"
       >
         <JournalPane />
@@ -22,6 +23,7 @@
         v-else-if="pane.key === 'MediaLibrary' && pane.enabled"
         :key="pane.key"
         min-size="5"
+        :size="pane.size_pc"
         ref="MediaLibrary"
       >
         <MediaLibrary :project="project" />
@@ -31,6 +33,7 @@
         v-else-if="pane.key === 'Capture' && pane.enabled"
         :key="pane.key"
         min-size="5"
+        :size="pane.size_pc"
         ref="Capture"
       >
         <CapturnePane :project="project" />
@@ -40,6 +43,7 @@
         v-else-if="pane.key === 'Team' && pane.enabled"
         :key="pane.key"
         min-size="5"
+        :size="pane.size_pc"
         ref="Team"
       >
         TEAM
@@ -76,10 +80,15 @@ export default {
   methods: {
     resized(shown_panes) {
       console.log(`Project / methods: resized`);
-      const enabled_panes = this.panes.slice().filter((p) => p.enabled);
-      enabled_panes.map(
-        (p, index) => (p.size_pc = Number(shown_panes[index].size.toFixed(2)))
-      );
+      let index = 0;
+      const panes = this.panes.slice().map((p) => {
+        if (p.enabled) {
+          p.size_pc = Number(shown_panes[index].size.toFixed(2));
+          index++;
+        }
+        return p;
+      });
+      this.$emit("update:panes", panes);
     },
   },
 };
