@@ -36,7 +36,7 @@
         :size="pane.size_pc"
         ref="Capture"
       >
-        <CapturnePane :project="project" />
+        <CapturePane :project="project" />
       </pane>
 
       <pane
@@ -46,7 +46,7 @@
         :size="pane.size_pc"
         ref="Team"
       >
-        TEAM
+        <TeamPane :project="project" />
       </pane>
     </template>
   </splitpanes>
@@ -55,7 +55,8 @@
 import { Splitpanes, Pane } from "splitpanes";
 import JournalPane from "@/components/panes/JournalPane.vue";
 import MediaLibrary from "@/components/panes/MediaLibrary.vue";
-import CapturnePane from "@/components/panes/CapturnePane.vue";
+import CapturePane from "@/components/panes/CapturePane.vue";
+import TeamPane from "@/components/panes/TeamPane.vue";
 
 export default {
   props: {
@@ -67,7 +68,8 @@ export default {
     Pane,
     JournalPane,
     MediaLibrary,
-    CapturnePane,
+    CapturePane,
+    TeamPane,
   },
   data() {
     return {};
