@@ -1,5 +1,4 @@
 const path = require("path"),
-  moment = require("moment"),
   TOML = require("@iarna/toml"),
   slugg = require("slugg"),
   validator = require("validator"),

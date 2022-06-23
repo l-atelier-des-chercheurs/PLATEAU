@@ -38,11 +38,6 @@
     },
     "linux": {
       "target": "AppImage"
-    },
-    "appImage": {
-      "synopsis": "A documentation tool for creativity.",
-      "category": "Game",
-      "desktop": "dodoc-linux-desktop-entry.desktop"
     }
   },
   "dependencies": {
