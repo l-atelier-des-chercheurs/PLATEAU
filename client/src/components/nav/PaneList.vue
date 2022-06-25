@@ -89,6 +89,13 @@ export default {
       handler() {
         if (JSON.stringify(this.project_panes) === JSON.stringify(this.panes))
           return false;
+
+        // if a pane is enabled its size_pc cant be set to 0
+        this.project_panes = this.project_panes.map((p) => {
+          if (p.size_pc === 0) p.size_pc = 20;
+          return p;
+        });
+
         this.$emit("update:panes", this.project_panes);
       },
       deep: true,

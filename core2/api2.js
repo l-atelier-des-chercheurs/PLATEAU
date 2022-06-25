@@ -201,7 +201,13 @@ module.exports = (function () {
       });
       res.status(200).json({ status: "ok" });
 
+      // TODO improve here
       notifier.emit("updateFolder", `${folder_type}`, {
+        folder_type,
+        folder_slug,
+        changed_data,
+      });
+      notifier.emit("updateFolder", `${folder_type}/${folder_slug}`, {
         folder_type,
         folder_slug,
         changed_data,

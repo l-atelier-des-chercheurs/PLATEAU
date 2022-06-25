@@ -45,10 +45,10 @@
       <input type="submit" />
     </form>
 
-    Médias = {{ all_files.length }}
+    Médias = {{ medias.length }}
     <div class="_mediaLibrary--lib">
       <MediaCard
-        v-for="file of all_files"
+        v-for="file of medias"
         :key="file.slug"
         :file="file"
         :project_slug="project.slug"
@@ -84,8 +84,8 @@ export default {
   beforeDestroy() {},
   watch: {},
   computed: {
-    all_files() {
-      return this.project?.files || [];
+    medias() {
+      return this.project.files.filter((f) => !f.is_journal) || [];
     },
   },
   methods: {
@@ -109,7 +109,7 @@ export default {
         caption: "plip",
       };
 
-      this.uploadText({ filename, content, additional_meta });
+      this.$api.uploadText({ filename, content, additional_meta });
     },
 
     async createLink() {
@@ -120,32 +120,7 @@ export default {
         type: "url",
       };
 
-      this.uploadText({ filename, content, additional_meta });
-    },
-
-    async uploadText({ filename, content, additional_meta }) {
-      let formData = new FormData();
-
-      const _file_to_upload = new Blob([content], { type: "text/plain" });
-      formData.append("file", _file_to_upload, filename);
-
-      if (additional_meta)
-        formData.append(filename, JSON.stringify(additional_meta));
-
-      const path = `/projects/${this.project.slug}/_upload`;
-
-      let res = await this.$axios
-        .post(path, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        })
-        .catch((err) => {
-          this.$alertify.delay(4000).error(err);
-          this.files_to_upload_meta[filename].status = "failed";
-          this.files_to_upload_meta[filename].upload_percentages = 0;
-          throw err;
-        });
-
-      res.data.meta_filename;
+      this.$api.uploadText({ filename, content, additional_meta });
     },
   },
 };

@@ -16,7 +16,7 @@
         :size="pane.size_pc"
         ref="Journal"
       >
-        <JournalPane />
+        <JournalPane :project="project" />
       </pane>
 
       <pane

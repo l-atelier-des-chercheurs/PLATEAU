@@ -178,6 +178,38 @@ export default function () {
 
         return d;
       },
+
+      async uploadText({
+        folder_type,
+        folder_slug,
+        filename,
+        content,
+        mimetype,
+        additional_meta,
+      }) {
+        let formData = new FormData();
+
+        const _file_to_upload = new Blob([content], mimetype);
+        formData.append("file", _file_to_upload, filename);
+
+        if (additional_meta)
+          formData.append(filename, JSON.stringify(additional_meta));
+
+        const path = `/${folder_type}/${folder_slug}/_upload`;
+
+        let res = await this.$axios
+          .post(path, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+          })
+          .catch((err) => {
+            this.$alertify.delay(4000).error(err);
+            this.files_to_upload_meta[filename].status = "failed";
+            this.files_to_upload_meta[filename].upload_percentages = 0;
+            throw err;
+          });
+
+        return res.data.meta_filename;
+      },
     },
   });
 }

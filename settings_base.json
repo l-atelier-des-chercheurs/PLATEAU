@@ -321,6 +321,9 @@
         },
         "folder": {
           "type": "string"
+        },
+        "journal_items": {
+          "type": "array"
         }
       },
       "files": {
@@ -330,6 +333,9 @@
         "fields": {
           "caption": {
             "type": "string"
+          },
+          "is_journal": {
+            "type": "boolean"
           }
         }
       },
