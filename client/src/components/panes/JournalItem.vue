@@ -21,7 +21,11 @@ export default {
   created() {},
   mounted() {},
   beforeDestroy() {},
-  watch: {},
+  watch: {
+    "file.content"() {
+      this.new_text = this.file.content;
+    },
+  },
   computed: {},
   methods: {
     async saveText() {

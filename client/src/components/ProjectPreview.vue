@@ -10,13 +10,13 @@
     <br />
     <!-- <input type="text" v-model="new_title" />
     <button type="button" class="button" @click="updateProject">save</button> -->
-    <sl-button size="small" variant="warning" @click="removeProject" pill>
-      supprimer
-    </sl-button>
 
     <router-link :to="`/projects/${project.slug}`" class="">
       <sl-button size="small" variant="primary" pill>ouvrir</sl-button>
     </router-link>
+    <sl-button size="small" variant="default" @click="removeProject" pill>
+      supprimer
+    </sl-button>
 
     <!-- fetch_status = {{ fetch_status }} <br />
     fetch_error = {{ fetch_error }} <br />

@@ -156,13 +156,32 @@ module.exports = (function () {
         if (typeof content !== "string")
           throw new Error("Content (text) is not a string");
 
-        // TODO update media filename (text, image, etc.)
-        await utils.saveMetaAtPath({
-          folder_type,
-          folder_slug,
-          file_slug: meta.media_filename,
-          meta: content,
-        });
+        dev.logfunction(
+          `Content is supposed to be updated`,
+          { type: meta.type },
+          { media_filename: meta.media_filename }
+        );
+
+        if (global.settings.versioning === true)
+          _archiveVersion({
+            folder_type,
+            folder_slug,
+            media_filename: meta.media_filename,
+          });
+
+        // TODO update media (text, image, etc.)
+        if (meta.type === "text")
+          await utils
+            .saveMetaAtPath({
+              folder_type,
+              folder_slug,
+              file_slug: meta.media_filename,
+              meta: content,
+            })
+            .catch((err) => {
+              throw err;
+            });
+
         // TODO remove thumbs
       }
 
@@ -506,6 +525,47 @@ module.exports = (function () {
     // prevent editing fields such as date_created
 
     return new_meta;
+  }
+
+  async function _archiveVersion({ folder_type, folder_slug, media_filename }) {
+    dev.logfunction(arguments[0]);
+    const media_path = utils.getPathToUserContent(
+      folder_type,
+      folder_slug,
+      media_filename
+    );
+
+    const archive_folder_name = path.parse(media_filename).name;
+    const archived_folder_path = utils.getPathToUserContent(
+      folder_type,
+      folder_slug,
+      archive_folder_name
+    );
+    await fs.ensureDir(archived_folder_path);
+
+    try {
+      // keep file name, append -1, -2, etc. if necessary to prevent override
+      // const archived_media_filename = await _preventFileOverride({
+      //   folder_path: archived_folder_path,
+      //   original_filename: media_filename,
+      // });
+
+      // use timestamp to mark time archived
+      const archived_media_filename =
+        +utils.getCurrentDate() + path.parse(media_filename).ext;
+
+      const archived_media_path = path.join(
+        archived_folder_path,
+        archived_media_filename
+      );
+
+      await fs.move(media_path, archived_media_path, {
+        overwrite: true,
+      });
+      return;
+    } catch (err) {
+      throw err;
+    }
   }
 
   return API;

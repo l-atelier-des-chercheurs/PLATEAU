@@ -316,7 +316,7 @@ module.exports = (function () {
       // res.setHeader("Access-Control-Allow-Origin", "*");
       res.status(200).json({ status: "ok" });
 
-      notifier.emit("updateFile", `${folder_type}/${folder_slug}`, {
+      notifier.emit("fileUpdated", `${folder_type}/${folder_slug}`, {
         folder_type,
         folder_slug,
         meta_slug,

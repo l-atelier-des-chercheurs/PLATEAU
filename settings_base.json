@@ -6,6 +6,7 @@
   "userDirname": "plateau",
   "cache_content": true,
   "removePermanently": false,
+  "versioning": true,
 
   "contentDirname": "user",
   "cacheDirname": "plateau_cache",
