@@ -165,7 +165,7 @@ module.exports = (function () {
         folder_slug: new_folder_slug,
       });
 
-      notifier.emit("createFolder", `${folder_type}`, {
+      notifier.emit("folderCreated", `${folder_type}`, {
         folder_type,
         meta: new_folder_meta,
       });
@@ -202,12 +202,12 @@ module.exports = (function () {
       res.status(200).json({ status: "ok" });
 
       // TODO improve here
-      notifier.emit("updateFolder", `${folder_type}`, {
+      notifier.emit("folderUpdated", `${folder_type}`, {
         folder_type,
         folder_slug,
         changed_data,
       });
-      notifier.emit("updateFolder", `${folder_type}/${folder_slug}`, {
+      notifier.emit("folderUpdated", `${folder_type}/${folder_slug}`, {
         folder_type,
         folder_slug,
         changed_data,
@@ -240,7 +240,7 @@ module.exports = (function () {
       // res.setHeader("Access-Control-Allow-Origin", "*");
       res.status(200).json({ status: "ok" });
 
-      notifier.emit("removeFolder", `${folder_type}`, {
+      notifier.emit("folderRemoved", `${folder_type}`, {
         folder_type,
         folder_slug,
       });
@@ -279,7 +279,7 @@ module.exports = (function () {
         meta_filename,
       });
 
-      notifier.emit("newFile", `${folder_type}/${folder_slug}`, {
+      notifier.emit("fileCreated", `${folder_type}/${folder_slug}`, {
         folder_type,
         folder_slug,
         file_meta,

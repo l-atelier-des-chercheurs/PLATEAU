@@ -8,8 +8,11 @@
     {{ project.date_created }}
     <DateField :title="'date_created'" :date="project.date_created" />
     <br />
-    <!-- <button type="button" class="button" @click="updateProject">save</button>
-    <button type="button" class="button" @click="removeProject">delete</button> -->
+    <!-- <input type="text" v-model="new_title" />
+    <button type="button" class="button" @click="updateProject">save</button> -->
+    <sl-button size="small" variant="warning" @click="removeProject" pill>
+      supprimer
+    </sl-button>
 
     <router-link :to="`/projects/${project.slug}`" class="">
       <sl-button size="small" variant="primary" pill>ouvrir</sl-button>

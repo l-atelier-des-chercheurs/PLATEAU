@@ -54,13 +54,13 @@ export default function () {
         this.socket.onAny((eventName, ...args) => {
           this.$alertify.delay(4000).success(eventName + JSON.stringify(args));
         });
-        this.socket.on("createFolder", this.createFolder);
-        this.socket.on("updateFolder", this.updateFolder);
-        this.socket.on("removeFolder", this.removeFolder);
+        this.socket.on("folderCreated", this.folderCreated);
+        this.socket.on("folderUpdated", this.folderUpdated);
+        this.socket.on("folderRemoved", this.folderRemoved);
 
-        this.socket.on("newFile", this.newFile);
-        this.socket.on("updateFile", this.updateFile);
-        this.socket.on("removeFile", this.removeFile);
+        this.socket.on("fileCreated", this.fileCreated);
+        this.socket.on("fileUpdated", this.fileUpdated);
+        this.socket.on("fileRemoved", this.fileRemoved);
       },
 
       disconnectSocket() {
@@ -94,10 +94,10 @@ export default function () {
         return false;
       },
 
-      createFolder({ folder_type, meta }) {
+      folderCreated({ folder_type, meta }) {
         this.store[folder_type].push(meta);
       },
-      updateFolder({ folder_type, folder_slug, changed_data }) {
+      folderUpdated({ folder_type, folder_slug, changed_data }) {
         const folder = this.findFolder({
           folder_type,
           folder_slug,
@@ -107,7 +107,7 @@ export default function () {
           this.$set(folder, key, value);
         });
       },
-      removeFolder({ folder_type, folder_slug }) {
+      folderRemoved({ folder_type, folder_slug }) {
         const folder_index = this.findFolderIndex({
           folder_type,
           folder_slug,
@@ -115,7 +115,7 @@ export default function () {
         this.store[folder_type].splice(folder_index, 1);
       },
 
-      newFile({ folder_type, folder_slug, file_meta }) {
+      fileCreated({ folder_type, folder_slug, file_meta }) {
         const folder = this.findFolder({
           folder_type,
           folder_slug,
@@ -123,7 +123,7 @@ export default function () {
         if (!folder.files) this.$set(folder, "files", new Array());
         folder.files.push(file_meta);
       },
-      updateFile({ folder_type, folder_slug, meta_slug, changed_data }) {
+      fileUpdated({ folder_type, folder_slug, meta_slug, changed_data }) {
         const file = this.findFileInFolder({
           folder_type,
           folder_slug,
@@ -135,7 +135,7 @@ export default function () {
             this.$set(file, key, value);
           });
       },
-      removeFile({ folder_type, folder_slug, meta_slug }) {
+      fileRemoved({ folder_type, folder_slug, meta_slug }) {
         const folder = this.findFolder({ folder_type, folder_slug });
         const file_index = this.findFileIndexInFolder({
           folder_type,
@@ -209,6 +209,22 @@ export default function () {
           });
 
         return res.data.meta_filename;
+      },
+
+      async updateItem({ folder_type, folder_slug, meta_slug, new_meta }) {
+        // const fetch_status = "pending";
+        // const fetch_error = null;
+        try {
+          const response = await this.$axios.patch(
+            `/${folder_type}/${folder_slug}/${meta_slug}`,
+            new_meta
+          );
+          // const fetch_status = "success";
+          return response.data;
+        } catch (e) {
+          // this.fetch_status = "error";
+          throw e.response.data;
+        }
       },
     },
   });

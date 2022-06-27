@@ -1,6 +1,8 @@
 <template>
   <div class="_projectView">
     <div class="_topbar">
+      <router-link to="/projects" v-text="'⇠'" />
+
       <template v-if="is_loading">Chargement…</template>
       <template v-else-if="error">
         <div v-if="error.status === 404">Projet introuvable</div>

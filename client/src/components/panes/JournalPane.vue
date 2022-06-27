@@ -8,19 +8,23 @@
       :key="file.slug"
       :file="file"
       :project_slug="project.slug"
-    ></div>
+    >
+      <JournalItem :file="file" :project_slug="project.slug" />
+    </div>
 
     <sl-button @click="createText">Créer une entrée</sl-button>
-
-    {{ project.journal_items }}
   </div>
 </template>
 <script>
+import JournalItem from "./JournalItem.vue";
+
 export default {
   props: {
     project: Object,
   },
-  components: {},
+  components: {
+    JournalItem,
+  },
   data() {
     return {};
   },
