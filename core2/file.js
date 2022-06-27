@@ -477,7 +477,11 @@ module.exports = (function () {
           path.join(folder_type, folder_slug, global.settings.deletedFolderName)
         );
         dev.logverbose({ file_path, path_in_bin });
-        await fs.move(file_path, path_in_bin, { overwrite: true });
+        await fs
+          .move(file_path, path_in_bin, { overwrite: true })
+          .catch((err) => {
+            // don't catch error if missing target at path (can be an "…_archives" folder)
+          });
       }
       return;
     } catch (err) {
@@ -509,6 +513,14 @@ module.exports = (function () {
     );
     paths.push(full_media_path);
 
+    const archive_folder_name = path.parse(media_filename).name + "_archives";
+    const full_archive_path = utils.getPathToUserContent(
+      folder_type,
+      folder_slug,
+      archive_folder_name
+    );
+    paths.push(full_archive_path);
+
     dev.logfunction({ paths });
 
     return paths;
@@ -535,7 +547,7 @@ module.exports = (function () {
       media_filename
     );
 
-    const archive_folder_name = path.parse(media_filename).name;
+    const archive_folder_name = path.parse(media_filename).name + "_archives";
     const archived_folder_path = utils.getPathToUserContent(
       folder_type,
       folder_slug,
@@ -567,6 +579,11 @@ module.exports = (function () {
       throw err;
     }
   }
+  async function _removeArchives({
+    folder_type,
+    folder_slug,
+    media_filename,
+  }) {}
 
   return API;
 })();

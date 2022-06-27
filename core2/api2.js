@@ -179,8 +179,7 @@ module.exports = (function () {
   }
 
   async function _updateFolder(req, res, next) {
-    let folder_type = req.params.folder_type;
-    let folder_slug = req.params.folder_slug;
+    let { folder_type, folder_slug } = req.params;
     const data = req.body;
 
     dev.logfunction({ folder_type, folder_slug, data });
@@ -222,8 +221,7 @@ module.exports = (function () {
   }
 
   async function _removeFolder(req, res, next) {
-    let folder_type = req.params.folder_type;
-    let folder_slug = req.params.folder_slug;
+    let { folder_type, folder_slug } = req.params;
 
     dev.logfunction({ folder_type, folder_slug });
 
@@ -254,8 +252,7 @@ module.exports = (function () {
   }
 
   async function _uploadFile(req, res, next) {
-    let folder_type = req.params.folder_type;
-    let folder_slug = req.params.folder_slug;
+    let { folder_type, folder_slug } = req.params;
 
     dev.logfunction({ folder_type, folder_slug });
 
@@ -332,9 +329,7 @@ module.exports = (function () {
   }
 
   async function _removeFile(req, res, next) {
-    let folder_type = req.params.folder_type;
-    let folder_slug = req.params.folder_slug;
-    let meta_slug = req.params.meta_slug;
+    let { folder_type, folder_slug, meta_slug } = req.params;
 
     dev.logfunction({ folder_type, folder_slug, meta_slug });
 
@@ -353,7 +348,7 @@ module.exports = (function () {
       // res.setHeader("Access-Control-Allow-Origin", "*");
       res.status(200).json({ status: "ok" });
 
-      notifier.emit("removeFile", `${folder_type}/${folder_slug}`, {
+      notifier.emit("fileRemoved", `${folder_type}/${folder_slug}`, {
         folder_type,
         folder_slug,
         meta_slug,
