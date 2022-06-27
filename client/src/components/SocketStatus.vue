@@ -47,15 +47,17 @@ export default {
 <style lang="scss" scoped>
 ._socketStatus {
   position: absolute;
+  z-index: 1500;
   bottom: 0;
   width: calc(100% - calc(var(--spacing)));
   padding: calc(var(--spacing) / 2);
-  background: rgba(255, 0, 0, 0.5);
+  background: var(--c-rouge);
+
   margin: calc(var(--spacing) / 2);
   border-radius: 8px;
 
   &.is--connected {
-    background: rgba(0, 255, 0, 0.5);
+    background: var(--c-vert);
   }
 }
 </style>

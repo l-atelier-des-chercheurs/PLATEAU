@@ -5,7 +5,6 @@
     </strong>
     {{ project.description }}
     <br />
-    {{ project.date_created }}
     <DateField :title="'date_created'" :date="project.date_created" />
     <br />
     <!-- <input type="text" v-model="new_title" />

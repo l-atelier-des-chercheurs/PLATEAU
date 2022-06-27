@@ -43,8 +43,6 @@ export default {
         folder_type: "projects",
         folder_slug: this.project.slug,
         filename: "journal.txt",
-        content: "PLOP PLIP" + Math.random(),
-        mimetype: { type: "text/plain" },
         additional_meta: {
           is_journal: true,
         },

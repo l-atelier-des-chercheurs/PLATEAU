@@ -35,6 +35,12 @@ module.exports = (function () {
       [cors(_corsCheck), _sessionPasswordCheck],
       _getFolderWithFiles
     );
+    app.get(
+      "/_api2/:folder_type/:folder_slug/:meta_slug/_archives",
+      [cors(_corsCheck), _sessionPasswordCheck],
+      _getArchives
+    );
+
     app.post(
       "/_api2/:folder_type",
       [cors(_corsCheck), _sessionPasswordCheck],
@@ -141,6 +147,28 @@ module.exports = (function () {
     dev.performance(`${hrend[0]}s ${hrend[1] / 1000000}ms`);
 
     cache.printStatus();
+  }
+
+  async function _getArchives(req, res, next) {
+    let { folder_type, folder_slug, meta_slug } = req.params;
+    dev.logfunction({ folder_type, folder_slug });
+
+    const hrstart = process.hrtime();
+
+    try {
+      const file_archives = await file.getArchives({
+        folder_type,
+        folder_slug,
+        meta_filename: meta_slug,
+      });
+      res.json(file_archives);
+    } catch (err) {
+      dev.error(err);
+      res.status(500).send(err);
+    }
+
+    let hrend = process.hrtime(hrstart);
+    dev.performance(`${hrend[0]}s ${hrend[1] / 1000000}ms`);
   }
 
   async function _createFolder(req, res, next) {

@@ -99,7 +99,6 @@ module.exports = (function () {
       );
       meta.slug = meta_filename;
 
-      // read media file content if file is text
       if (meta.media_filename.endsWith("txt"))
         meta.content = await utils.readFileContent(
           folder_type,
@@ -133,6 +132,14 @@ module.exports = (function () {
       });
 
       return meta;
+    },
+    getArchives: async ({ folder_type, folder_slug, meta_filename }) => {
+      dev.logfunction({ folder_type, folder_slug, meta_filename });
+      return await _readArchives({
+        folder_type,
+        folder_slug,
+        meta_filename,
+      });
     },
 
     updateFile: async ({ folder_type, folder_slug, meta_slug, data }) => {
@@ -579,11 +586,66 @@ module.exports = (function () {
       throw err;
     }
   }
-  async function _removeArchives({
-    folder_type,
-    folder_slug,
-    media_filename,
-  }) {}
+  async function _readArchives({ folder_type, folder_slug, meta_filename }) {
+    dev.logfunction(arguments[0]);
+
+    let meta = await utils.readMetaFile(
+      folder_type,
+      folder_slug,
+      meta_filename
+    );
+
+    const archive_folder_name =
+      path.parse(meta.media_filename).name + "_archives";
+    const archived_folder_path = utils.getPathToUserContent(
+      folder_type,
+      folder_slug,
+      archive_folder_name
+    );
+
+    // get a list of all files in archives folder
+
+    // if .txt, read content
+
+    // return an array
+    /*
+    [
+      {
+        filename: "some-numbers.txt",
+        content: "Hello\nWorld"
+      },
+      …
+    ]
+    */
+
+    try {
+      let filenames = (
+        await fs.readdir(archived_folder_path, { withFileTypes: true })
+      )
+        .filter((dirent) => !dirent.isDirectory())
+        .map((dirent) => dirent.name);
+      dev.logfunction({ filenames });
+
+      const files_content = [];
+      for (const filename of filenames) {
+        const content = await utils.readFileContent(
+          folder_type,
+          folder_slug,
+          archive_folder_name,
+          filename
+        );
+        const date = +path.parse(filename).name;
+        files_content.push({
+          date,
+          filename,
+          content,
+        });
+      }
+      return files_content;
+    } catch (err) {
+      throw err;
+    }
+  }
 
   return API;
 })();

@@ -153,15 +153,12 @@ export default function () {
       },
 
       async getFolders({ folder_type }) {
-        // fetch folders: only fetch if necessary
         const response = await this.$axios.get(`/${folder_type}`);
         const d = response.data;
         this.$set(this.store, folder_type, d);
         return d;
       },
       async getFolder({ folder_type, folder_slug }) {
-        // check if folder exists in store first, and if not invalidated
-
         const response = await this.$axios.get(
           `/${folder_type}/${folder_slug}`
         );
@@ -178,18 +175,24 @@ export default function () {
 
         return d;
       },
+      async getArchives({ folder_type, folder_slug, meta_slug }) {
+        const response = await this.$axios.get(
+          `/${folder_type}/${folder_slug}/${meta_slug}/_archives`
+        );
+        const d = response.data;
+        return d;
+      },
 
       async uploadText({
         folder_type,
         folder_slug,
         filename,
-        content,
-        mimetype,
+        content = "",
         additional_meta,
       }) {
         let formData = new FormData();
 
-        const _file_to_upload = new Blob([content], mimetype);
+        const _file_to_upload = new Blob([content], { type: "text/plain" });
         formData.append("file", _file_to_upload, filename);
 
         if (additional_meta)
@@ -218,6 +221,20 @@ export default function () {
           const response = await this.$axios.patch(
             `/${folder_type}/${folder_slug}/${meta_slug}`,
             new_meta
+          );
+          // const fetch_status = "success";
+          return response.data;
+        } catch (e) {
+          // this.fetch_status = "error";
+          throw e.response.data;
+        }
+      },
+      async deleteItem({ folder_type, folder_slug, meta_slug }) {
+        // const fetch_status = "pending";
+        // const fetch_error = null;
+        try {
+          const response = await this.$axios.delete(
+            `/${folder_type}/${folder_slug}/${meta_slug}`
           );
           // const fetch_status = "success";
           return response.data;
