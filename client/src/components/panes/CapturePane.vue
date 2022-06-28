@@ -1,10 +1,22 @@
 <template>
-  <div class="_capturePane">CAPTURE</div>
+  <div class="_capturePane">
+    <CaptureView
+      :slugFolderName="project.slug"
+      :type="'projects'"
+      :read_only="false"
+    />
+  </div>
 </template>
 <script>
+import CaptureView from "./capture/CaptureView.vue";
+
 export default {
-  props: {},
-  components: {},
+  props: {
+    project: Object,
+  },
+  components: {
+    CaptureView,
+  },
   data() {
     return {};
   },

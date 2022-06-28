@@ -185,7 +185,7 @@ export default {
 
   watch: {
     "project.planning_slugs_in_order": function () {
-      if (this.$root.state.dev_mode === "debug") {
+      if (this.$root.dev_mode === true) {
         console.log(`WATCH • Publication: publication.medias_slugs`);
       }
       this.planning_slugs_in_order = Array.isArray(
@@ -281,7 +281,7 @@ export default {
       }
     },
     toggleOpenItem(item_meta) {
-      if (window.state.dev_mode === "debug") {
+      if (window.state.dev_mode === true) {
         console.log("METHODS • Planning: toggleOpenItem");
       }
 
@@ -289,7 +289,7 @@ export default {
       return;
     },
     createPlanningMedia() {
-      if (window.state.dev_mode === "debug") {
+      if (window.state.dev_mode === true) {
         console.log("METHODS • Planning: createPlanningMedia");
       }
 
@@ -338,7 +338,7 @@ export default {
       });
     },
     removePlanningMedia(metaFileName) {
-      if (this.$root.state.dev_mode === "debug") {
+      if (this.$root.dev_mode === true) {
         console.log(
           `METHODS • Publication: removeMedia / metaFileName = ${metaFileName}`
         );

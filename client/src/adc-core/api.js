@@ -192,8 +192,29 @@ export default function () {
       }) {
         let formData = new FormData();
 
-        const _file_to_upload = new Blob([content], { type: "text/plain" });
-        formData.append("file", _file_to_upload, filename);
+        const file = new Blob([content], { type: "text/plain" });
+
+        if (additional_meta)
+          formData.append(filename, JSON.stringify(additional_meta));
+
+        await this.uploadFile({
+          folder_type,
+          folder_slug,
+          filename,
+          file,
+          additional_meta,
+        });
+      },
+
+      async uploadFile({
+        folder_type,
+        folder_slug,
+        filename,
+        file,
+        additional_meta,
+      }) {
+        let formData = new FormData();
+        formData.append("file", file, filename);
 
         if (additional_meta)
           formData.append(filename, JSON.stringify(additional_meta));
@@ -206,8 +227,6 @@ export default function () {
           })
           .catch((err) => {
             this.$alertify.delay(4000).error(err);
-            this.files_to_upload_meta[filename].status = "failed";
-            this.files_to_upload_meta[filename].upload_percentages = 0;
             throw err;
           });
 

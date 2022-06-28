@@ -357,7 +357,7 @@ export default {
       this.edit_mode = false;
     },
     removePlanningMedia() {
-      if (window.state.dev_mode === "debug")
+      if (window.state.dev_mode === true)
         console.log(
           `METHODS • PlanningItem: removePlanningMedia / ${this.media.metaFileName}`
         );
@@ -389,7 +389,7 @@ export default {
       });
     },
     closePlanning() {
-      if (window.state.dev_mode === "debug")
+      if (window.state.dev_mode === true)
         console.log(
           `METHODS • PlanningItem: closePlanning / ${this.media.metaFileName}`
         );

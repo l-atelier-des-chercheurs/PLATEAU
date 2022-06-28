@@ -28,6 +28,14 @@ import SaveCancelButtons from "@/components/fields/SaveCancelButtons.vue";
 Vue.component("SaveCancelButtons", SaveCancelButtons);
 import DateField from "@/components/fields/DateField.vue";
 Vue.component("DateField", DateField);
+Vue.component("LoaderSpinner", {
+  name: "LoaderSpinner",
+  template: `
+    <div class="_loader">
+      <span class="loader" />
+    </div>
+  `,
+});
 
 import "axios-debug-log/enable";
 import axios from "axios";
@@ -37,6 +45,7 @@ const instance = axios.create({
   //   Origin: window.location.origin,
   // },
 });
+
 instance.interceptors.request.use((request) => {
   alertify
     .delay(4000)
@@ -57,6 +66,8 @@ new Vue({
     store: window.store,
     app_infos: window.app_infos,
     is_connected: false,
+    is_electron: navigator.userAgent.toLowerCase().indexOf(" electron/") > -1,
+    dev_mode: true,
   },
   mounted() {
     this.$api.init();
@@ -88,6 +99,26 @@ new Vue({
         .closeLogOnClick(true)
         .delay(4000)
         .error(`Connect error ${reason}`);
+    },
+    formatBytes(a, b) {
+      if (0 == a) return `0 ${this.$t("bytes")}`;
+
+      var e = [
+        this.$t("bytes"),
+        this.$t("kb"),
+        this.$t("mb"),
+        this.$t("gb"),
+        "TB",
+        "PB",
+        "EB",
+        "ZB",
+        "YB",
+      ];
+
+      var c = 1024,
+        d = b || 2,
+        f = Math.floor(Math.log(a) / Math.log(c));
+      return parseFloat((a / Math.pow(c, f)).toFixed(d)) + " " + e[f];
     },
   },
 }).$mount("#app");

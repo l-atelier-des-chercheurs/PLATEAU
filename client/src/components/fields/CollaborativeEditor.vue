@@ -809,7 +809,7 @@ export default {
       this.cancelDragOver();
     },
     cancelDragOver() {
-      if (this.$root.state.dev_mode === "debug") {
+      if (this.$root.dev_mode === true) {
         console.log(`METHODS • CollaborativeEditor / cancelDragOver`);
       }
       this.removeDragoverFromBlots();
