@@ -2063,6 +2063,7 @@ export default {
   display: flex;
   flex-flow: row nowrap;
   max-height: 100vh;
+  height: 100%;
 
   // &.is--collapsed {
   //   .m_captureview--videoPane--bottom--buttons {

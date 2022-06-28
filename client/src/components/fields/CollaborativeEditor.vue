@@ -521,9 +521,11 @@ export default {
   methods: {
     getColorFromName(name) {
       const colors = this.custom_toolbar[4][0].color;
+
       // if (name === this.$t("anonymous")) {
       //   return colors[Math.floor(Math.random() * colors.length)];
       // }
+
       return colors[parseInt(name, 36) % colors.length];
     },
     sanitizeEditorHTML() {
@@ -807,7 +809,7 @@ export default {
       this.cancelDragOver();
     },
     cancelDragOver() {
-      if (this.$root.dev_mode === true) {
+      if (this.$root.dev_mode === "debug") {
         console.log(`METHODS • CollaborativeEditor / cancelDragOver`);
       }
       this.removeDragoverFromBlots();

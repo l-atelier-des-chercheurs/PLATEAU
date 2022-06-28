@@ -1,14 +1,12 @@
 <template>
   <div class="_journalItem">
-    <sl-details :summary="file.title">
-      <CollaborativeEditor2
-        :folder_type="'projects'"
-        :folder_slug="project_slug"
-        :meta_slug="file.slug"
-        :content="file.content"
-      />
+    <sl-details
+      :summary="file.title"
+      @sl-after-show="afterShow"
+      @sl-hide="hide"
+    >
+      <sl-button @click="removeText" size="small">Supprimer</sl-button>
       <sl-button @click="getArchives" size="small">Archives</sl-button>
-
       <div class="_archives" v-if="archives">
         <div v-for="archive in archives" :key="archive.filename">
           <DateField
@@ -20,10 +18,19 @@
         </div>
       </div>
 
-      <sl-button @click="removeText" size="small">Remove</sl-button>
-
       <!-- <pre>{{ file.content }}</pre> -->
     </sl-details>
+
+    <transition name="fade_fast" :duration="400">
+      <div class="_editor" v-if="is_open">
+        <CollaborativeEditor2
+          :folder_type="'projects'"
+          :folder_slug="project_slug"
+          :meta_slug="file.slug"
+          :content="file.content"
+        />
+      </div>
+    </transition>
   </div>
 </template>
 <script>
@@ -40,6 +47,7 @@ export default {
   data() {
     return {
       archives: null,
+      is_open: false,
     };
   },
   created() {},
@@ -62,6 +70,12 @@ export default {
         meta_slug: this.file.slug,
       });
     },
+    afterShow() {
+      this.is_open = true;
+    },
+    hide() {
+      this.is_open = false;
+    },
   },
 };
 </script>
@@ -70,12 +84,12 @@ export default {
   // padding: var(--sl-spacing-medium);
   // margin-top: -1px;
   // margin-bottom: -1px;
+  border-bottom: 1px solid black;
+  background: white;
 }
 sl-details::part(base) {
   border-color: black;
-  border-top-width: 0;
-  border-left-width: 0;
-  border-right-width: 0;
+  border-width: 0;
   border-radius: 0;
 }
 sl-details::part(content) {
@@ -102,5 +116,9 @@ textarea {
     background: white;
     padding: calc(var(--spacing) / 2);
   }
+}
+
+._editor {
+  padding: var(--spacing);
 }
 </style>

@@ -30,11 +30,7 @@ export default {
 <style src="../node_modules/splitpanes/dist/splitpanes.css"></style>
 <style lang="scss">
 :root {
-  /* Fonts */
-  --spacing: 0.9rem;
-  --border-width: 1pt;
-  --border-color: #222;
-  --page-height: 11in;
+  --spacing: var(--sl-spacing-medium);
   --active-color: rgb(52, 122, 213);
 
   --c-orange: #f9ca00;
@@ -258,5 +254,18 @@ img {
 }
 .splitpanes--horizontal > .splitpanes__splitter:hover:after {
   transform: rotate(180deg);
+}
+
+.fade_fast {
+  &-enter-active,
+  &-leave-active {
+    opacity: 1;
+    transition: opacity 0.15s linear;
+  }
+  &-enter,
+  &-leave-to {
+    opacity: 0;
+    transition: opacity 0.15s linear;
+  }
 }
 </style>

@@ -8,10 +8,10 @@
         <div v-if="error.status === 404">Projet introuvable</div>
       </template>
       <template v-else>
-        <PaneList :panes.sync="panes" />
         <div>
           <h1>{{ project.title }}</h1>
         </div>
+        <PaneList :panes.sync="panes" />
       </template>
     </div>
     <div class="_panes" v-if="!is_loading && !error">
@@ -108,6 +108,12 @@ export default {
 }
 
 ._topbar {
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  gap: calc(var(--spacing));
+  padding: var(--spacing);
+
   border-bottom: 1px solid black;
 }
 
