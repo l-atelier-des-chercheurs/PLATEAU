@@ -4,13 +4,19 @@
       <sl-button @click="removeText" size="small">Supprimer</sl-button>
       <sl-button @click="getArchives" size="small">Archives</sl-button>
       <div class="_archives" v-if="archives">
-        <div v-for="archive in archives" :key="archive.filename">
-          <DateField
-            :title="'date'"
-            :show_detail_initially="true"
-            :date="archive.date"
-          />
-          <textarea readonly :value="archive.content" />
+        <div
+          class="_archive"
+          v-for="archive in archives"
+          :key="archive.filename"
+        >
+          <small
+            ><DateField :show_detail_initially="true" :date="archive.date" />
+          </small>
+          <sl-button size="small" variant="text" disabled>
+            sélectionner tout le texte
+          </sl-button>
+
+          <div class="_archiveText" v-html="archive.content" />
         </div>
       </div>
 
@@ -93,14 +99,24 @@ sl-details::part(content) {
 }
 
 ._archives {
-  display: flex;
-  flex-flow: row wrap;
-  list-style: none;
-  gap: calc(var(--spacing) / 2);
+  border: 1px solid black;
+  overflow: auto;
 
   > * {
     background: white;
     padding: calc(var(--spacing) / 2);
+  }
+}
+
+._archiveText {
+  background: #eee;
+  padding: calc(var(--spacing) / 2);
+  width: 100%;
+  max-height: 150px;
+  overflow: auto;
+
+  ::v-deep > *:first-child {
+    margin-top: 0;
   }
 }
 

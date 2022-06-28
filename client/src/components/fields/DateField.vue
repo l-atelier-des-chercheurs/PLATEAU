@@ -11,7 +11,7 @@
 export default {
   props: {
     title: String,
-    date: String,
+    date: [Number, String],
     show_detail_initially: {
       type: Boolean,
       default: false,
