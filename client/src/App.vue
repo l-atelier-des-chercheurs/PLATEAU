@@ -61,6 +61,10 @@ export default {
   --c-barbgcolor: rgba(255, 255, 255, 0);
   --c-thumbcolor: black;
 
+  --sl-font-sans: "IBM Plex Sans";
+  --sl-font-serif: "IBM Plex Serif";
+  --sl-font-mono: "IBM Plex Mono";
+
   $sizes: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900;
 
   @each $size in $sizes {

@@ -1,8 +1,5 @@
 <template>
   <div class="_journal">
-    Journal <br />
-
-    Journal {{ files.length }}
     <div
       v-for="file of files"
       :key="file.slug"
@@ -12,7 +9,20 @@
       <JournalItem :file="file" :project_slug="project.slug" />
     </div>
 
-    <sl-button @click="createText">Créer une entrée</sl-button>
+    <div class="_createForm">
+      <sl-button @click="show_create_entry = !show_create_entry"
+        >Créer une entrée</sl-button
+      >
+      <form
+        v-if="show_create_entry"
+        class="input-validation-required"
+        @submit.prevent="createText"
+      >
+        <sl-input name="title" label="Titre" required />
+        <br />
+        <sl-button type="submit" variant="primary">Créer</sl-button>
+      </form>
+    </div>
   </div>
 </template>
 <script>
@@ -26,7 +36,9 @@ export default {
     JournalItem,
   },
   data() {
-    return {};
+    return {
+      show_create_entry: false,
+    };
   },
   created() {},
   mounted() {},
@@ -38,13 +50,20 @@ export default {
     },
   },
   methods: {
-    async createText() {
+    async createText($event) {
+      const formData = new FormData($event.target);
+      const formProps = Object.fromEntries(formData);
+
+      const title = formProps.title;
+      if (!title) throw new Error("Missing title");
+
       const meta_filename = await this.$api.uploadText({
         folder_type: "projects",
         folder_slug: this.project.slug,
-        filename: "journal.txt",
+        filename: "journal-" + title + ".txt",
         additional_meta: {
           is_journal: true,
+          title,
         },
       });
 
@@ -63,5 +82,8 @@ export default {
   background: var(--color-Journal);
   height: 100%;
   overflow: auto;
+}
+._createForm {
+  padding: var(--spacing);
 }
 </style>

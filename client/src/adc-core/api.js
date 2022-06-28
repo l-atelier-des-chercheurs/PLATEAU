@@ -52,7 +52,9 @@ export default function () {
         });
 
         this.socket.onAny((eventName, ...args) => {
-          this.$alertify.delay(4000).success(eventName + JSON.stringify(args));
+          this.$alertify
+            .delay(4000)
+            .log(`⤓ ` + eventName + JSON.stringify(args));
         });
         this.socket.on("folderCreated", this.folderCreated);
         this.socket.on("folderUpdated", this.folderUpdated);

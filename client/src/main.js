@@ -49,9 +49,9 @@ const instance = axios.create({
 instance.interceptors.request.use((request) => {
   alertify
     .delay(4000)
-    .success(
-      `${request.method} + ${request.url} + ${
-        request.data ? JSON.stringify(request.data) : "no-data"
+    .log(
+      `⤒ — ${request.method} + ${request.url}${
+        request.data ? `+ ` + JSON.stringify(request.data).slice(0, 20) : ""
       }`
     );
   return request;

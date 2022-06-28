@@ -108,6 +108,7 @@ export default {
 }
 
 ._topbar {
+  border-bottom: 1px solid black;
 }
 
 ._panes {

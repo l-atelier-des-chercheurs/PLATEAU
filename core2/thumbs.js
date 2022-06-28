@@ -11,12 +11,9 @@ const path = require("path"),
   StlThumbnailer = require("stl-thumbnailer-node"),
   PdfExtractor = require("pdf-extractor").PdfExtractor;
 
-const { BrowserWindow } = require("electron");
-
 sharp.cache(false);
 
 const utils = require("./utils");
-const { ffprobe } = require("fluent-ffmpeg");
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);

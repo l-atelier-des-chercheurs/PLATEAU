@@ -49,7 +49,10 @@ export default {
   position: absolute;
   z-index: 1500;
   bottom: 0;
+  right: 0;
+  left: auto;
   width: calc(100% - calc(var(--spacing)));
+  max-width: 50ch;
   padding: calc(var(--spacing) / 2);
   background: var(--c-rouge);
 
