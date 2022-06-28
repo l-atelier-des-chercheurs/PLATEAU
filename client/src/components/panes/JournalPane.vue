@@ -10,7 +10,7 @@
     </div>
 
     <div class="_createForm">
-      <sl-button @click="show_create_entry = !show_create_entry"
+      <sl-button variant="text" @click="show_create_entry = !show_create_entry"
         >Créer une entrée</sl-button
       >
       <form
@@ -73,6 +73,8 @@ export default {
       await this.$axios.patch(`/projects/${this.project.slug}`, {
         journal_items,
       });
+
+      this.show_create_entry = false;
     },
   },
 };

@@ -559,7 +559,9 @@ export default {
 
       this.socket = new ReconnectingWebSocket(this.requested_resource_url);
       const connection = new ShareDB.Connection(this.socket);
-      connection.on("state", this.wsState);
+      connection.on("state", (state, reason) => {
+        this.connection_state = state.toString();
+      });
 
       const doc = connection.get("textMedias", requested_querystring);
       doc.subscribe((err) => {
@@ -592,7 +594,7 @@ export default {
         // this.$emit("input", this.sanitizeEditorHTML());
 
         this.editor.on("text-change", (delta, oldDelta, source) => {
-          if (source == "user") {
+          if (source === "user") {
             console.log(`ON • CollaborativeEditor: text-change by user`);
             doc.submitOp(delta, { source: this.editor_id });
 

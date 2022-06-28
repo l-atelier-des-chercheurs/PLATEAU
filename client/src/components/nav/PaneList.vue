@@ -112,6 +112,7 @@ export default {
   height: auto;
   display: flex;
   flex-flow: row nowrap;
+  justify-content: flex-end;
   // justify-content: flex-end;
   white-space: nowrap;
 

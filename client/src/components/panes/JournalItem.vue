@@ -1,10 +1,6 @@
 <template>
   <div class="_journalItem">
-    <sl-details
-      :summary="file.title"
-      @sl-after-show="afterShow"
-      @sl-hide="hide"
-    >
+    <sl-details :summary="file.title" @sl-show="afterShow" @sl-hide="hide">
       <sl-button @click="removeText" size="small">Supprimer</sl-button>
       <sl-button @click="getArchives" size="small">Archives</sl-button>
       <div class="_archives" v-if="archives">
@@ -21,7 +17,7 @@
       <!-- <pre>{{ file.content }}</pre> -->
     </sl-details>
 
-    <transition name="fade_fast" :duration="400">
+    <transition name="fade_fast">
       <div class="_editor" v-if="is_open">
         <CollaborativeEditor2
           :folder_type="'projects'"
@@ -94,16 +90,6 @@ sl-details::part(base) {
 }
 sl-details::part(content) {
   overflow: initial;
-}
-
-h2 {
-  font-weight: 300;
-  margin: 0;
-}
-
-textarea {
-  width: 100%;
-  min-height: 13ch;
 }
 
 ._archives {

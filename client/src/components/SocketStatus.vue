@@ -23,10 +23,10 @@
       disconnect
     </button>
 
-    <details>
+    <!-- <details>
       <summary>$api.store</summary>
       <pre>{{ $api.store }}</pre>
-    </details>
+    </details> -->
   </div>
 </template>
 <script>
@@ -49,15 +49,16 @@ export default {
   position: absolute;
   z-index: 1500;
   bottom: 0;
-  right: 0;
-  left: auto;
-  width: calc(100% - calc(var(--spacing)));
-  max-width: 50ch;
-  padding: calc(var(--spacing) / 2);
+  // right: 0;
+  // left: auto;
+  // width: calc(100% - calc(var(--spacing)));
+  // max-width: 50ch;
+  padding: calc(var(--spacing) / 4) calc(var(--spacing) / 2);
+  width: 100%;
   background: var(--c-rouge);
 
-  margin: calc(var(--spacing) / 2);
-  border-radius: 8px;
+  // margin: calc(var(--spacing) / 2);
+  // border-radius: 8px;
 
   &.is--connected {
     background: var(--c-vert);

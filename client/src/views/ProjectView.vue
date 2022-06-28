@@ -11,7 +11,7 @@
         <div>
           <h1>{{ project.title }}</h1>
         </div>
-        <PaneList :panes.sync="panes" />
+        <PaneList class="_paneList" :panes.sync="panes" />
       </template>
     </div>
     <div class="_panes" v-if="!is_loading && !error">
@@ -111,10 +111,15 @@ export default {
   display: flex;
   flex-flow: row wrap;
   align-items: center;
+  // justify-content: space-between;
   gap: calc(var(--spacing));
   padding: var(--spacing);
 
   border-bottom: 1px solid black;
+
+  ._paneList {
+    flex: 1 1 auto;
+  }
 }
 
 ._panes {

@@ -2,12 +2,35 @@
   <div class="_collaborativeEditor">
     <component :is="`style`" v-html="font_selector_css" />
     <div ref="editor" class="" />
-    <sl-button @click="saveText" size="small">Save</sl-button>
+    <transition name="fade" :duration="600">
+      <div
+        class="quillWrapper--savingIndicator"
+        v-if="enable_collaboration && (is_loading_or_saving || show_saved_icon)"
+      >
+        <transition name="fade" :duration="600">
+          <template v-if="is_loading_or_saving">
+            <span class="loader loader-small" />
+          </template>
+          <template v-else-if="show_saved_icon">
+            <span>✓</span>
+          </template>
+        </transition>
+      </div>
+    </transition>
+
+    ID : {{ editor_id }} Etat de la connection : {{ connection_state }}
+    <sl-button v-if="!enable_collaboration" @click="saveText" size="small"
+      >Save</sl-button
+    >
   </div>
 </template>
 <script>
-import { toolbar, fonts, formats } from "./quill/defaults.js";
+import ReconnectingWebSocket from "reconnectingwebsocket";
+import ShareDB from "sharedb/lib/client";
 import Quill from "quill";
+ShareDB.types.register(require("rich-text").type);
+
+import { toolbar, fonts, formats } from "./quill/defaults.js";
 
 const FontAttributor = Quill.import("attributors/style/font");
 FontAttributor.whitelist = fonts;
@@ -24,16 +47,31 @@ export default {
   data() {
     return {
       editor: null,
+      socket: null,
+      connection_state: null,
+      debounce_textUpdate: undefined,
+      enable_collaboration: true,
+
+      is_loading_or_saving: false,
+      show_saved_icon: false,
+
+      editor_id: (Math.random().toString(36) + "00000000000000000").slice(
+        2,
+        5 + 5
+      ),
     };
   },
   created() {},
   mounted() {
     this.initEditor();
+    if (this.enable_collaboration) this.initCollaborative();
   },
-  beforeDestroy() {},
+  beforeDestroy() {
+    if (this.socket) this.socket.close();
+  },
   watch: {
     content() {
-      this.editor.root.innerHTML = this.content;
+      if (!this.enable_collaboration) this.editor.root.innerHTML = this.content;
     },
   },
   computed: {
@@ -55,7 +93,7 @@ export default {
   methods: {
     initEditor() {
       this.editor = new Quill(this.$refs.editor, {
-        debug: "info",
+        // debug: "info",
         modules: {
           toolbar: toolbar,
         },
@@ -67,6 +105,7 @@ export default {
 
       if (this.content) this.editor.root.innerHTML = this.content;
     },
+
     getEditorContent() {
       if (!this.editor.getText() || this.editor.getText() === "\n") return "";
       let content = this.editor.root.innerHTML;
@@ -85,6 +124,101 @@ export default {
         meta_slug: this.meta_slug,
         new_meta,
       });
+    },
+
+    initCollaborative() {
+      const params = new URLSearchParams({
+        folder_type: this.folder_type,
+        folder_slug: this.folder_slug,
+        meta_slug: this.meta_slug,
+      });
+
+      const requested_querystring = "?" + params.toString();
+      const requested_resource_url =
+        (location.protocol === "https:" ? "wss" : "ws") +
+        "://" +
+        window.location.host +
+        "/sharedb" +
+        requested_querystring;
+
+      console.log(
+        `CollaborativeEditor / initWebsocketMode : will connect to ws server with ${requested_resource_url}`
+      );
+
+      this.socket = new ReconnectingWebSocket(requested_resource_url);
+      const connection = new ShareDB.Connection(this.socket);
+      connection.on("state", (state) => {
+        this.connection_state = state.toString();
+      });
+
+      this.is_loading_websocket = true;
+
+      const doc = connection.get("textMedias", requested_querystring);
+      doc.subscribe((err) => {
+        if (err) {
+          console.error(`ON • CollaborativeEditor: err ${err}`);
+        }
+        console.log(`ON • CollaborativeEditor: subscribe`);
+
+        if (!doc.type) {
+          console.log(
+            `ON • CollaborativeEditor: no type found on doc, creating a new one with content ${JSON.stringify(
+              this.editor.getContents()
+            )}`
+          );
+          doc.create(this.editor.getContents(), "rich-text");
+        } else {
+          console.log(
+            `ON • CollaborativeEditor: doc already exists and doc.data = ${JSON.stringify(
+              doc.data,
+              null,
+              4
+            )}`
+          );
+          this.editor.setContents(doc.data, "init");
+        }
+
+        this.editor.history.clear();
+        // this.editor.setSelection(this.editor.getLength(), 0, "api");
+        // this.$emit("input", this.sanitizeEditorHTML());
+
+        this.editor.on("text-change", (delta, oldDelta, source) => {
+          if (source == "user") {
+            doc.submitOp(delta, { source: this.editor_id });
+            this.updateTextMedia();
+          } else {
+            console.log(`ON • CollaborativeEditor: text-change by API`);
+          }
+        });
+        doc.on("op", (op, source) => {
+          if (source === this.editor_id) return;
+          console.log(`ON • CollaborativeEditor: operation applied to quill`);
+          this.editor.updateContents(op);
+        });
+      });
+
+      doc.on("error", () => {
+        // err;
+        // soucis : les situations ou le serveur a été fermé et en le rouvrant il ne possède plus d’instance du doc dans sharedb…
+        this.$forceUpdate();
+      });
+    },
+
+    updateTextMedia() {
+      if (this.debounce_textUpdate) clearTimeout(this.debounce_textUpdate);
+      this.is_loading_or_saving = true;
+      this.debounce_textUpdate = setTimeout(async () => {
+        console.log(
+          `CollaborativeEditor • updateTextMedia: saving new snapshop`
+        );
+
+        await this.saveText();
+        this.is_loading_or_saving = false;
+        this.show_saved_icon = true;
+        setTimeout(() => {
+          this.show_saved_icon = false;
+        }, 200);
+      }, 1000);
     },
   },
 };
