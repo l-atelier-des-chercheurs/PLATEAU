@@ -17,9 +17,13 @@
     <template v-else-if="media.type === 'video'">
       <template v-if="context === 'preview'">
         <img
-          :srcset="complexMediaSrcSetAttr({ type: 'timeMark', option: 0 })"
+          :srcset="
+            complexMediaSrcSetAttr({ type: 'timeMark', option: '00:00:00' })
+          "
           :sizes="imageSizesAttr"
-          :src="linkToComplexMediaThumb({ type: 'timeMark', option: 0 })"
+          :src="
+            linkToComplexMediaThumb({ type: 'timeMark', option: '00:00:00' })
+          "
           draggable="false"
         />
         <div class="">
@@ -59,7 +63,9 @@
           @timeupdate="videoTimeUpdated"
         >
           <video
-            :poster="linkToComplexMediaThumb({ type: 'timeMark', option: 0 })"
+            :poster="
+              linkToComplexMediaThumb({ type: 'timeMark', option: '00:00:00' })
+            "
             :src="mediaURL"
             preload="none"
             :autoplay="autoplay"
