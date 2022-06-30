@@ -99,6 +99,12 @@ body {
   min-height: 100%;
 }
 
+button {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+}
+
 #app {
   /* font-family: "Work Sans"; */
   font-family: "IBM Plex Sans";
@@ -218,14 +224,14 @@ img {
   position: absolute;
   top: auto;
   bottom: auto;
-  top: calc(50% - 10px);
+  top: calc(50% - 15px);
   pointer-events: none;
   // top: 50%;
 
   transform: rotate(45deg);
 
   width: 2px;
-  height: 20px;
+  height: 30px;
 
   transition: transform 0.4s;
   background-color: #000;
@@ -239,18 +245,9 @@ img {
   opacity: 1;
   transform: rotate(90deg);
 }
-
-.splitpanes--vertical > .splitpanes__splitter:after {
-  // left: -10px;
-  // right: -10px;
-  // height: 100%;
-}
 .splitpanes--horizontal > .splitpanes__splitter:after {
   transform: rotate(135deg);
   left: 50%;
-  // top: -10px;
-  // bottom: -10px;
-  // width: 100%;
 }
 .splitpanes--horizontal > .splitpanes__splitter:hover:after {
   transform: rotate(180deg);

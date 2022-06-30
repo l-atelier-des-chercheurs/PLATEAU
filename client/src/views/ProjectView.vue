@@ -11,11 +11,16 @@
         <div>
           <h1>{{ project.title }}</h1>
         </div>
-        <PaneList class="_paneList" :panes.sync="panes" />
+        <PaneList class="_paneList" :panes.sync="projectpanes" />
       </template>
     </div>
     <div class="_panes" v-if="!is_loading && !error">
-      <ProjectPanes :panes.sync="panes" :project="project" />
+      <ProjectPanes
+        :projectpanes.sync="projectpanes"
+        :libpanes.sync="libpanes"
+        :project="project"
+        :media_focused.sync="media_focused"
+      />
     </div>
   </div>
 </template>
@@ -37,7 +42,9 @@ export default {
       error: null,
       project: null,
 
-      panes: [],
+      projectpanes: [],
+      libpanes: [],
+      media_focused: null,
     };
   },
   created() {},
@@ -62,17 +69,31 @@ export default {
   watch: {
     $route: {
       handler() {
-        let panes = this.$route.query?.panes;
-        if (panes) {
-          panes = JSON.parse(panes);
-          this.panes = panes;
-        }
+        let projectpanes = this.$route.query?.projectpanes;
+        if (projectpanes) this.projectpanes = JSON.parse(projectpanes);
+
+        let libpanes = this.$route.query?.libpanes;
+        if (libpanes) this.libpanes = JSON.parse(libpanes);
+
+        this.media_focused = this.$route.query?.media_focused || null;
       },
       immediate: true,
     },
-    panes: {
+    projectpanes: {
       handler() {
-        this.updateQuery({ panes: this.panes });
+        this.updateQueryPanes();
+      },
+      deep: true,
+    },
+    libpanes: {
+      handler() {
+        this.updateQueryPanes();
+      },
+      deep: true,
+    },
+    media_focused: {
+      handler() {
+        this.updateQueryPanes();
       },
       deep: true,
     },
@@ -83,16 +104,20 @@ export default {
     // },
   },
   methods: {
-    updateQuery({ panes }) {
-      console.log(`PaneList / methods: updateQuery`);
+    updateQueryPanes() {
+      let query = {};
 
-      // only update if necessary
-      if (this.$route.query?.panes)
-        if (this.$route.query.panes === JSON.stringify(panes)) return false;
+      if (this.projectpanes)
+        query.projectpanes = JSON.stringify(this.projectpanes);
+      if (this.libpanes) query.libpanes = JSON.stringify(this.libpanes);
+      if (this.media_focused) query.media_focused = this.media_focused;
 
-      const query = {
-        panes: JSON.stringify(panes),
-      };
+      if (
+        this.$route.query &&
+        JSON.stringify(this.$route.query) === JSON.stringify(query)
+      )
+        return false;
+
       this.$router.replace({ query });
     },
   },
