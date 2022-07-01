@@ -62,6 +62,9 @@
             <button
               type="button"
               class="_focusMediaBtn"
+              :class="{
+                'is--focused': media_focused === file.slug,
+              }"
               @click="toggleMediaFocus(file.slug)"
             />
           </div>
@@ -120,7 +123,7 @@ export default {
       show_create_link_field: false,
       url_to: "https://latelier-des-chercheurs.fr/",
 
-      focuspane_height_when_opened: 50,
+      focuspane_height_when_opened: this.libpanes[1] || 50,
     };
   },
   created() {},
@@ -215,6 +218,10 @@ export default {
   --active-color: var(--c-vert);
 }
 
+._mediaLibrary--lib {
+  overflow: auto;
+}
+
 ._mediaLibrary--lib--grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -245,8 +252,15 @@ export default {
     inset: 0;
     width: 100%;
     background: transparent;
+    transition: all 0.1s linear;
+
     &:hover {
       background: rgba(255, 255, 255, 0.35);
+      transition: none;
+    }
+
+    &.is--focused {
+      background: rgba(255, 255, 255, 0.55);
     }
   }
 }

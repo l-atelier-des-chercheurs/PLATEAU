@@ -270,12 +270,12 @@ img {
   &-enter-active,
   &-leave-active {
     opacity: 1;
-    transition: opacity 0.15s linear;
+    transition: opacity 0.1s linear;
   }
   &-enter,
   &-leave-to {
     opacity: 0;
-    transition: opacity 0.15s linear;
+    transition: opacity 0.1s linear;
   }
 }
 </style>
