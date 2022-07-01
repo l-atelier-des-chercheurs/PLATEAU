@@ -74,8 +74,8 @@
         :size="focus_pane_size"
       >
         <transition name="fade_fast" mode="out-in">
-          <div v-if="focused_media">
-            <sl-button-group>
+          <div v-if="focused_media" :key="focused_media.slug">
+            <sl-button-group class="_focusBtns">
               <sl-button size="small" @click="toggleMediaFocus()">
                 Fermer
               </sl-button>
@@ -84,7 +84,6 @@
               </sl-button>
             </sl-button-group>
             <MediaContent
-              :key="focused_media.slug"
               :file="focused_media"
               :project_slug="project.slug"
               :resolution="1600"
@@ -227,6 +226,7 @@ export default {
   ._mediaTile {
     position: relative;
     aspect-ratio: 1/1;
+    background: white;
 
     ::v-deep {
       img {
@@ -253,6 +253,8 @@ export default {
 
 ._mediaLibrary--focusPane {
   position: relative;
+  padding: 1px;
+
   ::v-deep {
     ._mediaContent {
       position: absolute;
@@ -269,5 +271,11 @@ export default {
       }
     }
   }
+}
+
+._focusBtns {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 </style>
