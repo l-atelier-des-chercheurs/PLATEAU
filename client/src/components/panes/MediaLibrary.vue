@@ -41,6 +41,7 @@
           :folder_type="'projects'"
           :folder_slug="project.slug"
           @importedMedias="mediaJustImported"
+          @close="selected_files = []"
         />
 
         <form
@@ -146,11 +147,11 @@ export default {
       $event.target.value = "";
     },
     mediaJustImported(list_of_added_metas) {
-      this.$alertify
-        .closeLogOnClick(true)
-        .delay(4000)
-        .success(list_of_added_metas);
-      this.selected_files = [];
+      list_of_added_metas;
+      // this.$alertify
+      //   .closeLogOnClick(true)
+      //   .delay(4000)
+      //   .success(list_of_added_metas);
     },
 
     async createText() {

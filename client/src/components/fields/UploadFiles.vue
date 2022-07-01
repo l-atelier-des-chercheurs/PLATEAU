@@ -7,9 +7,7 @@
         class="_uploadFile"
         :class="cssStatus(f)"
         :style="`--progress-percent: ${
-          files_to_upload_meta.hasOwnProperty(f.name)
-            ? files_to_upload_meta[f.name].upload_percentages / 100
-            : 0
+          files_to_upload_meta[f.name].upload_percentages / 100
         }`"
       >
         <div class="_uploadFile--progressBar"></div>
@@ -28,22 +26,20 @@
 
         <div :title="f.name" class="_uploadFile--filename">{{ f.name }}</div>
         <div class="_uploadFile--size">{{ formatBytes(f.size) }}</div>
-        <div
-          class="_uploadFile--action"
-          v-if="files_to_upload_meta.hasOwnProperty(f.name)"
-        >
+        <div class="_uploadFile--action">
           <button
             type="button"
             class="buttonLink"
             @click="sendThisFile(f)"
-            :disabled="
-              read_only ||
-              (files_to_upload_meta.hasOwnProperty(f.name) &&
-                files_to_upload_meta[f.name].status === 'success')
-            "
+            :disabled="files_to_upload_meta[f.name].status !== 'failed'"
           >
             <template v-if="!files_to_upload_meta.hasOwnProperty(f.name)">
               {{ $t("import") }}
+            </template>
+            <template
+              v-else-if="files_to_upload_meta[f.name].status === 'waiting'"
+            >
+              {{ $t("waiting") }}
             </template>
             <template
               v-else-if="files_to_upload_meta[f.name].status === 'sending'"
@@ -86,6 +82,14 @@ export default {
     };
   },
   watch: {},
+  created() {
+    this.files_to_upload.map((f) => {
+      this.$set(this.files_to_upload_meta, f.name, {
+        upload_percentages: 0,
+        status: "waiting",
+      });
+    });
+  },
   mounted() {
     this.sendAllFiles();
   },
@@ -95,10 +99,7 @@ export default {
     async sendThisFile(file) {
       const filename = file.name;
 
-      this.$set(this.files_to_upload_meta, filename, {
-        upload_percentages: 0,
-        status: "sending",
-      });
+      this.files_to_upload_meta[filename].status = "sending";
 
       let formData = new FormData();
       formData.append("file", file, filename);
@@ -141,26 +142,23 @@ export default {
     async sendAllFiles() {
       let list_of_added_metas = [];
 
-      // for (let i = 0; i < 10; i++) {
       for (const file of this.files_to_upload) {
         const meta_filename = await this.sendThisFile(file);
         if (meta_filename) list_of_added_metas.push(meta_filename);
       }
-      // }
 
       // TODO : if retrying sending a file we don't emit importedmedias
       this.$emit("importedMedias", list_of_added_metas);
-      // this.$emit("close", "");
+
+      setTimeout(() => {
+        this.$emit("close");
+      }, 2000);
     },
     getImgPreview(file) {
       return URL.createObjectURL(file);
     },
     cssStatus(f) {
-      if (
-        Object.prototype.hasOwnProperty.call(this.files_to_upload_meta, f.name)
-      ) {
-        return "is--" + this.files_to_upload_meta[f.name].status;
-      }
+      return "is--" + this.files_to_upload_meta[f.name].status;
     },
     formatBytes(a, b) {
       if (0 == a) return `0 ${"bytes"}`;
@@ -180,6 +178,7 @@ export default {
   padding: calc(var(--spacing) / 2);
   display: flex;
   flex-flow: column nowrap;
+  max-width: 350px;
 }
 
 ._uploadFile {
@@ -231,9 +230,10 @@ export default {
     flex: 0 0 60px;
     width: 60px;
     height: 60px;
-    object-fit: contain;
+    object-fit: cover;
+    padding: 4px;
     object-position: center;
-    background-color: fade(white, 35%);
+    background-color: rgba(220, 220, 220, 0.4);
   }
 
   ._uploadFile--filename {

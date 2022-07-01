@@ -31,7 +31,6 @@ export default {
 <style lang="scss">
 :root {
   --spacing: var(--sl-spacing-medium);
-  --active-color: rgb(52, 122, 213);
 
   --c-orange: #f9ca00;
   --c-rouge: #ff3e51;
@@ -139,9 +138,14 @@ body {
   }
 }
 
+.buttonLink {
+  font-variant: small-caps;
+  font-weight: 700;
+}
+
 b,
 strong {
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .pageContent {
