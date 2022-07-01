@@ -1,6 +1,9 @@
 <template>
   <div class="_mediaContent">
     <img v-if="thumb" :src="thumb" />
+    <span v-else>
+      {{ file.media_filename }}
+    </span>
   </div>
 </template>
 <script>

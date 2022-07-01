@@ -1,5 +1,5 @@
 <template>
-  <div class="m_metaField" @click="show_detail = !show_detail">
+  <div class="_metaField" @click="show_detail = !show_detail">
     <div>{{ $t(title) }}</div>
     <div>
       <template v-if="!show_detail">{{ formatDateToHuman(date) }} </template>

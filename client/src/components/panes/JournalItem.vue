@@ -104,6 +104,9 @@ export default {
   border-bottom: 1px solid black;
   background: white;
 }
+sl-details::part(summary) {
+  font-size: 120%;
+}
 sl-details::part(base) {
   border-color: black;
   border-width: 0;
@@ -111,6 +114,8 @@ sl-details::part(base) {
 }
 sl-details::part(content) {
   overflow: initial;
+  padding-top: 0;
+  padding-bottom: var(--sl-spacing-small);
 }
 
 ._archives {

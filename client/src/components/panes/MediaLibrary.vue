@@ -1,7 +1,6 @@
 <template>
   <div class="_mediaLibrary">
     <splitpanes horizontal :dbl-click-splitter="false" @resized="resized">
-      {{ previous_libpane_height }}
       <pane
         min-size="5"
         class="_mediaLibrary--lib"
@@ -27,6 +26,7 @@
             "
             @change="updateInputFiles($event)"
           />
+          <div>Importer depuis un autre appareil</div>
         </label>
         <!-- <sl-button @click="createText">Créer du texte</sl-button>
     <sl-button
@@ -75,9 +75,12 @@
         <transition name="fade_fast" mode="out-in">
           <div v-if="focused_media">
             <sl-button-group>
-              <sl-button size="small" @click="removeMedia(focused_media.slug)"
-                >Supprimer</sl-button
-              >
+              <sl-button size="small" @click="toggleMediaFocus()">
+                Fermer
+              </sl-button>
+              <sl-button size="small" @click="removeMedia(focused_media.slug)">
+                Supprimer
+              </sl-button>
             </sl-button-group>
             <MediaContent
               :key="focused_media.slug"
@@ -117,7 +120,7 @@ export default {
       show_create_link_field: false,
       url_to: "https://latelier-des-chercheurs.fr/",
 
-      previous_libpane_height: null,
+      focuspane_height_when_opened: 50,
     };
   },
   created() {},
@@ -176,22 +179,19 @@ export default {
       const _libpanes = libpanes.map((l) => Number(l.size.toFixed(2)));
       this.$emit("update:libpanes", _libpanes);
 
-      if (_libpanes[1] !== 0) this.previous_libpane_height = _libpanes[1];
+      if (_libpanes[1] !== 0) this.focuspane_height_when_opened = _libpanes[1];
     },
 
     toggleMediaFocus(slug) {
-      if (this.media_focused === slug) {
+      if (!slug || this.media_focused === slug) {
         this.$emit("update:media_focused", null);
         this.resized([{ size: 100 }, { size: 0 }]);
       } else {
         this.$emit("update:media_focused", slug);
-
-        debugger;
-        if (this.libpanes[1] === 0)
-          this.resized([
-            { size: 50 },
-            { size: this.previous_libpane_height || 50 },
-          ]);
+        this.resized([
+          { size: 100 - this.focuspane_height_when_opened },
+          { size: this.focuspane_height_when_opened },
+        ]);
       }
     },
 
@@ -211,6 +211,8 @@ export default {
   background: var(--color-MediaLibrary);
   height: 100%;
   overflow: auto;
+
+  --active-color: var(--c-vert);
 }
 
 ._mediaLibrary--lib--grid {

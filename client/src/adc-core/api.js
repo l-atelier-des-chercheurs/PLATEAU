@@ -214,6 +214,7 @@ export default function () {
         filename,
         file,
         additional_meta,
+        onProgress,
       }) {
         let formData = new FormData();
         formData.append("file", file, filename);
@@ -226,6 +227,9 @@ export default function () {
         let res = await this.$axios
           .post(path, formData, {
             headers: { "Content-Type": "multipart/form-data" },
+            onUploadProgress: (progressEvent) => {
+              onProgress(progressEvent);
+            },
           })
           .catch((err) => {
             this.$alertify.delay(4000).error(err);

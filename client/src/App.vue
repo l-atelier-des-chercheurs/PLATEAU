@@ -129,6 +129,16 @@ body {
   margin: 0;
 }
 
+._metaField {
+  display: flex;
+  gap: calc(var(--spacing) / 2);
+
+  > *:first-child {
+    font-variant: small-caps;
+    font-weight: 700;
+  }
+}
+
 b,
 strong {
   font-weight: bold;
@@ -147,7 +157,6 @@ h1 {
 
 ._boldBtn {
   font-weight: 700;
-
   font-variant: small-caps;
 }
 img {

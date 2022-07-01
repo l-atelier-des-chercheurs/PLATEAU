@@ -1,10 +1,10 @@
 <template>
-  <div>
+  <div class="_uploadFiles">
     <transition-group tag="div" name="fileupload_list">
       <div
-        v-for="(f, index) in files_to_upload"
+        v-for="f in files_to_upload"
         :key="f.name"
-        class="m_uploadFile"
+        class="_uploadFile"
         :class="cssStatus(f)"
         :style="`--progress-percent: ${
           files_to_upload_meta.hasOwnProperty(f.name)
@@ -12,20 +12,24 @@
             : 0
         }`"
       >
-        <div class="m_uploadFile--progressBar"></div>
+        <div class="_uploadFile--progressBar"></div>
 
         <img
-          v-if="!!f.type && f.type.includes('image') && index < 5"
-          class="m_uploadFile--image"
+          v-if="
+            !!f.type &&
+            f.type.includes('image') &&
+            files_to_upload_meta[f.name].status === 'sending'
+          "
+          class="_uploadFile--image"
           width="50"
           :src="getImgPreview(f)"
         />
-        <div v-else class="m_uploadFile--image" />
+        <div v-else class="_uploadFile--image" />
 
-        <div :title="f.name" class="m_uploadFile--filename">{{ f.name }}</div>
-        <div class="m_uploadFile--size">{{ formatBytes(f.size) }}</div>
+        <div :title="f.name" class="_uploadFile--filename">{{ f.name }}</div>
+        <div class="_uploadFile--size">{{ formatBytes(f.size) }}</div>
         <div
-          class="m_uploadFile--action"
+          class="_uploadFile--action"
           v-if="files_to_upload_meta.hasOwnProperty(f.name)"
         >
           <button
@@ -38,17 +42,24 @@
                 files_to_upload_meta[f.name].status === 'success')
             "
           >
-            <template v-if="!files_to_upload_meta.hasOwnProperty(f.name)">{{
-              $t("import")
-            }}</template>
+            <template v-if="!files_to_upload_meta.hasOwnProperty(f.name)">
+              {{ $t("import") }}
+            </template>
+            <template
+              v-else-if="files_to_upload_meta[f.name].status === 'sending'"
+            >
+              {{ $t("sending") }}
+            </template>
             <template
               v-else-if="files_to_upload_meta[f.name].status === 'success'"
-              >{{ $t("sent") }}</template
             >
+              {{ $t("sent") }}
+            </template>
             <template
               v-else-if="files_to_upload_meta[f.name].status === 'failed'"
-              >{{ $t("retry") }}</template
             >
+              {{ $t("retry") }}
+            </template>
           </button>
         </div>
       </div>
@@ -81,8 +92,8 @@ export default {
   beforeDestroy() {},
   computed: {},
   methods: {
-    async sendThisFile(_file_to_upload) {
-      const filename = _file_to_upload.name;
+    async sendThisFile(file) {
+      const filename = file.name;
 
       this.$set(this.files_to_upload_meta, filename, {
         upload_percentages: 0,
@@ -90,34 +101,30 @@ export default {
       });
 
       let formData = new FormData();
-      formData.append("file", _file_to_upload, filename);
+      formData.append("file", file, filename);
 
-      (() => {
-        let additional_meta = {};
-        if (_file_to_upload.lastModified)
-          additional_meta.fileCreationDate = _file_to_upload.lastModified;
-        // if (this.$root.current_author)
-        //   additional_meta.authors = [
-        //     { slugFolderName: this.$root.current_author.slugFolderName },
-        //   ];
-        // if (this.$api.socket.id)
-        //   additional_meta.socketid = this.$api.socket.id;
-        // additional_meta.caption = "will show up because of schema";
-        // additional_meta.title = "will not show up because of schema";
-        formData.append(filename, JSON.stringify(additional_meta));
-      })();
+      let additional_meta = {};
+      if (file.lastModified)
+        additional_meta.fileCreationDate = file.lastModified;
+      // if (this.$root.current_author)
+      //   additional_meta.authors = [
+      //     { slugFolderName: this.$root.current_author.slugFolderName },
+      //   ];
 
-      const path = `/${this.folder_type}/${this.folder_slug}/_upload`;
-      console.log(`Posting to path ${path}`);
+      const onProgress = (progressEvent) => {
+        this.files_to_upload_meta[filename].upload_percentages = parseInt(
+          Math.round((progressEvent.loaded * 100) / progressEvent.total)
+        );
+      };
 
-      let res = await this.$axios
-        .post(path, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-          onUploadProgress: (progressEvent) => {
-            this.files_to_upload_meta[filename].upload_percentages = parseInt(
-              Math.round((progressEvent.loaded * 100) / progressEvent.total)
-            );
-          },
+      let meta_filename = await this.$api
+        .uploadFile({
+          folder_type: this.folder_type,
+          folder_slug: this.folder_slug,
+          filename,
+          file,
+          additional_meta,
+          onProgress,
         })
         .catch((err) => {
           this.$alertify.delay(4000).error(err);
@@ -129,7 +136,7 @@ export default {
       this.files_to_upload_meta[filename].status = "success";
       this.files_to_upload_meta[filename].upload_percentages = 100;
 
-      return res.data.meta_filename;
+      return meta_filename;
     },
     async sendAllFiles() {
       let list_of_added_metas = [];
@@ -140,8 +147,10 @@ export default {
         if (meta_filename) list_of_added_metas.push(meta_filename);
       }
       // }
+
+      // TODO : if retrying sending a file we don't emit importedmedias
       this.$emit("importedMedias", list_of_added_metas);
-      this.$emit("close", "");
+      // this.$emit("close", "");
     },
     getImgPreview(file) {
       return URL.createObjectURL(file);
@@ -166,3 +175,87 @@ export default {
   },
 };
 </script>
+<style lang="scss">
+._uploadFiles {
+  padding: calc(var(--spacing) / 2);
+  display: flex;
+  flex-flow: column nowrap;
+}
+
+._uploadFile {
+  position: relative;
+
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: space-between;
+
+  font-size: 75%;
+  height: 60px;
+
+  margin-bottom: calc(var(--spacing) / 2);
+  background-color: white;
+
+  border-radius: 4px;
+  overflow: hidden;
+
+  ._uploadFile--progressBar {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    transform: scale(var(--progress-percent), 1);
+    transform-origin: left center;
+
+    transition: all 0.1s;
+    background-color: var(--active-color);
+  }
+
+  > * {
+    flex: 1 1 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  &.is--success {
+  }
+  &.is--failed {
+    &::before {
+      background-color: var(--color-noir);
+    }
+  }
+
+  ._uploadFile--image {
+    display: block;
+    flex: 0 0 60px;
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    object-position: center;
+    background-color: fade(white, 35%);
+  }
+
+  ._uploadFile--filename {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+
+    font-size: 75%;
+    color: var(--color-noir);
+    padding: calc(var(--spacing) / 4);
+  }
+  ._uploadFile--size {
+    flex: 0 0 70px;
+  }
+  ._uploadFile--action {
+    flex: 0 0 70px;
+
+    button {
+      // .bg-bleuvert;
+      background-color: transparent;
+      color: inherit;
+    }
+  }
+}
+</style>
