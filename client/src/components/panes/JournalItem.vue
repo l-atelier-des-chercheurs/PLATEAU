@@ -1,16 +1,25 @@
 <template>
   <div class="_journalItem">
     <sl-details :summary="file.title" @sl-show="afterShow" @sl-hide="hide">
+      <DateField class="" :title="'date_created'" :date="file.date_uploaded" />
+      <DateField :title="'date_modified'" :date="file.date_modified" />
       <sl-button @click="removeText" size="small">Supprimer</sl-button>
-      <sl-button @click="getArchives" size="small">Archives</sl-button>
-      <div class="_archives" v-if="archives">
+      <sl-button
+        @click="toggleArchives"
+        size="small"
+        caret
+        :active="show_archives"
+      >
+        Archives
+      </sl-button>
+      <div class="_archives" v-if="show_archives">
         <div
           class="_archive"
           v-for="archive in archives"
           :key="archive.filename"
         >
-          <small
-            ><DateField :show_detail_initially="true" :date="archive.date" />
+          <small>
+            <DateField :show_detail_initially="true" :date="archive.date" />
           </small>
           <sl-button size="small" variant="text" disabled>
             sélectionner tout le texte
@@ -48,8 +57,10 @@ export default {
   },
   data() {
     return {
-      archives: null,
       is_open: false,
+
+      archives: null,
+      show_archives: false,
     };
   },
   created() {},
@@ -77,6 +88,10 @@ export default {
     },
     hide() {
       this.is_open = false;
+    },
+    toggleArchives() {
+      this.show_archives = !this.show_archives;
+      if (this.show_archives) this.getArchives();
     },
   },
 };
@@ -122,5 +137,6 @@ sl-details::part(content) {
 
 ._editor {
   padding: var(--spacing);
+  max-width: 120ch;
 }
 </style>

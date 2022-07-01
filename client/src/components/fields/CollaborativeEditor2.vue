@@ -36,6 +36,12 @@ const FontAttributor = Quill.import("attributors/style/font");
 FontAttributor.whitelist = fonts;
 Quill.register(FontAttributor, true);
 
+var BlockEmbed = Quill.import("blots/block/embed");
+class DividerBlot extends BlockEmbed {}
+DividerBlot.blotName = "divider";
+DividerBlot.tagName = "hr";
+Quill.register(DividerBlot);
+
 export default {
   props: {
     folder_type: String,
@@ -227,6 +233,7 @@ export default {
 <style lang="scss" scoped>
 ._collaborativeEditor {
   position: relative;
+  font-size: 110%;
 
   ::v-deep .ql-toolbar {
     position: sticky;
@@ -235,16 +242,35 @@ export default {
     font-size: inherit;
     font-family: inherit;
     font-weight: normal;
-    background: white;
+    background: black;
+    color: white !important;
+
+    .ql-fill,
+    .ql-stroke.ql-fill {
+      fill: white;
+    }
+
+    .ql-stroke {
+      stroke: white;
+    }
+
+    .ql-picker {
+      color: white;
+    }
 
     .ql-picker.ql-font {
       width: 140px;
     }
   }
-  ::v-deep .ql-container {
-    font-size: inherit;
-    font-family: inherit;
-    font-weight: normal;
+  ::v-deep {
+    .ql-container {
+      font-size: inherit;
+      font-family: inherit;
+      font-weight: normal;
+    }
+    .ql-editor {
+      // color: blue;
+    }
   }
 }
 </style>

@@ -3,12 +3,12 @@
     watch-slots
     :dbl-click-splitter="false"
     @resized="resized"
-    :key="JSON.stringify(panes.map((p) => p.key))"
+    :key="JSON.stringify(projectpanes.map((p) => p.key))"
   >
-    <template v-if="panes.filter((p) => p.enabled).length === 0">
+    <template v-if="projectpanes.filter((p) => p.enabled).length === 0">
       <pane><i>Aucune panneau n’est actif</i></pane>
     </template>
-    <template v-else v-for="pane in panes">
+    <template v-else v-for="pane in projectpanes">
       <pane
         v-if="pane.key === 'Journal' && pane.enabled"
         :key="pane.key"
@@ -26,7 +26,13 @@
         :size="pane.size_pc"
         ref="MediaLibrary"
       >
-        <MediaLibrary :project="project" />
+        <MediaLibrary
+          :project="project"
+          :libpanes="libpanes"
+          @update:libpanes="$emit('update:libpanes', $event)"
+          :media_focused="media_focused"
+          @update:media_focused="$emit('update:media_focused', $event)"
+        />
       </pane>
 
       <pane
@@ -60,8 +66,10 @@ import TeamPane from "@/components/panes/TeamPane.vue";
 
 export default {
   props: {
-    panes: Array,
+    projectpanes: Array,
+    libpanes: Array,
     project: Object,
+    media_focused: String,
   },
   components: {
     Splitpanes,
@@ -80,17 +88,17 @@ export default {
   watch: {},
   computed: {},
   methods: {
-    resized(shown_panes) {
+    resized(shown_projectpanes) {
       console.log(`Project / methods: resized`);
       let index = 0;
-      const panes = this.panes.slice().map((p) => {
+      const projectpanes = this.projectpanes.slice().map((p) => {
         if (p.enabled) {
-          p.size_pc = Number(shown_panes[index].size.toFixed(2));
+          p.size_pc = Number(shown_projectpanes[index].size.toFixed(2));
           index++;
         }
         return p;
       });
-      this.$emit("update:panes", panes);
+      this.$emit("update:panes", projectpanes);
     },
   },
 };
