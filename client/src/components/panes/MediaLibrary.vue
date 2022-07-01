@@ -115,6 +115,8 @@ export default {
 
       show_create_link_field: false,
       url_to: "https://latelier-des-chercheurs.fr/",
+
+      previous_libpane_height: null,
     };
   },
   created() {},

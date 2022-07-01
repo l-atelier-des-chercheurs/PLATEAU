@@ -111,7 +111,7 @@ button {
   font-style: normal;
   font-weight: 300;
 
-  font-size: 85%;
+  font-size: 95%;
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
