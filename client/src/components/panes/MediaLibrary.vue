@@ -5,7 +5,7 @@
         min-size="5"
         class="_mediaLibrary--lib"
         ref="topLib"
-        :size="libpanes && libpanes[0]"
+        :size="lib_pane_size"
       >
         <label for="add_file" class="_boldBtn">
           <sl-button variant="text">
@@ -57,7 +57,13 @@
         Médias = {{ medias.length }}
 
         <div class="_mediaLibrary--lib--grid">
-          <div v-for="file of medias" :key="file.slug" class="_mediaTile">
+          <div
+            v-for="file of medias"
+            :key="file.slug"
+            class="_mediaTile"
+            :data-type="file.type"
+          >
+            <!-- {{ file.type }} -->
             <MediaContent :file="file" :project_slug="project.slug" />
             <button
               type="button"
@@ -78,6 +84,11 @@
       >
         <transition name="fade_fast" mode="out-in">
           <div v-if="focused_media" :key="focused_media.slug">
+            <MediaContent
+              :file="focused_media"
+              :project_slug="project.slug"
+              :resolution="1600"
+            />
             <sl-button-group class="_focusBtns">
               <sl-button size="small" @click="toggleMediaFocus()">
                 Fermer
@@ -86,11 +97,6 @@
                 Supprimer
               </sl-button>
             </sl-button-group>
-            <MediaContent
-              :file="focused_media"
-              :project_slug="project.slug"
-              :resolution="1600"
-            />
           </div>
         </transition>
       </pane>
@@ -139,8 +145,11 @@ export default {
         this.project.files.find((f) => f.slug === this.media_focused) || false
       );
     },
+    lib_pane_size() {
+      return (this.libpanes && this.libpanes[0]) || 100;
+    },
     focus_pane_size() {
-      return this.libpanes && this.libpanes[1];
+      return (this.libpanes && this.libpanes[1]) || 0;
     },
   },
   methods: {
@@ -233,7 +242,16 @@ export default {
   ._mediaTile {
     position: relative;
     aspect-ratio: 1/1;
-    background: white;
+    background: rgba(255, 255, 255, 0.35);
+
+    &[data-type="text"],
+    &[data-type="other"] {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      text-align: center;
+    }
 
     ::v-deep {
       img {
@@ -268,6 +286,7 @@ export default {
 ._mediaLibrary--focusPane {
   position: relative;
   padding: 1px;
+  // background: var(--c-bleu);
 
   ::v-deep {
     ._mediaContent {
