@@ -3,13 +3,12 @@
   "host": "localhost",
   "desired_port": 8080,
   "redirect_port": "",
-  "userDirname": "plateau",
   "cache_content": true,
   "removePermanently": false,
   "versioning": true,
 
-  "contentDirname": "user",
   "cacheDirname": "plateau_cache",
+  "userContentFolder": "/Users/louis/Créations Louis",
 
   "privateKeyPath": "",
   "certificatePath": "",
