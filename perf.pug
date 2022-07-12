@@ -10,7 +10,7 @@ html
       <input type="url" v-model="url" /><br>
       <input type="number" v-model.number="count" /><br>
       <div class="iframes">
-        <iframe v-for="i in Array(count).fill(undefined)" :key="i" :src="url" width="500" height="500">
+        <iframe v-for="i in Array(count).fill(undefined)" :key="i" :src="url" width="500" height="700">
         </iframe>
       </div>
     </div>

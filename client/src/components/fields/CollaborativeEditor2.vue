@@ -1,13 +1,19 @@
 <template>
-  <div class="_collaborativeEditor">
+  <div class="_collaborativeEditor" :data-editable="is_editable">
     <component :is="`style`" v-html="font_selector_css" />
+    <div ref="editBtn" class="btnContainer">
+      <sl-button @click="toggleEdit" size="small">
+        <sl-icon slot="prefix" name="pencil" />edit
+      </sl-button>
+    </div>
     <div ref="editor" class="" />
     <transition name="fade" :duration="600">
       <div
         class="quillWrapper--savingIndicator"
-        v-if="enable_collaboration && (is_loading_or_saving || show_saved_icon)"
+        v-if="is_collaborative && (is_loading_or_saving || show_saved_icon)"
       >
-        <transition name="fade" :duration="600">
+        <transition name="fade" :duration="600"
+          >""
           <template v-if="is_loading_or_saving">
             <span class="loader loader-small" />
           </template>
@@ -18,10 +24,12 @@
       </div>
     </transition>
 
-    ID : {{ editor_id }} Etat de la connection : {{ connection_state }}
-    <sl-button v-if="!enable_collaboration" @click="saveText" size="small"
-      >Save</sl-button
-    >
+    <template v-if="is_editable">
+      <span v-if="is_collaborative">
+        ID : {{ editor_id }} Etat de la connection : {{ connection_state }}
+      </span>
+      <sl-button v-else @click="saveText" size="small"> Save </sl-button>
+    </template>
   </div>
 </template>
 <script>
@@ -42,6 +50,11 @@ DividerBlot.blotName = "divider";
 DividerBlot.tagName = "hr";
 Quill.register(DividerBlot);
 
+// how it works:
+// -> disabled by default
+// -> if can_be_edited is true, an edit button is displayed up top
+// -> is is_collaborative is true, it uses sharedb on the server to handle conflict-free editing
+
 export default {
   props: {
     folder_type: String,
@@ -56,7 +69,9 @@ export default {
       socket: null,
       connection_state: null,
       debounce_textUpdate: undefined,
-      enable_collaboration: true,
+
+      is_collaborative: false,
+      is_editable: false,
 
       is_loading_or_saving: false,
       show_saved_icon: false,
@@ -70,15 +85,16 @@ export default {
   created() {},
   mounted() {
     this.initEditor();
-    if (this.enable_collaboration) this.initCollaborative();
+    // this.enableEditor();
   },
   beforeDestroy() {
     if (this.socket) this.socket.close();
   },
   watch: {
     content() {
-      if (!this.enable_collaboration) this.editor.root.innerHTML = this.content;
+      if (!this.is_collaborative) this.editor.root.innerHTML = this.content;
     },
+    is_editable() {},
   },
   computed: {
     font_selector_css() {
@@ -97,7 +113,7 @@ export default {
     },
   },
   methods: {
-    initEditor() {
+    async initEditor() {
       this.editor = new Quill(this.$refs.editor, {
         // debug: "info",
         modules: {
@@ -107,9 +123,17 @@ export default {
         theme: "snow",
         formats,
         placeholder: "…",
+        readOnly: !this.is_editable,
       });
-
       if (this.content) this.editor.root.innerHTML = this.content;
+
+      if (this.$refs.editBtn)
+        this.$el.querySelector(".ql-toolbar").appendChild(this.$refs.editBtn);
+      // document.getElementById('target').appendChild(  document.getElementById('to_be_moved') )
+
+      // this.$el.querySelector(".ql-edit").addEventListener("click", () => {
+      //   this.toggleEdit();
+      // });
     },
 
     getEditorContent() {
@@ -118,6 +142,19 @@ export default {
       // used to make sure we don’t get weird stuff such as <p style="font-family: "Avada";">plop</p>
       content = content.replace(/&quot;/g, "'");
       return content;
+    },
+
+    toggleEdit() {
+      if (!this.is_editable) this.enableEditor();
+      else this.disableEditor();
+    },
+    enableEditor() {
+      this.editor.enable();
+      this.is_editable = true;
+    },
+    disableEditor() {
+      this.editor.disable();
+      this.is_editable = false;
     },
 
     async saveText() {
@@ -132,7 +169,7 @@ export default {
       });
     },
 
-    initCollaborative() {
+    startCollaborative() {
       const params = new URLSearchParams({
         folder_type: this.folder_type,
         folder_slug: this.folder_slug,
@@ -148,7 +185,7 @@ export default {
         requested_querystring;
 
       console.log(
-        `CollaborativeEditor / initWebsocketMode : will connect to ws server with ${requested_resource_url}`
+        `CollaborativeEditor / startCollaborative : will connect to ws server with ${requested_resource_url}`
       );
 
       this.socket = new ReconnectingWebSocket(requested_resource_url);
@@ -209,6 +246,7 @@ export default {
         this.$forceUpdate();
       });
     },
+    endCollaborative() {},
 
     updateTextMedia() {
       if (this.debounce_textUpdate) clearTimeout(this.debounce_textUpdate);
@@ -245,17 +283,25 @@ export default {
     background: black;
     color: white !important;
 
+    border-radius: 0.5em;
+    border: none;
+
+    button,
+    svg {
+      color: currentColor;
+    }
+
     .ql-fill,
     .ql-stroke.ql-fill {
-      fill: white;
+      fill: currentColor;
     }
 
     .ql-stroke {
-      stroke: white;
+      stroke: currentColor;
     }
 
     .ql-picker {
-      color: white;
+      color: currentColor;
     }
 
     .ql-picker.ql-font {
@@ -267,10 +313,25 @@ export default {
       font-size: inherit;
       font-family: inherit;
       font-weight: normal;
-    }
-    .ql-editor {
-      // color: blue;
+
+      &:not(.ql-disabled) {
+        background-color: var(--sl-input-background-color-focus);
+        border-color: var(--sl-input-border-color-focus);
+        box-shadow: 0 0 0 var(--sl-focus-ring-width)
+          var(--sl-input-focus-ring-color);
+      }
     }
   }
+}
+
+._collaborativeEditor:not([data-editable="true"]) .btnContainer {
+  position: absolute;
+  background: red;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 </style>

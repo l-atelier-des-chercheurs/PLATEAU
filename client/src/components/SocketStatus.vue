@@ -48,7 +48,7 @@ export default {
   bottom: 0;
   width: 100%;
 
-  margin: calc(var(--spacing) / 2);
+  margin: calc(var(--spacing) / 2) 0;
 
   ._socketStatus--content {
     margin: 0 auto;

@@ -53,13 +53,14 @@ export default function () {
 
         this.socket.onAny((eventName, ...args) => {
           // truncate long strings in content (long texts for example)
-          if (args[0].changed_data?.content)
-            args[0].changed_data.content =
-              args[0].changed_data?.content.slice(0, 15) +
+          const _args = JSON.parse(JSON.stringify(args));
+          if (_args[0].changed_data?.content)
+            _args[0].changed_data.content =
+              _args[0].changed_data?.content.slice(0, 15) +
               "[…] (truncated content)";
           this.$alertify
             .delay(4000)
-            .log(`⤓ ` + eventName + JSON.stringify(args));
+            .log(`⤓ ` + eventName + JSON.stringify(_args));
         });
         this.socket.on("folderCreated", this.folderCreated);
         this.socket.on("folderUpdated", this.folderUpdated);
