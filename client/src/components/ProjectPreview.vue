@@ -49,6 +49,8 @@ export default {
       this.fetch_status = "pending";
       this.fetch_error = null;
 
+      // TODO use updateItem
+
       try {
         const response = await this.$axios.patch(
           `/projects/${this.project.slug}`,

@@ -2366,7 +2366,7 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: var(--c-orange);
+  background-color: var(--c-rouge);
   font-weight: 700;
   font-family: "Fira Code";
   font-size: var(--font-large);

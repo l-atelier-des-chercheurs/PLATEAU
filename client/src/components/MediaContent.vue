@@ -1,6 +1,10 @@
 <template>
   <div class="_mediaContent">
     <img v-if="thumb" :src="thumb" />
+    <span v-else>
+      <sl-icon name="file-earmark-arrow-down" /><br />
+      {{ file.media_filename }}
+    </span>
   </div>
 </template>
 <script>

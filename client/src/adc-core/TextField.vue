@@ -1,34 +1,33 @@
 <template>
-  <span>
-    <MetaFieldHeader
-      :title="$t(field_name)"
-      :edit_mode.sync="edit_mode"
-      :is_saving="is_saving"
-      :show_label="show_label"
-      @save="updateField"
-      @cancel="cancel"
-    />
-    <div v-if="!edit_mode" v-html="content" />
-    <sl-textarea
-      v-else
-      :help="help ? $t(help) : ''"
-      :placeholder="$t('add_text_here')"
-      v-sl-model="new_content"
-      resize="auto"
-      :disabled="is_saving"
+  <span class="">
+    <sl-input
+      :label="label"
       :readonly="!edit_mode"
-    />
+      :filled="!edit_mode"
+      v-sl-model="new_content"
+      :help-text="help_text"
+    >
+      <sl-tooltip :content="$t('edit')">
+        <sl-icon-button
+          name="pencil-fill"
+          label="Edit"
+          slot="suffix"
+          @click="edit_mode = !edit_mode"
+        />
+      </sl-tooltip>
+    </sl-input>
   </span>
 </template>
 <script>
 export default {
   props: {
+    label: String,
     field_name: String,
     show_label: {
       type: Boolean,
       default: true,
     },
-    help: String,
+    help_text: String,
     content: {
       type: String,
       default: "",
@@ -82,4 +81,13 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+._titleField {
+  display: flex;
+}
+
+sl-input::part(base) {
+  font-size: inherit;
+  font-weight: inherit;
+}
+</style>

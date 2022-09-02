@@ -2,6 +2,7 @@
 <template>
   <div id="app" class="">
     <SocketStatus />
+    <AdminPanel v-if="false" />
 
     <div class="">
       <router-view />
@@ -10,11 +11,13 @@
 </template>
 <script>
 import SocketStatus from "./components/SocketStatus.vue";
+import AdminPanel from "./adc-core/AdminPanel.vue";
 
 export default {
   props: {},
   components: {
     SocketStatus,
+    AdminPanel,
   },
   data() {
     return {};
@@ -31,7 +34,6 @@ export default {
 <style lang="scss">
 :root {
   --spacing: var(--sl-spacing-medium);
-  --active-color: rgb(52, 122, 213);
 
   --c-orange: #f9ca00;
   --c-rouge: #ff3e51;
@@ -129,9 +131,24 @@ body {
   margin: 0;
 }
 
+._metaField {
+  display: flex;
+  gap: calc(var(--spacing) / 2);
+
+  > *:first-child {
+    font-variant: small-caps;
+    font-weight: 700;
+  }
+}
+
+.buttonLink {
+  font-variant: small-caps;
+  font-weight: 700;
+}
+
 b,
 strong {
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .pageContent {
@@ -147,7 +164,6 @@ h1 {
 
 ._boldBtn {
   font-weight: 700;
-
   font-variant: small-caps;
 }
 img {
@@ -186,11 +202,11 @@ img {
 .splitpanes__splitter:before {
   content: "";
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
 
-  left: calc(50% - 15px);
-  top: calc(50% - 15px);
+  left: calc(50% - 20px);
+  top: calc(50% - 20px);
 
   transition: opacity 0.4s;
   // background-color: rgba(255, 255, 0, 1);
@@ -224,14 +240,14 @@ img {
   position: absolute;
   top: auto;
   bottom: auto;
-  top: calc(50% - 15px);
+  top: calc(50% - 10px);
   pointer-events: none;
   // top: 50%;
 
   transform: rotate(45deg);
 
-  width: 2px;
-  height: 30px;
+  width: 3px;
+  height: 20px;
 
   transition: transform 0.4s;
   background-color: #000;
@@ -257,12 +273,12 @@ img {
   &-enter-active,
   &-leave-active {
     opacity: 1;
-    transition: opacity 0.15s linear;
+    transition: opacity 0.1s linear;
   }
   &-enter,
   &-leave-to {
     opacity: 0;
-    transition: opacity 0.15s linear;
+    transition: opacity 0.1s linear;
   }
 }
 </style>

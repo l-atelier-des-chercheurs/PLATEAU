@@ -84,10 +84,10 @@ export const toolbar = {
     ["clean"],
   ],
   handlers: {
-    divider: () => {
-      var range = this.editor.getSelection();
+    divider: function () {
+      var range = this.quill.getSelection();
       if (range) {
-        this.editor.insertEmbed(
+        this.quill.insertEmbed(
           range.index,
           "divider",
           "null",

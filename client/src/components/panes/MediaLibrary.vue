@@ -5,7 +5,7 @@
         min-size="5"
         class="_mediaLibrary--lib"
         ref="topLib"
-        :size="libpanes && libpanes[0]"
+        :size="lib_pane_size"
       >
         <label for="add_file" class="_boldBtn">
           <sl-button variant="text">
@@ -26,6 +26,7 @@
             "
             @change="updateInputFiles($event)"
           />
+          <div>Importer depuis un autre appareil</div>
         </label>
         <!-- <sl-button @click="createText">Créer du texte</sl-button>
     <sl-button
@@ -40,6 +41,7 @@
           :folder_type="'projects'"
           :folder_slug="project.slug"
           @importedMedias="mediaJustImported"
+          @close="selected_files = []"
         />
 
         <form
@@ -55,11 +57,20 @@
         Médias = {{ medias.length }}
 
         <div class="_mediaLibrary--lib--grid">
-          <div v-for="file of medias" :key="file.slug" class="_mediaTile">
+          <div
+            v-for="file of medias"
+            :key="file.slug"
+            class="_mediaTile"
+            :data-type="file.type"
+          >
+            <!-- {{ file.type }} -->
             <MediaContent :file="file" :project_slug="project.slug" />
             <button
               type="button"
               class="_focusMediaBtn"
+              :class="{
+                'is--focused': media_focused === file.slug,
+              }"
               @click="toggleMediaFocus(file.slug)"
             />
           </div>
@@ -72,18 +83,20 @@
         :size="focus_pane_size"
       >
         <transition name="fade_fast" mode="out-in">
-          <div v-if="focused_media">
-            <sl-button-group>
-              <sl-button size="small" @click="removeMedia(focused_media.slug)"
-                >Supprimer</sl-button
-              >
-            </sl-button-group>
+          <div v-if="focused_media" :key="focused_media.slug">
             <MediaContent
-              :key="focused_media.slug"
               :file="focused_media"
               :project_slug="project.slug"
               :resolution="1600"
             />
+            <sl-button-group class="_focusBtns">
+              <sl-button size="small" @click="toggleMediaFocus()">
+                Fermer
+              </sl-button>
+              <sl-button size="small" @click="removeMedia(focused_media.slug)">
+                Supprimer
+              </sl-button>
+            </sl-button-group>
           </div>
         </transition>
       </pane>
@@ -116,7 +129,7 @@ export default {
       show_create_link_field: false,
       url_to: "https://latelier-des-chercheurs.fr/",
 
-      previous_libpane_height: null,
+      focuspane_height_when_opened: this.libpanes[1] || 50,
     };
   },
   created() {},
@@ -132,8 +145,11 @@ export default {
         this.project.files.find((f) => f.slug === this.media_focused) || false
       );
     },
+    lib_pane_size() {
+      return (this.libpanes && this.libpanes[0]) || 100;
+    },
     focus_pane_size() {
-      return this.libpanes && this.libpanes[1];
+      return (this.libpanes && this.libpanes[1]) || 0;
     },
   },
   methods: {
@@ -142,11 +158,11 @@ export default {
       $event.target.value = "";
     },
     mediaJustImported(list_of_added_metas) {
-      this.$alertify
-        .closeLogOnClick(true)
-        .delay(4000)
-        .success(list_of_added_metas);
-      this.selected_files = [];
+      list_of_added_metas;
+      // this.$alertify
+      //   .closeLogOnClick(true)
+      //   .delay(4000)
+      //   .success(list_of_added_metas);
     },
 
     async createText() {
@@ -174,15 +190,19 @@ export default {
     resized(libpanes) {
       const _libpanes = libpanes.map((l) => Number(l.size.toFixed(2)));
       this.$emit("update:libpanes", _libpanes);
+      if (_libpanes[1] !== 0) this.focuspane_height_when_opened = _libpanes[1];
     },
 
     toggleMediaFocus(slug) {
-      if (this.media_focused === slug) {
+      if (!slug || this.media_focused === slug) {
         this.$emit("update:media_focused", null);
         this.resized([{ size: 100 }, { size: 0 }]);
       } else {
         this.$emit("update:media_focused", slug);
-        this.resized([{ size: 50 }, { size: 50 }]);
+        this.resized([
+          { size: 100 - this.focuspane_height_when_opened },
+          { size: this.focuspane_height_when_opened },
+        ]);
       }
     },
 
@@ -202,6 +222,12 @@ export default {
   background: var(--color-MediaLibrary);
   height: 100%;
   overflow: auto;
+
+  --active-color: var(--c-vert);
+}
+
+._mediaLibrary--lib {
+  overflow: auto;
 }
 
 ._mediaLibrary--lib--grid {
@@ -215,6 +241,16 @@ export default {
   ._mediaTile {
     position: relative;
     aspect-ratio: 1/1;
+    background: rgba(255, 255, 255, 0.35);
+
+    &[data-type="text"],
+    &[data-type="other"] {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      text-align: center;
+    }
 
     ::v-deep {
       img {
@@ -233,14 +269,24 @@ export default {
     inset: 0;
     width: 100%;
     background: transparent;
+    transition: all 0.1s linear;
+
     &:hover {
       background: rgba(255, 255, 255, 0.35);
+      transition: none;
+    }
+
+    &.is--focused {
+      background: rgba(255, 255, 255, 0.55);
     }
   }
 }
 
 ._mediaLibrary--focusPane {
   position: relative;
+  padding: 1px;
+  // background: var(--c-bleu);
+
   ::v-deep {
     ._mediaContent {
       position: absolute;
@@ -257,5 +303,11 @@ export default {
       }
     }
   }
+}
+
+._focusBtns {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 </style>

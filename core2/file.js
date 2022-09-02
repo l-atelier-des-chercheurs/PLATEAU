@@ -421,12 +421,11 @@ module.exports = (function () {
         case ".txt":
           new_meta.type = "text";
           break;
-        // case ".ino":
-        //   additionalMeta.type = "code";
-        //   break;
         case ".pdf":
           new_meta.type = "document";
           break;
+        default:
+          new_meta.type = "other";
       }
       dev.logfunction(`Type determined to be ${new_meta.type}`);
     }
