@@ -1,12 +1,22 @@
 <template>
   <div class="_collaborativeEditor" :data-editable="is_editable">
+    is_being_dragover = {{ is_being_dragover }}
     <component :is="`style`" v-html="font_selector_css" />
     <div ref="editBtn" class="_btnContainer">
       <sl-button @click="toggleEdit" size="small">
         <sl-icon slot="prefix" name="pencil" />edit
       </sl-button>
     </div>
-    <div ref="editor" class="" />
+    <div
+      ref="editor"
+      class=""
+      :class="{
+        'is--dragover': is_being_dragover,
+      }"
+      @dragover="onDragover"
+      @dragleave="onDragLeave"
+      @drop="onDrop"
+    />
     <transition name="fade" :duration="600">
       <div
         class="quillWrapper--savingIndicator"
@@ -50,6 +60,12 @@ DividerBlot.blotName = "divider";
 DividerBlot.tagName = "hr";
 Quill.register(DividerBlot);
 
+import MediaBlot from "./quill/MediaBlot";
+import CardEditableModule from "./quill/CardEditableModule";
+
+Quill.register("formats/media", MediaBlot);
+Quill.register("modules/cardEditable", CardEditableModule);
+
 // how it works:
 // -> disabled by default
 // -> if can_be_edited is true, an edit button is displayed up top
@@ -72,7 +88,7 @@ export default {
 
       is_collaborative: false,
       is_editable: false,
-
+      is_being_dragover: false,
       is_loading_or_saving: false,
       show_saved_icon: false,
 
@@ -117,6 +133,7 @@ export default {
       this.editor = new Quill(this.$refs.editor, {
         // debug: "info",
         modules: {
+          cardEditable: true,
           toolbar: toolbar,
         },
         bounds: this.$refs.editor,
@@ -263,6 +280,195 @@ export default {
           this.show_saved_icon = false;
         }, 200);
       }, 1000);
+    },
+
+    addMediaAtTheEnd(media) {
+      this.addMediaAtIndex(this.editor.getLength() - 1, media);
+    },
+    addMediaAtCaretPosition(media) {
+      const selection = this.editor.getSelection(true);
+      if (selection && selection.index) {
+        this.addMediaAtIndex(selection.index, media);
+        return;
+      }
+      this.addMediaAtTheEnd(media);
+    },
+    addMediaAtIndex(index, media) {
+      console.log(`CollaborativeEditor • addMediaAtIndex ${index}`);
+      const mediaURL = `./${this.folder_slug}/${media.media_filename}`;
+      // const mediaURL =
+      //   this.$root.state.mode === "export_publication"
+      //     ? `./${this.folder_slug}/${media.media_filename}`
+      //     : `/${this.folder_slug}/${media.media_filename}`;
+
+      // setting editor focus and selection can cause the scroll to "jump"
+      // not exactly a good idea…
+      // this.editor.setSelection(index, Quill.sources.SILENT);
+      // this.editor.focus();
+
+      this.editor.blur();
+
+      const { type, caption, slug } = media;
+
+      debugger;
+
+      if (type === "image") {
+        const thumb_path = media.thumbs[1600];
+        if (thumb_path) {
+          // this.editor.insertText(index, "\n", Quill.sources.USER);
+          this.editor.insertEmbed(
+            index,
+            "media",
+            {
+              type,
+              caption,
+              meta_filename: slug,
+              src: `/thumbs/${this.folder_type}/${this.folder_slug}/${thumb_path}`,
+            },
+            Quill.sources.USER
+          );
+          // this.editor.setSelection(index + 1, Quill.sources.SILENT);
+        }
+      } else if (type === "video") {
+        // this.editor.insertText(index, "\n", Quill.sources.USER);
+        this.editor.insertEmbed(
+          index,
+          "media",
+          {
+            type,
+            caption,
+            meta_filename: slug,
+            src: mediaURL,
+          },
+          Quill.sources.USER
+        );
+        // this.editor.setSelection(index + 1, Quill.sources.SILENT);
+      } else if (media.type === "audio") {
+        this.editor.insertEmbed(
+          index,
+          "media",
+          {
+            type,
+            caption,
+            meta_filename: slug,
+            src: mediaURL,
+          },
+          Quill.sources.USER
+        );
+      } else {
+        this.$alertify
+          .closeLogOnClick(true)
+          .delay(4000)
+          .error(this.$t("notifications.media_type_not_handled"));
+      }
+    },
+
+    onDragover($event) {
+      console.log(`CollaborativeEditor2 / onDragover`);
+      this.is_being_dragover = true;
+
+      this.removeDragoverFromBlots();
+      // this.removeFocusFromBlots();
+
+      const _blot = this.getBlockFromElement($event.target);
+      if (_blot) _blot.domNode.classList.add("is--dragover");
+    },
+    onDragLeave($event) {
+      if (
+        $event.target.classList.contains("ql-editor") ||
+        this.getBlockFromElement($event.target) !== false
+      )
+        return;
+
+      console.log(`CollaborativeEditor2 / onDragLeave`);
+      this.is_being_dragover = false;
+    },
+
+    onDrop($event) {
+      console.log(`CollaborativeEditor2 / onDrop`);
+
+      // Prevent default behavior (Prevent file from being opened)
+      $event.preventDefault();
+      $event.dataTransfer.dropEffect = "move";
+
+      this.removeDragoverFromBlots();
+
+      if ($event.dataTransfer.getData("text/plain") === "media_in_quill") {
+        console.log(
+          `CollaborativeEditor2 / onDrop : : drag and dropped a media from quill`
+        );
+
+        let _blot = this.getBlockFromElement($event.target);
+        const index = this.editor.getIndex(_blot);
+
+        // find which blot was dragged (A)
+
+        // find where it was dropped (B)
+
+        // move delta from A to B
+
+        console.log(`_blot is currently at index ${index}`);
+      } else if ($event.dataTransfer.getData("text/plain")) {
+        console.log(
+          `CollaborativeEditor2 / onDrop : : dropped a media from the library`
+        );
+
+        const media = JSON.parse($event.dataTransfer.getData("text/plain"));
+        console.log(media);
+
+        if (media.media_filename) {
+          // drop sur l’éditor et pas sur une ligne
+          if ($event.target.classList.contains("ql-editor")) {
+            console.log(
+              "dropped on editor and not on line, will insert at the end of doc"
+            );
+            this.addMediaAtIndex(this.editor.getLength() - 1, media);
+            return;
+          }
+
+          let _blot = this.getBlockFromElement($event.target);
+
+          if (!_blot) {
+            this.$alertify
+              .closeLogOnClick(true)
+              .delay(4000)
+              .error(this.$t("notifications.failed_to_find_block_line"));
+            return;
+          }
+
+          _blot =
+            _blot.next !== null && _blot.next.domNode ? _blot.next : _blot;
+
+          const index = this.editor.getIndex(_blot);
+          this.addMediaAtIndex(index, media);
+        }
+      }
+    },
+
+    removeDragoverFromBlots() {
+      this.editor.getLines().map((b) => {
+        while (b.parent !== b.scroll) {
+          b = b.parent;
+          if (b === b.scroll) {
+            break;
+          }
+        }
+        if (b !== b.scroll && b.domNode) {
+          b.domNode.classList.remove("is--dragover");
+        }
+      });
+    },
+
+    getBlockFromElement(_target) {
+      while (!_target.parentElement.classList.contains("ql-editor")) {
+        _target = _target.parentElement;
+        if (_target === null || !_target.parentElement) break;
+      }
+      let _blot = Quill.find(_target);
+      if (_blot) {
+        return _blot;
+      }
+      return false;
     },
   },
 };

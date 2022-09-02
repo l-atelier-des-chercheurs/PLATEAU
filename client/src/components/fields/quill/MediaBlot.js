@@ -2,12 +2,12 @@ import Quill from "quill";
 let BlockEmbed = Quill.import("blots/block/embed");
 
 // inspired from https://gist.github.com/tranduongms1/584d43ec7d8ddeab458f087adbeef950
-class MediaBlot extends BlockEmbed {
+export default class MediaBlot extends BlockEmbed {
   static blotName = "media";
   static tagName = "figure";
   static className = "ql-mediacard";
 
-  static create({ type, src, content, caption, metaFileName }) {
+  static create({ type, src, content, caption, meta_filename }) {
     let node = super.create();
     console.log(`CollaborativeEditor • MediaBlot : create for type = ${type}`);
 
@@ -19,9 +19,9 @@ class MediaBlot extends BlockEmbed {
 
     let tag;
 
-    if (!type || !metaFileName) {
+    if (!type || !meta_filename) {
       alert(
-        `Missing type or metaFileName : type = ${type} and metaFileName = ${metaFileName}`
+        `Missing type or meta_filename : type = ${type} and meta_filename = ${meta_filename}`
       );
       return;
     }
@@ -50,7 +50,7 @@ class MediaBlot extends BlockEmbed {
       node.appendChild(caption_tag);
     }
     node.dataset.type = type;
-    node.dataset.metaFileName = metaFileName;
+    node.dataset.meta_filename = meta_filename;
     node.setAttribute("draggable", false);
 
     // todo for later: allow drag from cards in quill
@@ -59,7 +59,7 @@ class MediaBlot extends BlockEmbed {
       $event.dataTransfer.setData("text/plain", "media_in_quill");
       $event.dataTransfer.effectAllowed = "move";
       // this.is_dragged = true;
-      // this.$root.settings.media_being_dragged = media.metaFileName;
+      // this.$root.settings.media_being_dragged = media.meta_filename;
     });
 
     node.style.animation = "scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
@@ -148,7 +148,7 @@ class MediaBlot extends BlockEmbed {
       return {
         alt: img.getAttribute("alt"),
         src: img.getAttribute("src"),
-        metaFileName: node.dataset.metaFileName,
+        meta_filename: node.dataset.meta_filename,
         type: node.dataset.type,
         caption: figcaption ? figcaption.innerText : null,
       };
@@ -159,7 +159,7 @@ class MediaBlot extends BlockEmbed {
       return {
         alt: video.getAttribute("alt"),
         src: video.getAttribute("src"),
-        metaFileName: node.dataset.metaFileName,
+        meta_filename: node.dataset.meta_filename,
         type: node.dataset.type,
         caption: figcaption ? figcaption.innerText : null,
       };
@@ -170,7 +170,7 @@ class MediaBlot extends BlockEmbed {
       return {
         alt: audio.getAttribute("alt"),
         src: audio.getAttribute("src"),
-        metaFileName: node.dataset.metaFileName,
+        meta_filename: node.dataset.meta_filename,
         type: node.dataset.type,
         caption: figcaption ? figcaption.innerText : null,
       };
@@ -179,7 +179,7 @@ class MediaBlot extends BlockEmbed {
       let figcaption = node.querySelector("figcaption");
       if (!blockquote) return false;
       return {
-        metaFileName: node.dataset.metaFileName,
+        meta_filename: node.dataset.meta_filename,
         content: blockquote.innerHTML,
         type: node.dataset.type,
         caption: figcaption ? figcaption.innerText : null,
@@ -187,5 +187,3 @@ class MediaBlot extends BlockEmbed {
     }
   }
 }
-
-module.exports = MediaBlot;

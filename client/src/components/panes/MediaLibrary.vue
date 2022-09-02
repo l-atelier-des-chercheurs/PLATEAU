@@ -83,21 +83,14 @@
         :size="focus_pane_size"
       >
         <transition name="fade_fast" mode="out-in">
-          <div v-if="focused_media" :key="focused_media.slug">
-            <MediaContent
-              :file="focused_media"
-              :project_slug="project.slug"
-              :resolution="1600"
-            />
-            <sl-button-group class="_focusBtns">
-              <sl-button size="small" @click="toggleMediaFocus()">
-                Fermer
-              </sl-button>
-              <sl-button size="small" @click="removeMedia(focused_media.slug)">
-                Supprimer
-              </sl-button>
-            </sl-button-group>
-          </div>
+          <MediaFocus
+            v-if="focused_media"
+            :key="focused_media.slug"
+            :file="focused_media"
+            :project_slug="project.slug"
+            @remove="removeMedia(focused_media.slug)"
+            @close="toggleMediaFocus(focused_media.slug)"
+          />
         </transition>
       </pane>
     </splitpanes>
@@ -106,6 +99,7 @@
 <script>
 import { Splitpanes, Pane } from "splitpanes";
 
+import MediaFocus from "@/components/fields/MediaFocus";
 import UploadFiles from "@/components/fields/UploadFiles";
 import MediaContent from "@/components/MediaContent.vue";
 
@@ -119,6 +113,7 @@ export default {
     Splitpanes,
     Pane,
 
+    MediaFocus,
     UploadFiles,
     MediaContent,
   },
@@ -293,6 +288,7 @@ export default {
       position: absolute;
       width: 100%;
       height: 100%;
+      pointer-events: auto;
 
       img {
         position: absolute;
