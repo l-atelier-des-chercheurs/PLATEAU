@@ -156,17 +156,13 @@ module.exports = (function () {
     const result = await dialog.showOpenDialog(win, {
       properties: ["openDirectory", "createDirectory"],
     });
+    if (result.canceled) return false;
 
     const path_to_content = result.filePaths[0];
     win.webContents.send("fromMain", {
       type: "new_path",
       path_to_content,
     });
-
-    // dev.logfunction({ new_path_to_content_folder });
-    // if (path_to_folder) {
-    //   store.set("custom_content_path", new_path_to_content_folder);
-    // }
   }
 
   function setApplicationMenu() {
