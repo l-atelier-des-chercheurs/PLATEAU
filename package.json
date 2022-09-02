@@ -16,8 +16,8 @@
     "url": "https://github.com/l-atelier-des-chercheurs/PLATEAU/issues"
   },
   "scripts": {
-    "start": ".",
-    "debug": ". --inspect=5858 -- --debug --verbose"
+    "start": "node .",
+    "debug": "node . --inspect=5858 -- --debug --verbose"
   },
   "engines": {
     "node": "16.14.2",
