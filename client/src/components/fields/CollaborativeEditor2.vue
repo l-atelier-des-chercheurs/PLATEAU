@@ -1,7 +1,7 @@
 <template>
   <div class="_collaborativeEditor" :data-editable="is_editable">
     <component :is="`style`" v-html="font_selector_css" />
-    <div ref="editBtn" class="btnContainer">
+    <div ref="editBtn" class="_btnContainer">
       <sl-button @click="toggleEdit" size="small">
         <sl-icon slot="prefix" name="pencil" />edit
       </sl-button>
@@ -321,17 +321,27 @@ export default {
           var(--sl-input-focus-ring-color);
       }
     }
+
+    .ql-container.ql-disabled {
+      .ql-editor > * {
+        cursor: inherit;
+      }
+    }
+    .ql-editor > img {
+      max-width: 30ch;
+    }
   }
 }
 
-._collaborativeEditor:not([data-editable="true"]) .btnContainer {
+._collaborativeEditor:not([data-editable="true"]) ._btnContainer {
   position: absolute;
-  background: red;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   display: flex;
+  justify-content: center;
   align-items: center;
+  background: black;
 }
 </style>

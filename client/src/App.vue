@@ -2,6 +2,7 @@
 <template>
   <div id="app" class="">
     <SocketStatus />
+    <AdminPanel v-if="false" />
 
     <div class="">
       <router-view />
@@ -10,11 +11,13 @@
 </template>
 <script>
 import SocketStatus from "./components/SocketStatus.vue";
+import AdminPanel from "./adc-core/AdminPanel.vue";
 
 export default {
   props: {},
   components: {
     SocketStatus,
+    AdminPanel,
   },
   data() {
     return {};

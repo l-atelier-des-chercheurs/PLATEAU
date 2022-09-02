@@ -70,6 +70,8 @@ export default {
       const journal_items = this.project.journal_items?.slice() || [];
       journal_items.push(meta_filename);
 
+      // TODO use updateItem
+
       await this.$axios.patch(`/projects/${this.project.slug}`, {
         journal_items,
       });
