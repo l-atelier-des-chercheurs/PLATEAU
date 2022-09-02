@@ -26,6 +26,11 @@ module.exports = (function () {
       _getLocalNetworkInfos
     );
     app.get(
+      "/_api2/_admin",
+      [cors(_corsCheck), _sessionPasswordCheck],
+      _getAdminInfos
+    );
+    app.get(
       "/_api2/:folder_type",
       [cors(_corsCheck), _sessionPasswordCheck],
       _getFolders
@@ -392,13 +397,16 @@ module.exports = (function () {
 
   function _getLocalNetworkInfos(req, res, next) {
     dev.logfunction();
-    const hrstart = process.hrtime();
-
     const local_ips = utils.getLocalIP();
     res.status(200).json(local_ips);
-
-    let hrend = process.hrtime(hrstart);
-    dev.performance(`${hrend[0]}s ${hrend[1] / 1000000}ms`);
+  }
+  function _getAdminInfos(req, res, next) {
+    // TODO only available to admins
+    dev.logfunction();
+    // get storage path
+    res.status(200).json({
+      pathToUserContent: pathToUserContent,
+    });
   }
 
   return API;

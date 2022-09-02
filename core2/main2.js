@@ -34,7 +34,7 @@ module.exports = async function () {
     win = await require("./electron")
       .init()
       .catch((err) => {
-        dev.error(`Error code: ${err}`);
+        dev.error(err);
       });
 
   await setupApp().catch((err) => {
@@ -104,7 +104,7 @@ async function setupApp() {
       global.settings.desired_port + 20
     )
     .catch((err) => {
-      dev.error(`err ${err}`);
+      dev.error(err);
       throw err;
     });
 
@@ -121,15 +121,15 @@ async function copyAndRenameUserFolder(full_default_path) {
   let full_path_to_content;
 
   // two cases:
-  if (global.settings.userContentFolder.startsWith("/")) {
+  if (global.settings.contentPath.startsWith("/")) {
     // otherwise if starts with '/' then its a path to the folder itself
-    full_path_to_content = global.settings.userContentFolder;
+    full_path_to_content = global.settings.contentPath;
   } else {
-    // if userContentFolder is just a name, thats the name of the folder inside /Documents
+    // if contentPath is just a name, thats the name of the folder inside /Documents
     const user_dir_path = getPath.getDocumentsFolder();
     full_path_to_content = path.join(
       user_dir_path,
-      global.settings.userContentFolder
+      global.settings.contentPath
     );
   }
 

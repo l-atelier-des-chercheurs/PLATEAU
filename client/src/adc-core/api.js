@@ -160,6 +160,10 @@ export default function () {
         this.socket.emit("leaveRoom", { room });
       },
 
+      async getSettings() {
+        const response = await this.$axios.get(`/_admin`);
+        return response.data;
+      },
       async getFolders({ folder_type }) {
         const response = await this.$axios.get(`/${folder_type}`);
         const d = response.data;
@@ -249,14 +253,19 @@ export default function () {
         // const fetch_status = "pending";
         // const fetch_error = null;
         try {
-          const response = await this.$axios.patch(
-            `/${folder_type}/${folder_slug}/${meta_slug}`,
-            new_meta
-          );
-          // const fetch_status = "success";
+          let path = ``;
+          if (folder_type) {
+            path += `/${folder_type}`;
+            if (folder_slug) {
+              path += `/${folder_slug}`;
+              if (meta_slug) {
+                path += `/${meta_slug}`;
+              }
+            }
+          }
+          const response = await this.$axios.patch(path, new_meta);
           return response.data;
         } catch (e) {
-          // this.fetch_status = "error";
           throw e.response.data;
         }
       },

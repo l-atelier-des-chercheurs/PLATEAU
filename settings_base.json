@@ -8,7 +8,7 @@
   "versioning": true,
 
   "cacheDirname": "plateau_cache",
-  "userContentFolder": "/Users/louis/Créations Louis",
+  "contentPath": "plateau",
 
   "privateKeyPath": "",
   "certificatePath": "",
