@@ -96,6 +96,16 @@ body {
 }
 html {
   height: 100%;
+
+  font-family: "IBM Plex Sans";
+  font-style: normal;
+  font-weight: 300;
+
+  font-size: 95%;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--c-noir);
 }
 body {
   min-height: 100%;
@@ -109,15 +119,6 @@ button {
 
 #app {
   /* font-family: "Work Sans"; */
-  font-family: "IBM Plex Sans";
-  font-style: normal;
-  font-weight: 300;
-
-  font-size: 95%;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: var(--c-noir);
 
   min-height: 100%;
 }

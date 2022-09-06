@@ -156,7 +156,7 @@ sl-details::part(content) {
 }
 
 ._editor {
-  padding: var(--spacing);
+  padding: var(--spacing) 0;
   max-width: 120ch;
 }
 </style>

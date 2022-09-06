@@ -1,6 +1,5 @@
 <template>
   <div class="_collaborativeEditor" :data-editable="is_editable">
-    is_being_dragover = {{ is_being_dragover }}
     <component :is="`style`" v-html="font_selector_css" />
     <div ref="editBtn" class="_btnContainer">
       <sl-button @click="toggleEdit" size="small">
@@ -310,8 +309,6 @@ export default {
 
       const { type, caption, slug } = media;
 
-      debugger;
-
       if (type === "image") {
         const thumb_path = media.thumbs[1600];
         if (thumb_path) {
@@ -367,13 +364,15 @@ export default {
       console.log(`CollaborativeEditor2 / onDragover`);
       this.is_being_dragover = true;
 
-      this.removeDragoverFromBlots();
+      // this.removeDragoverFromBlots();
       // this.removeFocusFromBlots();
 
       const _blot = this.getBlockFromElement($event.target);
       if (_blot) _blot.domNode.classList.add("is--dragover");
     },
     onDragLeave($event) {
+      debugger;
+
       if (
         $event.target.classList.contains("ql-editor") ||
         this.getBlockFromElement($event.target) !== false
@@ -479,6 +478,8 @@ export default {
   position: relative;
   font-size: 110%;
 
+  --toolbar-bg: hsl(210, 11%, 88%);
+
   ::v-deep .ql-toolbar {
     position: sticky;
     top: 0;
@@ -486,10 +487,10 @@ export default {
     font-size: inherit;
     font-family: inherit;
     font-weight: normal;
-    background: black;
-    color: white !important;
+    background-color: var(--toolbar-bg);
+    color: black !important;
 
-    border-radius: 0.5em;
+    // border-radius: 0.5em;
     border: none;
 
     button,
@@ -528,6 +529,71 @@ export default {
       }
     }
 
+    .ql-editor {
+      padding: 0;
+      counter-reset: listCounter;
+
+      & > * {
+        counter-increment: listCounter;
+        position: relative;
+        padding: 0;
+        margin: 0 calc(var(--spacing) * 2);
+
+        &::before {
+          content: "";
+
+          // font-family: "IBM Plex Sans", "OutputSansVariable";
+          position: absolute;
+          padding-top: 0.85em;
+          right: 100%;
+          height: 100%;
+          text-align: right;
+
+          font-size: 0.6rem;
+          text-align: center;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          overflow: hidden;
+          width: calc(var(--spacing) * 2);
+          max-width: 100px;
+          // padding-right: calc(var(--spacing) / 2);
+          color: transparent;
+          color: hsl(210, 11%, 18%);
+
+          background-color: var(--toolbar-bg);
+          background-color: var(--toolbar-bg);
+
+          transition: all 0.1s cubic-bezier(0.19, 1, 0.22, 1);
+
+          content: counter(listCounter);
+        }
+
+        &.is--focused,
+        &.is--dragover {
+          &::before {
+            color: var(--active-color);
+          }
+        }
+
+        &::after {
+          content: "";
+          display: block;
+          width: 100%;
+          height: 0;
+          margin: 0;
+          background-color: var(--c-rouge);
+        }
+
+        &.is--dragover {
+          &::after {
+            margin: var(--spacing) 0;
+            height: 4px;
+            transition: all 0.1s cubic-bezier(0.19, 1, 0.22, 1);
+          }
+        }
+      }
+    }
+
     .ql-container.ql-disabled {
       .ql-editor > * {
         cursor: inherit;
@@ -548,6 +614,6 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: black;
+  background-color: var(--toolbar-bg);
 }
 </style>
