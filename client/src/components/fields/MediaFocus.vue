@@ -1,6 +1,5 @@
 <template>
   <div>
-    is_dragged {{ is_dragged }} -
     <div
       :draggable="true"
       @dragstart="startMediaDrag($event)"

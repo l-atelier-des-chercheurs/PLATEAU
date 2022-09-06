@@ -1,6 +1,11 @@
 <template>
   <div class="_journalItem">
-    <sl-details :summary="file.title" @sl-show="afterShow" @sl-hide="hide">
+    <sl-details
+      :summary="file.title"
+      @sl-show="afterShow"
+      @sl-hide="hide"
+      ref="detail"
+    >
       <DateField class="" :title="'date_created'" :date="file.date_uploaded" />
       <DateField :title="'date_modified'" :date="file.date_modified" />
       <sl-button @click="removeText" size="small">Supprimer</sl-button>
@@ -49,24 +54,34 @@ import CollaborativeEditor2 from "@/components/fields/CollaborativeEditor2.vue";
 
 export default {
   props: {
-    project_slug: String,
     file: Object,
+    project_slug: String,
+    open_initially: Boolean,
   },
   components: {
     CollaborativeEditor2,
   },
   data() {
     return {
-      is_open: false,
-
       archives: null,
       show_archives: false,
+      is_open: false,
     };
   },
   created() {},
-  mounted() {},
+  mounted() {
+    if (this.open_initially) {
+      this.$nextTick(() => {
+        this.$refs.detail.show();
+      });
+    }
+  },
   beforeDestroy() {},
-  watch: {},
+  watch: {
+    is_open() {
+      this.$emit("toggleEntry", this.is_open);
+    },
+  },
   computed: {},
   methods: {
     async removeText() {

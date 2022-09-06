@@ -20,6 +20,7 @@
         :libpanes.sync="libpanes"
         :project="project"
         :media_focused.sync="media_focused"
+        :opened_journal_entries.sync="opened_journal_entries"
       />
     </div>
   </div>
@@ -45,6 +46,7 @@ export default {
       projectpanes: [],
       libpanes: [],
       media_focused: null,
+      opened_journal_entries: [],
     };
   },
   created() {},
@@ -76,6 +78,10 @@ export default {
         if (libpanes) this.libpanes = JSON.parse(libpanes);
 
         this.media_focused = this.$route.query?.media_focused || null;
+
+        let opened_journal_entries = this.$route.query?.opened_journal_entries;
+        if (opened_journal_entries)
+          this.opened_journal_entries = JSON.parse(opened_journal_entries);
       },
       immediate: true,
     },
@@ -97,6 +103,12 @@ export default {
       },
       deep: true,
     },
+    opened_journal_entries: {
+      handler() {
+        this.updateQueryPanes();
+      },
+      deep: true,
+    },
   },
   computed: {
     // project() {
@@ -111,7 +123,10 @@ export default {
         query.projectpanes = JSON.stringify(this.projectpanes);
       if (this.libpanes) query.libpanes = JSON.stringify(this.libpanes);
       if (this.media_focused) query.media_focused = this.media_focused;
-
+      if (this.opened_journal_entries)
+        query.opened_journal_entries = JSON.stringify(
+          this.opened_journal_entries
+        );
       if (
         this.$route.query &&
         JSON.stringify(this.$route.query) === JSON.stringify(query)

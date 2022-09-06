@@ -16,7 +16,13 @@
         :size="pane.size_pc"
         ref="Journal"
       >
-        <JournalPane :project="project" />
+        <JournalPane
+          :project="project"
+          :opened_journal_entries="opened_journal_entries"
+          @update:opened_journal_entries="
+            $emit('update:opened_journal_entries', $event)
+          "
+        />
       </pane>
 
       <pane
@@ -68,6 +74,7 @@ export default {
   props: {
     projectpanes: Array,
     libpanes: Array,
+    opened_journal_entries: Array,
     project: Object,
     media_focused: String,
   },

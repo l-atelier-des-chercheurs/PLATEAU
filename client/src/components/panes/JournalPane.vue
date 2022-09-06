@@ -6,7 +6,12 @@
       :file="file"
       :project_slug="project.slug"
     >
-      <JournalItem :file="file" :project_slug="project.slug" />
+      <JournalItem
+        :file="file"
+        :project_slug="project.slug"
+        :open_initially="entryStatus({ slug: file.slug })"
+        @toggleEntry="toggleEntry({ slug: file.slug, is_open: $event })"
+      />
     </div>
 
     <div class="_createForm">
@@ -31,6 +36,7 @@ import JournalItem from "./JournalItem.vue";
 export default {
   props: {
     project: Object,
+    opened_journal_entries: Array,
   },
   components: {
     JournalItem,
@@ -77,6 +83,20 @@ export default {
       });
 
       this.show_create_entry = false;
+    },
+    entryStatus({ slug }) {
+      // todo : is entry opened or close (if its meta name is in this.opened_journal_entries)
+      return this.opened_journal_entries.includes(slug);
+    },
+    toggleEntry({ slug, is_open }) {
+      // todo : add or remove slug from opened_journal_entries
+      let opened_journal_entries = this.opened_journal_entries;
+      opened_journal_entries = opened_journal_entries.filter(
+        (je) => je !== slug
+      );
+      if (is_open) opened_journal_entries.push(slug);
+
+      this.$emit("update:opened_journal_entries", opened_journal_entries);
     },
   },
 };
