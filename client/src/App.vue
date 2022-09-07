@@ -43,7 +43,7 @@ export default {
   --c-vert: hsl(143, 69%, 55%);
   --c-vert_fonce: hsl(143, 69%, 40%);
 
-  --active-color: var(--c-orange);
+  --active-color: var(--c-vert);
   /* --active-color: #aaa; */
   --color-WriteUp: #fff;
 

@@ -2,9 +2,10 @@
   <div class="_collaborativeEditor" :data-editable="is_editable">
     <component :is="`style`" v-html="font_selector_css" />
     <div ref="editBtn" class="_btnContainer">
-      <sl-button @click="toggleEdit" size="small">
-        <sl-icon slot="prefix" name="pencil" />edit
+      <sl-button v-if="!is_editable" @click="toggleEdit" size="small">
+        <sl-icon slot="prefix" name="pencil" />Modifier
       </sl-button>
+      <sl-button v-else @click="saveText" size="small">Enregistrer</sl-button>
     </div>
     <div
       ref="editor"
@@ -183,6 +184,8 @@ export default {
         meta_slug: this.meta_slug,
         new_meta,
       });
+
+      this.disableEditor();
     },
 
     startCollaborative() {
@@ -364,15 +367,13 @@ export default {
       console.log(`CollaborativeEditor2 / onDragover`);
       this.is_being_dragover = true;
 
-      // this.removeDragoverFromBlots();
+      this.removeDragoverFromBlots();
       // this.removeFocusFromBlots();
 
       const _blot = this.getBlockFromElement($event.target);
       if (_blot) _blot.domNode.classList.add("is--dragover");
     },
     onDragLeave($event) {
-      debugger;
-
       if (
         $event.target.classList.contains("ql-editor") ||
         this.getBlockFromElement($event.target) !== false
@@ -476,9 +477,8 @@ export default {
 <style lang="scss" scoped>
 ._collaborativeEditor {
   position: relative;
-  font-size: 110%;
-
-  --toolbar-bg: hsl(210, 11%, 88%);
+  font-size: 100%;
+  --toolbar-bg: var(--color-Journal);
 
   ::v-deep .ql-toolbar {
     position: sticky;
@@ -520,24 +520,34 @@ export default {
       font-size: inherit;
       font-family: inherit;
       font-weight: normal;
+      background-color: var(--toolbar-bg);
 
       &:not(.ql-disabled) {
-        background-color: var(--sl-input-background-color-focus);
-        border-color: var(--sl-input-border-color-focus);
-        box-shadow: 0 0 0 var(--sl-focus-ring-width)
-          var(--sl-input-focus-ring-color);
       }
     }
 
     .ql-editor {
       padding: 0;
       counter-reset: listCounter;
+      height: auto;
+      overflow: visible;
 
-      & > * {
+      margin: 0 calc(var(--spacing) * 2);
+      background-color: white;
+      border-radius: 4px;
+
+      > * {
+        padding: 0 calc(var(--spacing));
+        margin: 0;
+      }
+      > img {
+        max-width: 30ch;
+      }
+
+      > * {
         counter-increment: listCounter;
         position: relative;
-        padding: 0;
-        margin: 0 calc(var(--spacing) * 2);
+        // padding-left: calc(var(--spacing));
 
         &::before {
           content: "";
@@ -546,7 +556,6 @@ export default {
           position: absolute;
           padding-top: 0.85em;
           right: 100%;
-          height: 100%;
           text-align: right;
 
           font-size: 0.6rem;
@@ -560,9 +569,6 @@ export default {
           color: transparent;
           color: hsl(210, 11%, 18%);
 
-          background-color: var(--toolbar-bg);
-          background-color: var(--toolbar-bg);
-
           transition: all 0.1s cubic-bezier(0.19, 1, 0.22, 1);
 
           content: counter(listCounter);
@@ -571,7 +577,7 @@ export default {
         &.is--focused,
         &.is--dragover {
           &::before {
-            color: var(--active-color);
+            background-color: var(--active-color);
           }
         }
 
@@ -586,8 +592,8 @@ export default {
 
         &.is--dragover {
           &::after {
-            margin: var(--spacing) 0;
-            height: 4px;
+            // margin: var(--spacing) 0;
+            // height: 4px;
             transition: all 0.1s cubic-bezier(0.19, 1, 0.22, 1);
           }
         }
@@ -598,9 +604,6 @@ export default {
       .ql-editor > * {
         cursor: inherit;
       }
-    }
-    .ql-editor > img {
-      max-width: 30ch;
     }
   }
 }
