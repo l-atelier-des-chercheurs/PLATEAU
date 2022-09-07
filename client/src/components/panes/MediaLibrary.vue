@@ -229,8 +229,6 @@ export default {
 ._mediaLibrary--lib--grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  // gap: calc(var(--spacing) / 2);
-  // padding: calc(var(--spacing) / 2);
   gap: 1px;
   padding: 1px;
 

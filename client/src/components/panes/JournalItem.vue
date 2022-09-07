@@ -9,30 +9,6 @@
       <DateField class="" :title="'date_created'" :date="file.date_uploaded" />
       <DateField :title="'date_modified'" :date="file.date_modified" />
       <sl-button @click="removeText" size="small">Supprimer</sl-button>
-      <sl-button
-        @click="toggleArchives"
-        size="small"
-        caret
-        :active="show_archives"
-      >
-        Archives
-      </sl-button>
-      <div class="_archives" v-if="show_archives">
-        <div
-          class="_archive"
-          v-for="archive in archives"
-          :key="archive.filename"
-        >
-          <small>
-            <DateField :show_detail_initially="true" :date="archive.date" />
-          </small>
-          <sl-button size="small" variant="text" disabled>
-            sélectionner tout le texte
-          </sl-button>
-
-          <div class="_archiveText" v-html="archive.content" />
-        </div>
-      </div>
 
       <!-- <pre>{{ file.content }}</pre> -->
     </sl-details>
@@ -63,8 +39,6 @@ export default {
   },
   data() {
     return {
-      archives: null,
-      show_archives: false,
       is_open: false,
     };
   },
@@ -91,22 +65,11 @@ export default {
         meta_slug: this.file.slug,
       });
     },
-    async getArchives() {
-      this.archives = await this.$api.getArchives({
-        folder_type: "projects",
-        folder_slug: this.project_slug,
-        meta_slug: this.file.slug,
-      });
-    },
     afterShow() {
       this.is_open = true;
     },
     hide() {
       this.is_open = false;
-    },
-    toggleArchives() {
-      this.show_archives = !this.show_archives;
-      if (this.show_archives) this.getArchives();
     },
   },
 };
@@ -131,28 +94,6 @@ sl-details::part(content) {
   overflow: initial;
   padding-top: 0;
   padding-bottom: var(--sl-spacing-small);
-}
-
-._archives {
-  border: 1px solid black;
-  overflow: auto;
-
-  > * {
-    background: white;
-    padding: calc(var(--spacing) / 2);
-  }
-}
-
-._archiveText {
-  background: #eee;
-  padding: calc(var(--spacing) / 2);
-  width: 100%;
-  max-height: 150px;
-  overflow: auto;
-
-  ::v-deep > *:first-child {
-    margin-top: 0;
-  }
 }
 
 ._editor {

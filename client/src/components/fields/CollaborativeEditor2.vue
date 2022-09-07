@@ -1,5 +1,12 @@
 <template>
   <div class="_collaborativeEditor" :data-editable="is_editable">
+    <TextVersioning
+      :folder_type="folder_type"
+      :folder_slug="folder_slug"
+      :meta_slug="meta_slug"
+      @restore="restoreVersion"
+    />
+
     <component :is="`style`" v-html="font_selector_css" />
     <div ref="editBtn" class="_btnContainer">
       <sl-button v-if="!is_editable" @click="toggleEdit" size="small">
@@ -43,6 +50,7 @@
   </div>
 </template>
 <script>
+import TextVersioning from "./quill/TextVersioning.vue";
 import ReconnectingWebSocket from "reconnectingwebsocket";
 import ShareDB from "sharedb/lib/client";
 import Quill from "quill";
@@ -78,7 +86,9 @@ export default {
     meta_slug: String,
     content: String,
   },
-  components: {},
+  components: {
+    TextVersioning,
+  },
   data() {
     return {
       editor: null,
@@ -158,6 +168,8 @@ export default {
       let content = this.editor.root.innerHTML;
       // used to make sure we don’t get weird stuff such as <p style="font-family: "Avada";">plop</p>
       content = content.replace(/&quot;/g, "'");
+      // todo : remove status class like is--focused or is--dragover
+
       return content;
     },
 
@@ -172,6 +184,10 @@ export default {
     disableEditor() {
       this.editor.disable();
       this.is_editable = false;
+    },
+
+    restoreVersion(content) {
+      this.editor.root.innerHTML = content;
     },
 
     async saveText() {
