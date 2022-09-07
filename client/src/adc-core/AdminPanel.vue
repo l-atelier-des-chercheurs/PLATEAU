@@ -1,10 +1,5 @@
 <template>
-  <sl-dialog
-    ref="createModal"
-    label="Règlages admin"
-    class="dialog-overview"
-    open
-  >
+  <sl-dialog ref="createModal" label="Règlages admin" class="" open>
     <div class="">
       <TextField
         :label="'Chemin de stockage des contenus'"

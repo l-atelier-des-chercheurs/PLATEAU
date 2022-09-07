@@ -37,6 +37,9 @@ Vue.component("LoaderSpinner", {
   `,
 });
 
+import FormatDates from "./mixins/FormatDates";
+Vue.mixin(FormatDates);
+
 import "axios-debug-log/enable";
 import axios from "axios";
 const instance = axios.create({

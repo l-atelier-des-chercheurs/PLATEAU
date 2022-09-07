@@ -9,25 +9,45 @@
       Archives
     </sl-button>
 
-    <div class="_archives" v-if="show_archives">
-      <div class="_archive" v-for="archive in archives" :key="archive.filename">
-        <small>
-          <DateField :show_detail_initially="true" :date="archive.date" />
-        </small>
-        <sl-button size="small" variant="text" disabled>
-          sélectionner tout le texte
-        </sl-button>
-        <sl-button
-          size="small"
-          variant="text"
-          @click="restoreVersion(archive.content)"
-        >
-          restaurer cette version
-        </sl-button>
+    <sl-dialog ref="showArchives" label="Archives" class="">
+      <div class="_archives" v-if="show_archives">
+        <!-- not sure why sl-select doesnt work here -->
+        <select v-model="selected_archive_filename">
+          <option
+            v-for="archive in archives"
+            :value="archive.filename"
+            :key="archive.filename"
+            v-text="formatDateToPrecise(archive.date)"
+          />
+        </select>
 
-        <div class="_archiveText" v-html="archive.content" />
+        <!-- <sl-select v-sl-model="selected_archive_filename">
+          <sl-menu-item
+            v-for="archive in archives"
+            :value="archive.filename"
+            :key="archive.filename"
+            v-text="formatDateToPrecise(archive.date)"
+          />
+        </sl-select> -->
+
+        <div
+          v-if="
+            archive_shown &&
+            (archive_shown.content || archive_shown.content === '')
+          "
+        >
+          <DateField :show_detail_initially="true" :date="archive_shown.date" />
+          <div v-html="archive_shown.content" />
+        </div>
       </div>
-    </div>
+      <sl-button
+        slot="footer"
+        variant="primary"
+        @click="restoreVersion(archive_shown.content)"
+      >
+        {{ $t("restore_this_version") }}
+      </sl-button>
+    </sl-dialog>
   </div>
 </template>
 <script>
@@ -42,13 +62,23 @@ export default {
     return {
       archives: null,
       show_archives: false,
+      selected_archive_filename: "",
     };
   },
   created() {},
   mounted() {},
   beforeDestroy() {},
   watch: {},
-  computed: {},
+  computed: {
+    archive_shown() {
+      debugger;
+      if (this.archives)
+        return this.archives.find(
+          (a) => a.filename === this.selected_archive_filename
+        );
+      return false;
+    },
+  },
   methods: {
     async getArchives() {
       this.archives = await this.$api.getArchives({
@@ -56,13 +86,22 @@ export default {
         folder_slug: this.folder_slug,
         meta_slug: this.meta_slug,
       });
+
+      // this.selected_archive_filename =
+      //   this.archives[this.archives.length - 1].filename;
     },
     toggleArchives() {
       this.show_archives = !this.show_archives;
-      if (this.show_archives) this.getArchives();
+      if (this.show_archives) {
+        this.getArchives();
+        this.$refs.showArchives.show();
+      } else {
+        this.$refs.showArchives.hide();
+      }
     },
     restoreVersion(content) {
       this.$emit("restore", content);
+      this.toggleArchives();
     },
   },
 };
@@ -85,8 +124,8 @@ export default {
   background: #eee;
   padding: calc(var(--spacing) / 2);
   width: 100%;
-  max-height: 150px;
-  overflow: auto;
+  // max-height: 150px;
+  // overflow: auto;
 
   ::v-deep > *:first-child {
     margin-top: 0;
