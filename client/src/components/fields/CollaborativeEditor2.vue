@@ -20,6 +20,7 @@
       class=""
       :class="{
         'is--dragover': is_being_dragover,
+        'is--editable': editor_is_enabled,
       }"
       @dragover="onDragover"
       @drop="onDrop"
@@ -123,9 +124,14 @@ export default {
       if (!this.is_collaborative) this.editor.root.innerHTML = this.content;
     },
     editor_is_enabled() {},
-    currently_selected_blots(newEles, oldEles) {
-      if (oldEles) oldEles.forEach((el) => el.classList.remove("is--selected"));
+    currently_selected_blots(newEles) {
+      this.editor.container
+        .querySelectorAll(".is--selected")
+        .forEach((el) => el.classList.remove("is--selected"));
+
       if (newEles) newEles.forEach((el) => el.classList.add("is--selected"));
+
+      debugger;
     },
   },
   computed: {
@@ -168,13 +174,14 @@ export default {
       //   this.toggleEdit();
       // });
 
-      this.editor.on("selection-change", (range, oldRange, source) => {
-        source;
-        console.log(`CollaborativeEditor • selection-change`);
+      this.editor.on("selection-change", () => {
+        console.log(`CollaborativeEditor / selection-change`);
         this.updateSelectedLines();
       });
       this.editor.on("text-change", (delta, oldDelta, source) => {
         console.log(`CollaborativeEditor / text-change with source ${source}`);
+
+        // todo : only update if possibly changing line (backspace and enter)
         this.$nextTick(() => {
           this.updateSelectedLines();
         });
@@ -216,6 +223,7 @@ export default {
     },
     disableEditor() {
       this.editor.setSelection(null);
+      this.editor.blur();
       this.updateSelectedLines();
       this.$nextTick(() => {
         this.editor.disable();
@@ -229,11 +237,15 @@ export default {
 
     updateSelectedLines() {
       console.log(`CollaborativeEditor • updateSelectedLines`);
-
       if (!this.editor_is_enabled) return;
+
       const range = this.editor.getSelection();
 
       if (range && range.index) {
+        console.log(
+          `CollaborativeEditor • updateSelectedLines / range.index = ${range.index} et range.length = ${range.length} `
+        );
+
         let blots = [];
         if (range.length === 0) blots = [this.editor.getLine(range.index)[0]];
         else blots = this.editor.getLines(range.index, range.length);
@@ -442,20 +454,29 @@ export default {
     },
 
     onDragover($event) {
+      if (!this.editor_is_enabled) return;
       console.log(`CollaborativeEditor2 / onDragover`);
       $event.preventDefault();
       // todo debounce dragover to trigger only a handful of times per seconds
-      const el = $event.target;
-      if (el.parentElement.classList.contains("ql-editor")) {
-        el.classList.add("is--dragover");
-        el.addEventListener("dragleave", () => {
+      // const el = $event.target;
+      let _blot = this.getBlockFromElement($event.target);
+      if (!_blot) return false;
+
+      // do nothing if dragover on
+      // if (el.classList.contains("ql-editor")) return;
+
+      // if (el.parentElement.classList.contains("ql-editor")) {
+      if (!_blot.domNode.classList.contains("is--dragover")) {
+        _blot.domNode.classList.add("is--dragover");
+        _blot.domNode.addEventListener("dragleave", () => {
           console.log(`CollaborativeEditor2 / dragleave`);
-          el.classList.remove("is--dragover");
+          _blot.domNode.classList.remove("is--dragover");
         });
       }
     },
     // onDragLeave($event) {},
     onDrop($event) {
+      if (!this.editor_is_enabled) return;
       console.log(`CollaborativeEditor2 / onDrop`);
 
       // Prevent default behavior (Prevent file from being opened)
@@ -623,13 +644,13 @@ export default {
         // margin-left: calc(-1 * var(--spacing) / 2);
         // margin-right: calc(-1 * var(--spacing) / 2);
 
-        &[data-ratio="1\/4"] {
+        &[data-ratio="1\/4"] .ql-mediacard-container {
           width: 25%;
         }
-        &[data-ratio="2\/4"] {
+        &[data-ratio="2\/4"] .ql-mediacard-container {
           width: 50%;
         }
-        &[data-ratio="3\/4"] {
+        &[data-ratio="3\/4"] .ql-mediacard-container {
           width: 75%;
         }
 
@@ -739,11 +760,6 @@ export default {
             background-color: var(--active-color);
           }
         }
-        &.is--dragover {
-          &::before {
-            background-color: var(--c-orange);
-          }
-        }
 
         &::after {
           content: "";
@@ -751,14 +767,14 @@ export default {
           width: 100%;
           height: 0;
           margin: 0;
-          background-color: var(--c-rouge);
+          background-color: var(--active-color);
+          transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1);
         }
 
         &.is--dragover {
           &::after {
-            // margin: var(--spacing) 0;
-            // height: 4px;
-            transition: all 0.1s cubic-bezier(0.19, 1, 0.22, 1);
+            margin: 4px 0;
+            height: 4px;
           }
         }
       }

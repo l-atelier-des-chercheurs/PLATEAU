@@ -8,11 +8,13 @@ export default class MediaBlot extends BlockEmbed {
   static className = "ql-mediacard";
 
   static create({ type, src, content, caption, meta_filename }) {
-    let node = super.create();
     console.log(`CollaborativeEditor • MediaBlot : create for type = ${type}`);
 
-    node.setAttribute("contenteditable", false);
+    let node = super.create();
+    let container = window.document.createElement("div");
+    container.classList.add("ql-mediacard-container");
 
+    node.setAttribute("contenteditable", false);
     // let bg = window.document.createElement("div");
     // bg.setAttribute("class", "ql-mediacard--background");
     // node.appendChild(bg);
@@ -43,22 +45,23 @@ export default class MediaBlot extends BlockEmbed {
       tag.setAttribute("src", src);
     }
     tag.setAttribute("draggable", false);
-    node.appendChild(tag);
+    container.appendChild(tag);
+
     if (caption) {
       let caption_tag = window.document.createElement("figcaption");
       caption_tag.innerHTML = caption;
-      node.appendChild(caption_tag);
+      container.appendChild(caption_tag);
     }
     node.dataset.type = type;
     node.dataset.meta_filename = meta_filename;
     node.setAttribute("draggable", false);
-
-    // todo for later: allow drag from cards in quill
-    // to move inside document or to composition
+    // todo for later: allow drag from cards in quill to move inside document or to composition
     node.addEventListener("dragstart", ($event) => {
       $event.dataTransfer.setData("text/plain", "media_in_quill");
       $event.dataTransfer.effectAllowed = "move";
     });
+
+    node.appendChild(container);
 
     return node;
   }
@@ -70,11 +73,8 @@ export default class MediaBlot extends BlockEmbed {
 
     node.__onSelect = () => {
       const quill = Quill.find(node.parentElement.parentElement);
-      // only allow select if editing in quill isnt disabled
-      // if (quill.container.classList.contains("ql-disabled")) return;
 
-      // const _block = Quill.find(node);
-      // quill.setSelection(quill.getIndex(_block), 0, Quill.sources.USER);
+      if (!quill.container.classList.contains("is--editable")) return;
       node.classList.add("is--focused");
 
       btnRow = window.document.createElement("div");
@@ -123,7 +123,7 @@ export default class MediaBlot extends BlockEmbed {
       } else {
         caption = window.document.createElement("figcaption");
         caption.appendChild(captionInput);
-        node.appendChild(caption);
+        node.querySelector(".ql-mediacard-container").appendChild(caption);
       }
 
       setTimeout(() => {
@@ -145,7 +145,6 @@ export default class MediaBlot extends BlockEmbed {
 
   // deleteAt() {
   //   console.log("deleteAt for custom mediablock: prevented");
-
   //   return false;
   //   // prevent removing on backspace after block
   // }
