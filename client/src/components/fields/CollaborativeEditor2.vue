@@ -1,5 +1,5 @@
 <template>
-  <div class="_collaborativeEditor" :data-editable="is_editable">
+  <div class="_collaborativeEditor" :data-editable="editor_is_enabled">
     <TextVersioning
       :folder_type="folder_type"
       :folder_slug="folder_slug"
@@ -9,10 +9,11 @@
 
     <component :is="`style`" v-html="font_selector_css" />
     <div ref="editBtn" class="_btnContainer">
-      <sl-button v-if="!is_editable" @click="toggleEdit" size="small">
+      <sl-button v-if="!editor_is_enabled" @click="toggleEdit" size="small">
         <sl-icon slot="prefix" name="pencil" />Modifier
       </sl-button>
       <sl-button v-else @click="saveText" size="small">Enregistrer</sl-button>
+      <!-- {{ currently_selected_blots }} -->
     </div>
     <div
       ref="editor"
@@ -21,7 +22,6 @@
         'is--dragover': is_being_dragover,
       }"
       @dragover="onDragover"
-      @dragleave="onDragLeave"
       @drop="onDrop"
     />
     <transition name="fade" :duration="600">
@@ -41,7 +41,7 @@
       </div>
     </transition>
 
-    <template v-if="is_editable">
+    <template v-if="editor_is_enabled">
       <span v-if="is_collaborative">
         ID : {{ editor_id }} Etat de la connection : {{ connection_state }}
       </span>
@@ -97,10 +97,12 @@ export default {
       debounce_textUpdate: undefined,
 
       is_collaborative: false,
-      is_editable: false,
+      editor_is_enabled: false,
       is_being_dragover: false,
       is_loading_or_saving: false,
       show_saved_icon: false,
+
+      currently_selected_blots: false,
 
       editor_id: (Math.random().toString(36) + "00000000000000000").slice(
         2,
@@ -120,7 +122,11 @@ export default {
     content() {
       if (!this.is_collaborative) this.editor.root.innerHTML = this.content;
     },
-    is_editable() {},
+    editor_is_enabled() {},
+    currently_selected_blots(newEles, oldEles) {
+      if (oldEles) oldEles.forEach((el) => el.classList.remove("is--selected"));
+      if (newEles) newEles.forEach((el) => el.classList.add("is--selected"));
+    },
   },
   computed: {
     font_selector_css() {
@@ -150,7 +156,7 @@ export default {
         theme: "snow",
         formats,
         placeholder: "…",
-        readOnly: !this.is_editable,
+        readOnly: !this.editor_is_enabled,
       });
       if (this.content) this.editor.root.innerHTML = this.content;
 
@@ -161,39 +167,91 @@ export default {
       // this.$el.querySelector(".ql-edit").addEventListener("click", () => {
       //   this.toggleEdit();
       // });
+
+      this.editor.on("selection-change", (range, oldRange, source) => {
+        source;
+        console.log(`CollaborativeEditor • selection-change`);
+        this.updateSelectedLines();
+      });
+      this.editor.on("text-change", (delta, oldDelta, source) => {
+        console.log(`CollaborativeEditor / text-change with source ${source}`);
+        this.$nextTick(() => {
+          this.updateSelectedLines();
+        });
+      });
     },
 
     getEditorContent() {
+      console.log(`CollaborativeEditor • getEditorContent`);
       if (!this.editor.getText() || this.editor.getText() === "\n") return "";
-      let content = this.editor.root.innerHTML;
-      // used to make sure we don’t get weird stuff such as <p style="font-family: "Avada";">plop</p>
-      content = content.replace(/&quot;/g, "'");
-      // todo : remove status class like is--focused or is--dragover
+      let html = this.editor.root.innerHTML;
 
-      return content;
+      html = this.cleanEditorContent(html);
+
+      return html;
+    },
+    cleanEditorContent(html) {
+      console.log(`CollaborativeEditor • cleanEditorContent`);
+
+      var t = document.createElement("template");
+      t.innerHTML = html;
+
+      // used to make sure we don’t get weird stuff such as <p style="font-family: "Avada";">plop</p>
+      // content = content.replace(/&quot;/g, "'");
+      // todo : remove status class like is--selected or is--dragover
+      t.content
+        .querySelectorAll(".is--selected")
+        .forEach((el) => el.classList.remove("is--selected"));
+
+      return t.innerHTML;
     },
 
     toggleEdit() {
-      if (!this.is_editable) this.enableEditor();
+      if (!this.editor_is_enabled) this.enableEditor();
       else this.disableEditor();
     },
     enableEditor() {
       this.editor.enable();
-      this.is_editable = true;
+      this.editor_is_enabled = true;
     },
     disableEditor() {
-      this.editor.disable();
-      this.is_editable = false;
+      this.editor.setSelection(null);
+      this.updateSelectedLines();
+      this.$nextTick(() => {
+        this.editor.disable();
+        this.editor_is_enabled = false;
+      });
     },
 
     restoreVersion(content) {
       this.editor.root.innerHTML = content;
     },
 
+    updateSelectedLines() {
+      console.log(`CollaborativeEditor • updateSelectedLines`);
+
+      if (!this.editor_is_enabled) return;
+      const range = this.editor.getSelection();
+
+      if (range && range.index) {
+        let blots = [];
+        if (range.length === 0) blots = [this.editor.getLine(range.index)[0]];
+        else blots = this.editor.getLines(range.index, range.length);
+
+        if (blots) {
+          this.currently_selected_blots = blots.map((b) => b.domNode);
+          return;
+        }
+      }
+
+      this.currently_selected_blots = false;
+    },
+
     async saveText() {
       const new_meta = {
         content: this.getEditorContent(),
       };
+
       await this.$api.updateItem({
         folder_type: this.folder_type,
         folder_slug: this.folder_slug,
@@ -234,20 +292,20 @@ export default {
       const doc = connection.get("textMedias", requested_querystring);
       doc.subscribe((err) => {
         if (err) {
-          console.error(`ON • CollaborativeEditor: err ${err}`);
+          console.error(`CollaborativeEditor / err ${err}`);
         }
-        console.log(`ON • CollaborativeEditor: subscribe`);
+        console.log(`CollaborativeEditor / doc subscribe`);
 
         if (!doc.type) {
           console.log(
-            `ON • CollaborativeEditor: no type found on doc, creating a new one with content ${JSON.stringify(
+            `CollaborativeEditor / no type found on doc, creating a new one with content ${JSON.stringify(
               this.editor.getContents()
             )}`
           );
           doc.create(this.editor.getContents(), "rich-text");
         } else {
           console.log(
-            `ON • CollaborativeEditor: doc already exists and doc.data = ${JSON.stringify(
+            `CollaborativeEditor / doc already exists and doc.data = ${JSON.stringify(
               doc.data,
               null,
               4
@@ -261,16 +319,20 @@ export default {
         // this.$emit("input", this.sanitizeEditorHTML());
 
         this.editor.on("text-change", (delta, oldDelta, source) => {
+          console.log(
+            `CollaborativeEditor / text-change with source ${source}`
+          );
           if (source == "user") {
             doc.submitOp(delta, { source: this.editor_id });
             this.updateTextMedia();
-          } else {
-            console.log(`ON • CollaborativeEditor: text-change by API`);
           }
+          this.$nextTick(() => {
+            this.updateSelectedLines();
+          });
         });
         doc.on("op", (op, source) => {
           if (source === this.editor_id) return;
-          console.log(`ON • CollaborativeEditor: operation applied to quill`);
+          console.log(`CollaborativeEditor / operation applied to quill`);
           this.editor.updateContents(op);
         });
       });
@@ -381,25 +443,18 @@ export default {
 
     onDragover($event) {
       console.log(`CollaborativeEditor2 / onDragover`);
-      this.is_being_dragover = true;
-
-      this.removeDragoverFromBlots();
-      // this.removeFocusFromBlots();
-
-      const _blot = this.getBlockFromElement($event.target);
-      if (_blot) _blot.domNode.classList.add("is--dragover");
+      $event.preventDefault();
+      // todo debounce dragover to trigger only a handful of times per seconds
+      const el = $event.target;
+      if (el.parentElement.classList.contains("ql-editor")) {
+        el.classList.add("is--dragover");
+        el.addEventListener("dragleave", () => {
+          console.log(`CollaborativeEditor2 / dragleave`);
+          el.classList.remove("is--dragover");
+        });
+      }
     },
-    onDragLeave($event) {
-      if (
-        $event.target.classList.contains("ql-editor") ||
-        this.getBlockFromElement($event.target) !== false
-      )
-        return;
-
-      console.log(`CollaborativeEditor2 / onDragLeave`);
-      this.is_being_dragover = false;
-    },
-
+    // onDragLeave($event) {},
     onDrop($event) {
       console.log(`CollaborativeEditor2 / onDrop`);
 
@@ -418,9 +473,7 @@ export default {
         const index = this.editor.getIndex(_blot);
 
         // find which blot was dragged (A)
-
         // find where it was dropped (B)
-
         // move delta from A to B
 
         console.log(`_blot is currently at index ${index}`);
@@ -456,7 +509,7 @@ export default {
             _blot.next !== null && _blot.next.domNode ? _blot.next : _blot;
 
           const index = this.editor.getIndex(_blot);
-          this.addMediaAtIndex(index, media);
+          this.addMediaAtIndex(index - 1, media);
         }
       }
     },
@@ -481,9 +534,7 @@ export default {
         if (_target === null || !_target.parentElement) break;
       }
       let _blot = Quill.find(_target);
-      if (_blot) {
-        return _blot;
-      }
+      if (_blot) return _blot;
       return false;
     },
   },
@@ -537,6 +588,7 @@ export default {
       font-family: inherit;
       font-weight: normal;
       background-color: var(--toolbar-bg);
+      border: 0;
 
       &:not(.ql-disabled) {
       }
@@ -548,16 +600,99 @@ export default {
       height: auto;
       overflow: visible;
 
-      margin: 0 calc(var(--spacing) * 2);
+      margin: 0 0 0 calc(var(--spacing) * 2);
       background-color: white;
       border-radius: 4px;
 
       > * {
-        padding: 0 calc(var(--spacing));
+        padding: 0 calc(var(--spacing) / 2);
         margin: 0;
       }
       > img {
         max-width: 30ch;
+      }
+
+      .ql-mediacard {
+        transform-origin: center top;
+        border-radius: 0px;
+        outline: none;
+        // margin-top: var(--spacing);
+        // margin-bottom: var(--spacing);
+        // padding: calc(var(--spacing)) 0;
+        // padding-top: 0;
+        // margin-left: calc(-1 * var(--spacing) / 2);
+        // margin-right: calc(-1 * var(--spacing) / 2);
+
+        &[data-ratio="1\/4"] {
+          width: 25%;
+        }
+        &[data-ratio="2\/4"] {
+          width: 50%;
+        }
+        &[data-ratio="3\/4"] {
+          width: 75%;
+        }
+
+        .ql-mediacard--background {
+          content: "";
+          // position: absolute;
+          // display: block;
+          // top: calc(var(--spacing) / 2);
+          // left: calc(-1 * var(--spacing) / 2);
+          // right: calc(-1 * var(--spacing) / 2);
+          // bottom: calc(var(--spacing) / 1);
+
+          // background-color: rgba(0, 0, 0, 0.2);
+          // border: 2px solid var(--active-color);
+          pointer-events: none;
+
+          opacity: 0;
+          z-index: 0;
+        }
+
+        img {
+          display: block;
+        }
+        video {
+          display: block;
+          &:focus {
+            outline: 0;
+          }
+        }
+
+        figcaption {
+          text-align: center;
+          font-size: 75%;
+          // font-weight: 600;
+          color: #444;
+          margin: 0 auto;
+          padding: 0.4em 0;
+          max-width: 33ch;
+          line-height: 2;
+          input {
+            text-align: center;
+            background-color: #d9d9d9;
+            border: 0;
+            border-radius: 4px;
+
+            &:focus {
+              background-color: #eee;
+            }
+          }
+        }
+
+        &:hover {
+          // background-color: #eee;
+          // box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
+        }
+
+        &.is--focused {
+          // outline: 0;
+          // box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
+          // .ql-mediacard--background {
+          //   opacity: 1;
+          // }
+        }
       }
 
       > * {
@@ -568,32 +703,45 @@ export default {
         &::before {
           content: "";
 
-          // font-family: "IBM Plex Sans", "OutputSansVariable";
+          /* old way : pos abs */
           position: absolute;
-          padding-top: 0.85em;
+          // padding-top: 0.85em;
           right: 100%;
           text-align: right;
+          height: 100%;
 
           font-size: 0.6rem;
           text-align: center;
           text-overflow: ellipsis;
           white-space: nowrap;
           overflow: hidden;
+          line-height: 3;
           width: calc(var(--spacing) * 2);
           max-width: 100px;
-          // padding-right: calc(var(--spacing) / 2);
+          line-height: 2.5;
           color: transparent;
           color: hsl(210, 11%, 18%);
 
-          transition: all 0.1s cubic-bezier(0.19, 1, 0.22, 1);
+          // position: relative;
+          // display: inline-block;
+          // font-size: 0.6rem;
+          // vertical-align: baseline;
+          // width: calc(var(--spacing) * 2);
+          // margin-left: calc(var(--spacing) * 2 * -1);
+
+          transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1);
 
           content: counter(listCounter);
         }
 
-        &.is--focused,
-        &.is--dragover {
+        &.is--selected {
           &::before {
             background-color: var(--active-color);
+          }
+        }
+        &.is--dragover {
+          &::before {
+            background-color: var(--c-orange);
           }
         }
 

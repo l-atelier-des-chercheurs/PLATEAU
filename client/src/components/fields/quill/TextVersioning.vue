@@ -71,7 +71,6 @@ export default {
   watch: {},
   computed: {
     archive_shown() {
-      debugger;
       if (this.archives)
         return this.archives.find(
           (a) => a.filename === this.selected_archive_filename

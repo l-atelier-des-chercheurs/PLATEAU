@@ -46,7 +46,7 @@ export default {
   mounted() {
     if (this.open_initially) {
       this.$nextTick(() => {
-        this.$refs.detail.show();
+        if (this.$refs.detail.show) this.$refs.detail.show();
       });
     }
   },
@@ -97,7 +97,7 @@ sl-details::part(content) {
 }
 
 ._editor {
-  padding: var(--spacing) 0;
-  max-width: 120ch;
+  // padding: var(--spacing) 0;
+  // max-width: 120ch;
 }
 </style>

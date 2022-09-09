@@ -13,9 +13,9 @@ export default class MediaBlot extends BlockEmbed {
 
     node.setAttribute("contenteditable", false);
 
-    let bg = window.document.createElement("div");
-    bg.setAttribute("class", "ql-mediacard--background");
-    node.appendChild(bg);
+    // let bg = window.document.createElement("div");
+    // bg.setAttribute("class", "ql-mediacard--background");
+    // node.appendChild(bg);
 
     let tag;
 
@@ -58,13 +58,6 @@ export default class MediaBlot extends BlockEmbed {
     node.addEventListener("dragstart", ($event) => {
       $event.dataTransfer.setData("text/plain", "media_in_quill");
       $event.dataTransfer.effectAllowed = "move";
-      // this.is_dragged = true;
-      // this.$root.settings.media_being_dragged = media.meta_filename;
-    });
-
-    node.style.animation = "scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
-    node.addEventListener("animationend", () => {
-      node.style.animation = "";
     });
 
     return node;
@@ -73,32 +66,49 @@ export default class MediaBlot extends BlockEmbed {
   constructor(node) {
     super(node);
 
-    let removeButton;
-    let caption;
-    let captionInput;
+    let btnRow, caption, captionInput;
 
     node.__onSelect = () => {
       const quill = Quill.find(node.parentElement.parentElement);
-      // const _block = Quill.find(node);
+      // only allow select if editing in quill isnt disabled
+      // if (quill.container.classList.contains("ql-disabled")) return;
 
+      // const _block = Quill.find(node);
       // quill.setSelection(quill.getIndex(_block), 0, Quill.sources.USER);
       node.classList.add("is--focused");
 
-      removeButton = window.document.createElement("button");
-      removeButton.innerHTML = "×";
+      btnRow = window.document.createElement("div");
+
+      let removeButton = window.document.createElement("button");
+      removeButton.innerHTML = "supprimer ×";
       removeButton.setAttribute("type", "button");
       removeButton.classList.add("_button_removeMedia");
       removeButton.addEventListener("click", () => {
-        node.__onDeselect();
         quill.enable(true);
-        node.style.animation = "scale-out 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
-        node.addEventListener("animationend", () => {
-          super.remove();
-          // node.remove();
-          // supprimer du bloc proprement
+        super.remove();
+      });
+      btnRow.appendChild(removeButton);
+
+      let ratioButton = window.document.createElement("select");
+      ratioButton.innerHTML = `
+        <option>default</option>
+        <option>1/4</option>
+        <option>2/4</option>
+        <option>3/4</option>
+        `;
+      ratioButton.classList.add("_select_ratio");
+      ratioButton.addEventListener("change", (event) => {
+        const ratio = event.target.value;
+        node.dataset.ratio = ratio;
+        ratioButton.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest",
         });
       });
-      node.appendChild(removeButton);
+      btnRow.appendChild(ratioButton);
+
+      node.appendChild(btnRow);
 
       caption = node.querySelector("figcaption");
       captionInput = window.document.createElement("input");
@@ -129,7 +139,7 @@ export default class MediaBlot extends BlockEmbed {
         caption.innerText = value;
       }
       node.classList.remove("is--focused");
-      removeButton.remove();
+      btnRow.remove();
     };
   }
 

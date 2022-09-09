@@ -106,6 +106,7 @@ export default {
   background: var(--color-Journal);
   height: 100%;
   overflow: auto;
+  scroll-behavior: smooth;
 }
 ._createForm {
   padding: var(--spacing);

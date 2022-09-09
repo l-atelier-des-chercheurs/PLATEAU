@@ -46,10 +46,12 @@ export default {
 
       $event.dataTransfer.setData("text/plain", JSON.stringify(this.file));
       $event.dataTransfer.effectAllowed = "move";
+      this.$eventHub.$emit(`mediadrag.start`);
     },
     endMediaDrag() {
       this.is_dragged = false;
       console.log(`MediaFocus / endMediaDrag`);
+      this.$eventHub.$emit(`mediadrag.end`);
     },
   },
 };
