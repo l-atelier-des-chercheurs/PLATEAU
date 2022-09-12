@@ -19,7 +19,6 @@
       ref="editor"
       class=""
       :class="{
-        'is--dragover': is_being_dragover,
         'is--editable': editor_is_enabled,
       }"
       @dragover="onDragover"
@@ -44,7 +43,7 @@
 
     <template v-if="editor_is_enabled">
       <span v-if="is_collaborative">
-        ID : {{ editor_id }} Etat de la connection : {{ connection_state }}
+        ID : {{ editor_id }} Etat de la connection : {{ rtc.connection_state }}
       </span>
       <sl-button v-else @click="saveText" size="small"> Save </sl-button>
     </template>
@@ -77,8 +76,7 @@ Quill.register("modules/cardEditable", CardEditableModule);
 
 // how it works:
 // -> disabled by default
-// -> if can_be_edited is true, an edit button is displayed up top
-// -> is is_collaborative is true, it uses sharedb on the server to handle conflict-free editing
+// -> if is_collaborative is true, it uses sharedb on the server to handle conflict-free editing
 
 export default {
   props: {
@@ -93,13 +91,17 @@ export default {
   data() {
     return {
       editor: null,
-      socket: null,
-      connection_state: null,
+
+      rtc: {
+        socket: null,
+        connection_state: null,
+      },
+
       debounce_textUpdate: undefined,
 
-      is_collaborative: false,
+      is_collaborative: true,
+
       editor_is_enabled: false,
-      is_being_dragover: false,
       is_loading_or_saving: false,
       show_saved_icon: false,
 
@@ -117,7 +119,7 @@ export default {
     // this.enableEditor();
   },
   beforeDestroy() {
-    if (this.socket) this.socket.close();
+    this.disableEditor();
   },
   watch: {
     content() {
@@ -217,14 +219,22 @@ export default {
       if (!this.editor_is_enabled) this.enableEditor();
       else this.disableEditor();
     },
-    enableEditor() {
-      this.editor.enable();
-      this.editor_is_enabled = true;
+    async enableEditor() {
+      if (!this.is_collaborative) {
+        this.editor.enable();
+        this.editor_is_enabled = true;
+      } else {
+        await this.startCollaborative();
+        this.editor.enable();
+        this.editor_is_enabled = true;
+      }
     },
     disableEditor() {
       this.editor.setSelection(null);
       this.editor.blur();
       this.updateSelectedLines();
+      this.endCollaborative();
+
       this.$nextTick(() => {
         this.editor.disable();
         this.editor_is_enabled = false;
@@ -274,62 +284,52 @@ export default {
       this.disableEditor();
     },
 
-    startCollaborative() {
-      const params = new URLSearchParams({
-        folder_type: this.folder_type,
-        folder_slug: this.folder_slug,
-        meta_slug: this.meta_slug,
-      });
+    async startCollaborative() {
+      // const params = new URLSearchParams({
+      //   folder_type: this.folder_type,
+      //   folder_slug: this.folder_slug,
+      //   meta_slug: this.meta_slug,
+      // });
 
-      const requested_querystring = "?" + params.toString();
+      // const requested_querystring = "?" + params.toString();
+      const path_to_meta =
+        this.folder_type + "_" + this.folder_slug + "_" + this.meta_slug;
       const requested_resource_url =
         (location.protocol === "https:" ? "wss" : "ws") +
         "://" +
         window.location.host +
-        "/sharedb" +
-        requested_querystring;
+        "/isSharedb" +
+        `?path_to_meta=${path_to_meta}`;
 
       console.log(
         `CollaborativeEditor / startCollaborative : will connect to ws server with ${requested_resource_url}`
       );
 
-      this.socket = new ReconnectingWebSocket(requested_resource_url);
-      const connection = new ShareDB.Connection(this.socket);
+      this.rtc.socket = new ReconnectingWebSocket(requested_resource_url);
+      const connection = new ShareDB.Connection(this.rtc.socket);
       connection.on("state", (state) => {
-        this.connection_state = state.toString();
+        this.rtc.connection_state = state.toString();
       });
 
-      this.is_loading_websocket = true;
-
-      const doc = connection.get("textMedias", requested_querystring);
+      console.log(`CollaborativeEditor / connecting to doc ${path_to_meta}`);
+      const doc = connection.get("collaborative_texts", path_to_meta);
       doc.subscribe((err) => {
-        if (err) {
-          console.error(`CollaborativeEditor / err ${err}`);
-        }
+        if (err) console.error(`CollaborativeEditor / err ${err}`);
         console.log(`CollaborativeEditor / doc subscribe`);
 
         if (!doc.type) {
-          console.log(
-            `CollaborativeEditor / no type found on doc, creating a new one with content ${JSON.stringify(
-              this.editor.getContents()
-            )}`
-          );
-          doc.create(this.editor.getContents(), "rich-text");
+          // if no doc type, then doc wasnt created server
+          // this is very bad…
         } else {
           console.log(
             `CollaborativeEditor / doc already exists and doc.data = ${JSON.stringify(
-              doc.data,
-              null,
-              4
+              doc.data
             )}`
           );
           this.editor.setContents(doc.data, "init");
         }
 
         this.editor.history.clear();
-        // this.editor.setSelection(this.editor.getLength(), 0, "api");
-        // this.$emit("input", this.sanitizeEditorHTML());
-
         this.editor.on("text-change", (delta, oldDelta, source) => {
           console.log(
             `CollaborativeEditor / text-change with source ${source}`
@@ -338,9 +338,6 @@ export default {
             doc.submitOp(delta, { source: this.editor_id });
             this.updateTextMedia();
           }
-          this.$nextTick(() => {
-            this.updateSelectedLines();
-          });
         });
         doc.on("op", (op, source) => {
           if (source === this.editor_id) return;
@@ -349,13 +346,15 @@ export default {
         });
       });
 
-      doc.on("error", () => {
+      doc.on("error", (err) => {
         // err;
         // soucis : les situations ou le serveur a été fermé et en le rouvrant il ne possède plus d’instance du doc dans sharedb…
-        this.$forceUpdate();
+        console.error(`CollaborativeEditor / doc err ${err}`);
       });
     },
-    endCollaborative() {},
+    endCollaborative() {
+      if (this.rtc.socket) this.rtc.socket.close();
+    },
 
     updateTextMedia() {
       if (this.debounce_textUpdate) clearTimeout(this.debounce_textUpdate);
