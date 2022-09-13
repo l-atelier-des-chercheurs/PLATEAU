@@ -15,13 +15,15 @@ module.exports = function (server) {
   dev.log(`init`);
   const backend = new Backend();
   const connection = backend.connect();
-  const sharedb_logger = new ShareDB_logger(backend);
+  // const sharedb_logger = new ShareDB_logger(backend);
   dev.log(`ws init`);
 
-  backend.use("op", (req, cb) => {
+  backend.use("op", (context, next) => {
     dev.logverbose(`sharedb: op received`);
-    const snapshot_as_delta = backend.db.docs[req.collection][req.id];
-    dev.logverbose(`-> snapshot = ${JSON.stringify(snapshot_as_delta)}`);
+    // const snapshot_as_delta = backend.db.docs[req.collection][req.id];
+    // dev.logverbose(`-> snapshot = ${JSON.stringify(snapshot_as_delta)}`);
+    // getSnapshot(context);
+    next();
   });
   backend.use("connect", (context, next) => {
     dev.logfunction(`connect`);
@@ -50,10 +52,10 @@ module.exports = function (server) {
     backend.listen(stream);
 
     client.on("message", function (data, flags) {
-      dev.logverbose(`sharewss: message for ${client.id}`);
+      dev.logverbose(`sharewss: message from ${client.id}`);
     });
     client.on("pong", function (data, flags) {
-      dev.logverbose(`sharewss: pong received for ${client.id}`);
+      // dev.logverbose(`sharewss: pong received from ${client.id}`);
       client.isAlive = true;
     });
     client.on("message", function () {});
@@ -78,7 +80,7 @@ module.exports = function (server) {
       if (client.isAlive === false) return client.terminate();
       client.isAlive = false;
       client.ping();
-      dev.logverbose(`sharewss: ping sent for ${client.id}`);
+      // dev.logverbose(`sharewss: ping sent for ${client.id}`);
     });
   }, 5000);
 
@@ -96,15 +98,17 @@ module.exports = function (server) {
     // remove /isSharedb/ and parse path
     const q = new URLSearchParams(url.substring(11));
     const path_to_meta = q.get("path_to_meta");
+    // const path_to_meta = "plop";
 
     const sharedoc = connection.get("collaborative_texts", path_to_meta);
-    const rendered_text = "<p>Plop</p>";
+    const ops = [{ insert: "Text", attributes: { bold: true } }];
 
     dev.logverbose(`Connecting to doc ${path_to_meta}`);
     try {
       if (sharedoc.data == null) {
-        dev.logverbose(`Doc doesnt exist, creating it with ${rendered_text}`);
-        await sharedoc.create(rendered_text, "rich-text");
+        dev.logverbose(`Doc doesnt exist, creating it with ${ops}`);
+        await sharedoc.create(ops, "rich-text");
+        await new Promise((r) => setTimeout(r, 2000));
       } else {
         dev.logverbose(`Doc already exists`);
       }
@@ -113,6 +117,18 @@ module.exports = function (server) {
     }
 
     // doc client side doesnt seem to be the same as the one used server side
+  }
+
+  async function getSnapshot(context) {
+    backend.fetch(
+      context.agent,
+      context.collection,
+      context.id,
+      {},
+      function (error, snapshot) {
+        console.log(snapshot);
+      }
+    );
   }
 };
 

@@ -132,8 +132,6 @@ export default {
         .forEach((el) => el.classList.remove("is--selected"));
 
       if (newEles) newEles.forEach((el) => el.classList.add("is--selected"));
-
-      debugger;
     },
   },
   computed: {
@@ -177,12 +175,10 @@ export default {
       // });
 
       this.editor.on("selection-change", () => {
-        console.log(`CollaborativeEditor / selection-change`);
+        // console.log(`CollaborativeEditor / selection-change`);
         this.updateSelectedLines();
       });
       this.editor.on("text-change", (delta, oldDelta, source) => {
-        console.log(`CollaborativeEditor / text-change with source ${source}`);
-
         // todo : only update if possibly changing line (backspace and enter)
         this.$nextTick(() => {
           this.updateSelectedLines();
@@ -246,15 +242,15 @@ export default {
     },
 
     updateSelectedLines() {
-      console.log(`CollaborativeEditor • updateSelectedLines`);
+      // console.log(`CollaborativeEditor • updateSelectedLines`);
       if (!this.editor_is_enabled) return;
 
       const range = this.editor.getSelection();
 
       if (range && range.index) {
-        console.log(
-          `CollaborativeEditor • updateSelectedLines / range.index = ${range.index} et range.length = ${range.length} `
-        );
+        // console.log(
+        //   `CollaborativeEditor • updateSelectedLines / range.index = ${range.index} et range.length = ${range.length} `
+        // );
 
         let blots = [];
         if (range.length === 0) blots = [this.editor.getLine(range.index)[0]];
@@ -294,6 +290,7 @@ export default {
       // const requested_querystring = "?" + params.toString();
       const path_to_meta =
         this.folder_type + "_" + this.folder_slug + "_" + this.meta_slug;
+
       const requested_resource_url =
         (location.protocol === "https:" ? "wss" : "ws") +
         "://" +
@@ -313,20 +310,21 @@ export default {
 
       console.log(`CollaborativeEditor / connecting to doc ${path_to_meta}`);
       const doc = connection.get("collaborative_texts", path_to_meta);
+
       doc.subscribe((err) => {
         if (err) console.error(`CollaborativeEditor / err ${err}`);
         console.log(`CollaborativeEditor / doc subscribe`);
 
-        if (!doc.type) {
-          // if no doc type, then doc wasnt created server
-          // this is very bad…
-        } else {
+        if (doc.type) {
           console.log(
             `CollaborativeEditor / doc already exists and doc.data = ${JSON.stringify(
               doc.data
             )}`
           );
           this.editor.setContents(doc.data, "init");
+        } else {
+          // if no doc type, then doc wasnt created server
+          // this is very bad…
         }
 
         this.editor.history.clear();
@@ -334,14 +332,20 @@ export default {
           console.log(
             `CollaborativeEditor / text-change with source ${source}`
           );
-          if (source == "user") {
+          if (source === "user") {
             doc.submitOp(delta, { source: this.editor_id });
-            this.updateTextMedia();
+            console.log(
+              `CollaborativeEditor / submitted op to server ${JSON.stringify(
+                delta
+              )}`
+            );
+            // this.updateTextMedia();
           }
         });
         doc.on("op", (op, source) => {
+          console.log(`CollaborativeEditor / op applied`);
           if (source === this.editor_id) return;
-          console.log(`CollaborativeEditor / operation applied to quill`);
+          console.log(`CollaborativeEditor / outside op applied`);
           this.editor.updateContents(op);
         });
       });
