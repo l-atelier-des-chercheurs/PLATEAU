@@ -273,12 +273,17 @@ export default {
         content: this.getEditorContent(),
       };
 
-      await this.$api.updateItem({
-        folder_type: this.folder_type,
-        folder_slug: this.folder_slug,
-        meta_slug: this.meta_slug,
-        new_meta,
-      });
+      try {
+        await this.$api.updateItem({
+          folder_type: this.folder_type,
+          folder_slug: this.folder_slug,
+          meta_slug: this.meta_slug,
+          new_meta,
+        });
+      } catch (err) {
+        if (err.message === "content not changed") err;
+        debugger;
+      }
 
       this.disableEditor();
     },
