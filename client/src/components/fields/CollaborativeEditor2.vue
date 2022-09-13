@@ -17,7 +17,7 @@
     </div>
     <div
       ref="editor"
-      class=""
+      class="_mainText"
       :class="{
         'is--editable': editor_is_enabled,
       }"
@@ -179,6 +179,7 @@ export default {
         this.updateSelectedLines();
       });
       this.editor.on("text-change", (delta, oldDelta, source) => {
+        delta, oldDelta, source;
         // todo : only update if possibly changing line (backspace and enter)
         this.$nextTick(() => {
           this.updateSelectedLines();
@@ -628,96 +629,7 @@ export default {
       background-color: white;
       border-radius: 4px;
 
-      > * {
-        padding: 0 calc(var(--spacing) / 2);
-        margin: 0;
-      }
-      > img {
-        max-width: 30ch;
-      }
-
-      .ql-mediacard {
-        transform-origin: center top;
-        border-radius: 0px;
-        outline: none;
-        // margin-top: var(--spacing);
-        // margin-bottom: var(--spacing);
-        // padding: calc(var(--spacing)) 0;
-        // padding-top: 0;
-        // margin-left: calc(-1 * var(--spacing) / 2);
-        // margin-right: calc(-1 * var(--spacing) / 2);
-
-        &[data-ratio="1\/4"] .ql-mediacard-container {
-          width: 25%;
-        }
-        &[data-ratio="2\/4"] .ql-mediacard-container {
-          width: 50%;
-        }
-        &[data-ratio="3\/4"] .ql-mediacard-container {
-          width: 75%;
-        }
-
-        .ql-mediacard--background {
-          content: "";
-          // position: absolute;
-          // display: block;
-          // top: calc(var(--spacing) / 2);
-          // left: calc(-1 * var(--spacing) / 2);
-          // right: calc(-1 * var(--spacing) / 2);
-          // bottom: calc(var(--spacing) / 1);
-
-          // background-color: rgba(0, 0, 0, 0.2);
-          // border: 2px solid var(--active-color);
-          pointer-events: none;
-
-          opacity: 0;
-          z-index: 0;
-        }
-
-        img {
-          display: block;
-        }
-        video {
-          display: block;
-          &:focus {
-            outline: 0;
-          }
-        }
-
-        figcaption {
-          text-align: center;
-          font-size: 75%;
-          // font-weight: 600;
-          color: #444;
-          margin: 0 auto;
-          padding: 0.4em 0;
-          max-width: 33ch;
-          line-height: 2;
-          input {
-            text-align: center;
-            background-color: #d9d9d9;
-            border: 0;
-            border-radius: 4px;
-
-            &:focus {
-              background-color: #eee;
-            }
-          }
-        }
-
-        &:hover {
-          // background-color: #eee;
-          // box-shadow: 0 0 0 1px #fff, 0 0 0 2px var(--active-color);
-        }
-
-        &.is--focused {
-          // outline: 0;
-          // box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--active-color);
-          // .ql-mediacard--background {
-          //   opacity: 1;
-          // }
-        }
-      }
+      @import "./quill/mainText.scss";
 
       > * {
         counter-increment: listCounter;

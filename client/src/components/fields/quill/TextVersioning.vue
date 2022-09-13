@@ -14,10 +14,14 @@
         <!-- not sure why sl-select doesnt work here -->
         <select v-model="selected_archive_filename">
           <option
-            v-for="archive in archives"
+            v-for="(archive, index) in archives"
             :value="archive.filename"
             :key="archive.filename"
-            v-text="formatDateToPrecise(archive.date)"
+            v-text="
+              formatDateToPrecise(archive.date) +
+              ' - version ' +
+              (archives.length - index)
+            "
           />
         </select>
 
@@ -36,8 +40,8 @@
             (archive_shown.content || archive_shown.content === '')
           "
         >
-          <DateField :show_detail_initially="true" :date="archive_shown.date" />
-          <div v-html="archive_shown.content" />
+          <!-- <DateField :show_detail_initially="true" :date="archive_shown.date" /> -->
+          <div class="_archiveText" v-html="archive_shown.content" />
         </div>
       </div>
       <sl-button
@@ -86,8 +90,9 @@ export default {
         meta_slug: this.meta_slug,
       });
 
-      // this.selected_archive_filename =
-      //   this.archives[this.archives.length - 1].filename;
+      this.archives.reverse();
+
+      this.selected_archive_filename = this.archives[0].filename;
     },
     toggleArchives() {
       this.show_archives = !this.show_archives;
@@ -107,27 +112,27 @@ export default {
 </script>
 <style lang="scss" scoped>
 ._archives {
-  border: 1px solid black;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1px;
-  padding: 1px;
+  // border: 1px solid black;
+  // display: grid;
+  // grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  // gap: 1px;
+  // padding: 1px;
 
   > * {
-    background: white;
-    padding: calc(var(--spacing) / 2);
+    // background: white;
+    // padding: calc(var(--spacing) / 2);
   }
 }
 
 ._archiveText {
-  background: #eee;
+  background: var(--color-Journal);
   padding: calc(var(--spacing) / 2);
   width: 100%;
   // max-height: 150px;
   // overflow: auto;
 
-  ::v-deep > *:first-child {
-    margin-top: 0;
+  ::v-deep {
+    @import "./mainText.scss";
   }
 }
 </style>
