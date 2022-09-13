@@ -20,6 +20,7 @@
           :folder_slug="project_slug"
           :meta_slug="file.slug"
           :content="file.content"
+          :scrollingContainer="scrollingContainer"
         />
       </div>
     </transition>
@@ -33,6 +34,7 @@ export default {
     file: Object,
     project_slug: String,
     open_initially: Boolean,
+    scrollingContainer: HTMLElement,
   },
   components: {
     CollaborativeEditor2,

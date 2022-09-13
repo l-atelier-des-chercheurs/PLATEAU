@@ -84,6 +84,7 @@ export default {
     folder_slug: String,
     meta_slug: String,
     content: String,
+    scrollingContainer: HTMLElement,
   },
   components: {
     TextVersioning,
@@ -163,6 +164,7 @@ export default {
         formats,
         placeholder: "…",
         readOnly: !this.editor_is_enabled,
+        scrollingContainer: this.scrollingContainer,
       });
       if (this.content) this.editor.root.innerHTML = this.content;
 

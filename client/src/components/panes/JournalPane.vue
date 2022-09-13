@@ -1,5 +1,5 @@
 <template>
-  <div class="_journal">
+  <div class="_journal" ref="journal">
     <div
       v-for="file of files"
       :key="file.slug"
@@ -10,6 +10,7 @@
         :file="file"
         :project_slug="project.slug"
         :open_initially="entryStatus({ slug: file.slug })"
+        :scrollingContainer="$refs.journal"
         @toggleEntry="toggleEntry({ slug: file.slug, is_open: $event })"
       />
     </div>
