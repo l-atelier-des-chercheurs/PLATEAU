@@ -8,7 +8,7 @@
     <component
       :is="$root.is_mobile_view ? 'sl-drawer' : 'span'"
       label="Panneaux"
-      class=""
+      class="_paneList2"
       placement="top"
       ref="drawer"
     >
@@ -24,26 +24,36 @@
           class="_paneItem"
           :key="item.key"
         >
-          <label
-            :for="`enable_pane_for_${item.key}`"
+          <div
             class="_paneItem--button button"
-            :data-correspondingpane="item.key"
-            :disabled="!item.enabled"
             :style="`--color-active: var(--color-${item.key});`"
+            @click="removePane(index)"
           >
-            <input
-              type="checkbox"
-              :id="`enable_pane_for_${item.key}`"
-              v-model="item.enabled"
-            />
             <div>
-              <div v-handle v-if="item.enabled" class="_handle" />
+              <div v-handle class="_handle" />
               <span>{{ $t(item.key) }}</span>
             </div>
-          </label>
+          </div>
         </SlickItem>
       </SlickList>
+      <!-- <sl-icon name="plus-square-fill" label="Panneaux" />
+      <sl-icon name="plus" label="Panneaux" /> -->
+      <sl-dropdown>
+        <sl-button slot="trigger" variant="default" circle>
+          <sl-icon name="plus" label="Panneaux" />
+        </sl-button>
+        <sl-menu>
+          <sl-menu-item
+            v-for="pane in possible_project_panes"
+            :key="pane.key"
+            v-html="$t(pane.key)"
+            @click="newPaneSelected(pane)"
+          />
+        </sl-menu>
+      </sl-dropdown>
     </component>
+
+    <!-- // TODO -->
 
     <sl-button
       v-if="$root.is_mobile_view"
@@ -52,8 +62,8 @@
       type="primary"
       size="small"
     >
-      Panneaux</sl-button
-    >
+      <sl-icon name="layout-three-columns" label="Panneaux" />
+    </sl-button>
   </div>
 </template>
 <script>
@@ -73,33 +83,33 @@ export default {
       show_panelist: false,
 
       project_panes: [],
-      default_project_panes: [
+      possible_project_panes: [
         {
           key: "Journal",
-          enabled: true,
-          size_pc: 50,
+          pads: [],
+          size: 50,
         },
         {
           key: "MediaLibrary",
-          enabled: true,
-          size_pc: 50,
+          focus: false,
+          focus_height: 0,
+          size: 50,
         },
         {
           key: "Capture",
-          enabled: false,
-          size_pc: 0,
+          mode: false,
+          size: 50,
         },
         {
           key: "Team",
-          enabled: false,
-          size_pc: 0,
+          size: 50,
         },
       ],
     };
   },
   created() {
-    if (this.project_panes.length === 0)
-      this.project_panes = this.default_project_panes.slice();
+    // if (this.project_panes.length === 0)
+    //   this.project_panes = this.default_project_panes.slice();
   },
   mounted() {},
   beforeDestroy() {},
@@ -116,9 +126,9 @@ export default {
         if (JSON.stringify(this.project_panes) === JSON.stringify(this.panes))
           return false;
 
-        // if a pane is enabled its size_pc cant be set to 0
+        // if a pane is enabled its size cant be set to 0
         this.project_panes = this.project_panes.map((p) => {
-          if (p.size_pc === 0) p.size_pc = 20;
+          if (p.size === 0) p.size = 20;
           return p;
         });
 
@@ -133,11 +143,25 @@ export default {
     },
   },
   computed: {},
-  methods: {},
+  methods: {
+    newPaneSelected(pane) {
+      // $evt.detail.item.value;
+      this.project_panes.push(pane);
+    },
+    removePane(index) {
+      this.project_panes.splice(index, 1);
+    },
+  },
 };
 </script>
 <style lang="scss">
 ._paneList {
+  ._paneList2 {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-end;
+  }
+
   &.is--mobile {
     ._paneList--list {
       // flex-flow: row;
@@ -148,7 +172,7 @@ export default {
 }
 
 ._paneList--list {
-  flex-basis: 300px;
+  // flex-basis: 300px;
 
   height: auto;
   display: flex;
@@ -216,19 +240,11 @@ export default {
     border: 1px solid transparent;
   }
 
-  > input {
-    flex: 0 0 auto;
-    margin-right: calc(var(--spacing) / 2);
-    position: absolute;
-    top: -20px;
-    opacity: 0;
-
-    &:checked + div {
-      // background-color: #ccc;
-      // border-color: var(--color-active);
-      border-color: black;
-      background: var(--color-active);
-    }
+  div {
+    // background-color: #ccc;
+    // border-color: var(--color-active);
+    // border-color: black;
+    background: var(--color-active);
   }
 }
 
@@ -261,6 +277,7 @@ export default {
   &:hover {
     border-color: #000;
     background-color: var(--color-active);
+
     ::before {
     }
   }

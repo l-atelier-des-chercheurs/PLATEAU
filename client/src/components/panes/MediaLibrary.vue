@@ -97,7 +97,7 @@ import MediaTile from "@/components/MediaTile.vue";
 export default {
   props: {
     project: Object,
-    libpanes: Array,
+    focus_height: Number,
     media_focused: String,
   },
   components: {
@@ -114,7 +114,7 @@ export default {
       show_create_link_field: false,
       url_to: "https://latelier-des-chercheurs.fr/",
 
-      focuspane_height_when_opened: this.libpanes[1] || 50,
+      focuspane_height_when_opened: this.focus_height,
     };
   },
   created() {},
@@ -131,10 +131,11 @@ export default {
       );
     },
     lib_pane_size() {
-      return (this.libpanes && this.libpanes[0]) || 100;
+      return 100 - this.focus_pane_size;
     },
     focus_pane_size() {
-      return (this.libpanes && this.libpanes[1]) || 0;
+      if (!this.focused_media) return 0;
+      return this.focus_height;
     },
   },
   methods: {
@@ -172,23 +173,22 @@ export default {
       this.$api.uploadText({ filename, content, additional_meta });
     },
 
-    resized(libpanes) {
-      const _libpanes = libpanes.map((l) => Number(l.size.toFixed(2)));
-      this.$emit("update:libpanes", _libpanes);
-
-      if (_libpanes[1] !== 0) this.focuspane_height_when_opened = _libpanes[1];
+    resized(panes) {
+      const focus_pane_height = panes[1].size;
+      this.$emit("update:focus_height", focus_pane_height);
     },
-
+    setMediaFocusHeight(size) {},
     toggleMediaFocus(slug) {
       if (!slug || this.media_focused === slug) {
         this.$emit("update:media_focused", null);
-        this.resized([{ size: 100 }, { size: 0 }]);
       } else {
         this.$emit("update:media_focused", slug);
-        this.resized([
-          { size: 100 - this.focuspane_height_when_opened },
-          { size: this.focuspane_height_when_opened },
-        ]);
+        if (this.focus_height === 0) this.$emit("update:focus_height", 50);
+        // debugger;
+        // this.resized([
+        //   { size: 100 - this.focuspane_height_when_opened },
+        //   { size: this.focuspane_height_when_opened },
+        // ]);
       }
     },
 

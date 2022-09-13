@@ -1,61 +1,54 @@
 <template>
-  <splitpanes
-    watch-slots
-    :dbl-click-splitter="false"
-    @resized="resized"
-    :key="JSON.stringify(projectpanes.map((p) => p.key))"
-  >
-    <template v-if="projectpanes.filter((p) => p.enabled).length === 0">
+  <splitpanes watch-slots :dbl-click-splitter="false" @resized="resized">
+    <template v-if="projectpanes.length === 0">
       <pane><i>Aucune panneau n’est actif</i></pane>
     </template>
     <template v-else v-for="pane in projectpanes">
       <pane
-        v-if="pane.key === 'Journal' && pane.enabled"
+        v-if="pane.key === 'Journal'"
         :key="pane.key"
         min-size="5"
-        :size="pane.size_pc"
+        :size="pane.size"
         ref="Journal"
       >
         <JournalPane
           :project="project"
-          :opened_journal_entries="opened_journal_entries"
-          @update:opened_journal_entries="
-            $emit('update:opened_journal_entries', $event)
-          "
+          :opened_journal_entries="pane.pads"
+          @update:opened_journal_entries="pane.pads = $event"
         />
       </pane>
 
       <pane
-        v-else-if="pane.key === 'MediaLibrary' && pane.enabled"
+        v-else-if="pane.key === 'MediaLibrary'"
         :key="pane.key"
         min-size="5"
-        :size="pane.size_pc"
+        :size="pane.size"
         ref="MediaLibrary"
       >
         <MediaLibrary
           :project="project"
-          :libpanes="libpanes"
-          @update:libpanes="$emit('update:libpanes', $event)"
-          :media_focused="media_focused"
-          @update:media_focused="$emit('update:media_focused', $event)"
+          :focus_height="pane.focus_height"
+          @update:focus_height="pane.focus_height = $event"
+          :media_focused="pane.focus"
+          @update:media_focused="pane.focus = $event"
         />
       </pane>
 
       <pane
-        v-else-if="pane.key === 'Capture' && pane.enabled"
+        v-else-if="pane.key === 'Capture'"
         :key="pane.key"
         min-size="5"
-        :size="pane.size_pc"
+        :size="pane.size"
         ref="Capture"
       >
         <CapturePane :project="project" />
       </pane>
 
       <pane
-        v-else-if="pane.key === 'Team' && pane.enabled"
+        v-else-if="pane.key === 'Team'"
         :key="pane.key"
         min-size="5"
-        :size="pane.size_pc"
+        :size="pane.size"
         ref="Team"
       >
         <TeamPane :project="project" />
@@ -73,10 +66,7 @@ import TeamPane from "@/components/panes/TeamPane.vue";
 export default {
   props: {
     projectpanes: Array,
-    libpanes: Array,
-    opened_journal_entries: Array,
     project: Object,
-    media_focused: String,
   },
   components: {
     Splitpanes,
@@ -98,14 +88,11 @@ export default {
     resized(shown_projectpanes) {
       console.log(`Project / methods: resized`);
       let index = 0;
-      const projectpanes = this.projectpanes.slice().map((p) => {
-        if (p.enabled) {
-          p.size_pc = Number(shown_projectpanes[index].size.toFixed(2));
-          index++;
-        }
+      this.projectpanes.map((p) => {
+        p.size = Number(p.size.toFixed(1));
         return p;
       });
-      this.$emit("update:panes", projectpanes);
+      // this.$emit("update:projectpanes", projectpanes);
     },
   },
 };
