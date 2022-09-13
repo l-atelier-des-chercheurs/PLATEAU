@@ -1,35 +1,59 @@
 <template>
-  <div>
-    <SlickList
-      class="_panelist"
-      axis="x"
-      v-model="project_panes"
-      :useDragHandle="true"
+  <div
+    class="_paneList"
+    :class="{
+      'is--mobile': $root.is_mobile_view,
+    }"
+  >
+    <component
+      :is="$root.is_mobile_view ? 'sl-drawer' : 'span'"
+      label="Panneaux"
+      class=""
+      placement="top"
+      ref="drawer"
     >
-      <SlickItem
-        v-for="(item, index) in project_panes"
-        :index="index"
-        :key="item.key"
+      <SlickList
+        class="_paneList--list"
+        axis="x"
+        v-model="project_panes"
+        :useDragHandle="true"
       >
-        <label
-          :for="`enable_pane_for_${item.key}`"
-          class="_panelist--button button"
-          :data-correspondingpane="item.key"
-          :disabled="!item.enabled"
-          :style="`--color-active: var(--color-${item.key});`"
+        <SlickItem
+          v-for="(item, index) in project_panes"
+          :index="index"
+          class="_paneItem"
+          :key="item.key"
         >
-          <input
-            type="checkbox"
-            :id="`enable_pane_for_${item.key}`"
-            v-model="item.enabled"
-          />
-          <div>
-            <div v-handle v-if="item.enabled" class="_handle" />
-            <span>{{ $t(item.key) }}</span>
-          </div>
-        </label>
-      </SlickItem>
-    </SlickList>
+          <label
+            :for="`enable_pane_for_${item.key}`"
+            class="_paneItem--button button"
+            :data-correspondingpane="item.key"
+            :disabled="!item.enabled"
+            :style="`--color-active: var(--color-${item.key});`"
+          >
+            <input
+              type="checkbox"
+              :id="`enable_pane_for_${item.key}`"
+              v-model="item.enabled"
+            />
+            <div>
+              <div v-handle v-if="item.enabled" class="_handle" />
+              <span>{{ $t(item.key) }}</span>
+            </div>
+          </label>
+        </SlickItem>
+      </SlickList>
+    </component>
+
+    <sl-button
+      v-if="$root.is_mobile_view"
+      @click="$refs.drawer.show()"
+      pill
+      type="primary"
+      size="small"
+    >
+      Panneaux</sl-button
+    >
   </div>
 </template>
 <script>
@@ -46,6 +70,8 @@ export default {
   directives: { handle: HandleDirective },
   data() {
     return {
+      show_panelist: false,
+
       project_panes: [],
       default_project_panes: [
         {
@@ -100,18 +126,33 @@ export default {
       },
       deep: true,
     },
+    "$root.is_mobile_view"() {
+      if (this.$root.is_mobile_view) {
+        // this.project_panes.map()
+      }
+    },
   },
   computed: {},
   methods: {},
 };
 </script>
 <style lang="scss">
-._panelist {
+._paneList {
+  &.is--mobile {
+    ._paneList--list {
+      // flex-flow: row;
+      align-items: center;
+      flex-flow: column nowrap;
+    }
+  }
+}
+
+._paneList--list {
   flex-basis: 300px;
 
   height: auto;
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row wrap;
   justify-content: flex-end;
   // justify-content: flex-end;
   white-space: nowrap;
@@ -139,7 +180,7 @@ export default {
   }
 }
 
-._panelist--button {
+._paneItem--button {
   display: flex;
   flex-flow: row nowrap;
   align-items: center;

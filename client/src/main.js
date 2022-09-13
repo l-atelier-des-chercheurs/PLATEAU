@@ -71,6 +71,11 @@ new Vue({
     is_connected: false,
     is_electron: navigator.userAgent.toLowerCase().indexOf(" electron/") > -1,
     dev_mode: true,
+
+    window: {
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+    },
   },
   mounted() {
     this.$api.init();
@@ -78,10 +83,20 @@ new Vue({
     this.$eventHub.$on("socketio.reconnect", this.socketConnected);
     this.$eventHub.$on("socketio.disconnect", this.socketDisconnected);
     this.$eventHub.$on("socketio.connect_error", this.socketConnectError);
+
+    window.addEventListener("resize", () => {
+      this.window.innerWidth = window.innerWidth;
+      this.window.innerHeight = window.innerHeight;
+    });
   },
   watch: {
     "$api.socket.connected": function () {
       this.is_connected = this.$api.socket.connected;
+    },
+  },
+  computed: {
+    is_mobile_view() {
+      return this.window.innerWidth < 700;
     },
   },
   methods: {
