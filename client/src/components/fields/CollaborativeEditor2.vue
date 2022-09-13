@@ -543,6 +543,10 @@ export default {
           const index = this.editor.getIndex(_blot);
           this.addMediaAtIndex(index - 1, media);
         }
+      } else {
+        console.log(
+          `CollaborativeEditor2 / onDrop : missing meta for drop to occur`
+        );
       }
     },
 

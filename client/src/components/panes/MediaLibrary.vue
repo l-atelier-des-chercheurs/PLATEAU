@@ -57,23 +57,14 @@
         Médias = {{ medias.length }}
 
         <div class="_mediaLibrary--lib--grid">
-          <div
+          <MediaTile
             v-for="file of medias"
             :key="file.slug"
-            class="_mediaTile"
-            :data-type="file.type"
-          >
-            <!-- {{ file.type }} -->
-            <MediaContent :file="file" :project_slug="project.slug" />
-            <button
-              type="button"
-              class="_focusMediaBtn"
-              :class="{
-                'is--focused': media_focused === file.slug,
-              }"
-              @click="toggleMediaFocus(file.slug)"
-            />
-          </div>
+            :project_slug="project.slug"
+            :file="file"
+            :is_focused="media_focused === file.slug"
+            @toggleMediaFocus="(slug) => toggleMediaFocus(slug)"
+          />
         </div>
       </pane>
       <pane
@@ -99,9 +90,9 @@
 <script>
 import { Splitpanes, Pane } from "splitpanes";
 
-import MediaFocus from "@/components/fields/MediaFocus";
+import MediaFocus from "@/components/MediaFocus";
 import UploadFiles from "@/components/fields/UploadFiles";
-import MediaContent from "@/components/MediaContent.vue";
+import MediaTile from "@/components/MediaTile.vue";
 
 export default {
   props: {
@@ -112,10 +103,9 @@ export default {
   components: {
     Splitpanes,
     Pane,
-
+    MediaTile,
     MediaFocus,
     UploadFiles,
-    MediaContent,
   },
   data() {
     return {
@@ -231,73 +221,10 @@ export default {
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   gap: 1px;
   padding: 1px;
-
-  ._mediaTile {
-    position: relative;
-    aspect-ratio: 1/1;
-    background: rgba(255, 255, 255, 0.35);
-
-    &[data-type="text"],
-    &[data-type="other"] {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      text-align: center;
-    }
-
-    ::v-deep {
-      img {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        max-width: none;
-      }
-    }
-  }
-
-  ._focusMediaBtn {
-    appearance: none;
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    background: transparent;
-    transition: all 0.1s linear;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.35);
-      transition: none;
-    }
-
-    &.is--focused {
-      background: rgba(255, 255, 255, 0.55);
-    }
-  }
 }
 
 ._mediaLibrary--focusPane {
-  position: relative;
-  padding: 1px;
   // background: var(--c-bleu);
-
-  ::v-deep {
-    ._mediaContent {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      pointer-events: auto;
-
-      img {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-
-        object-fit: contain;
-        max-width: none;
-      }
-    }
-  }
 }
 
 ._focusBtns {

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="_mediaFocus">
     <div
       :draggable="true"
       @dragstart="startMediaDrag($event)"
@@ -56,4 +56,29 @@ export default {
   },
 };
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+._mediaFocus {
+  position: relative;
+  // padding: 1px;
+  width: 100%;
+  height: 100%;
+
+  ::v-deep {
+    ._mediaContent {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: auto;
+
+      img {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+
+        object-fit: contain;
+        max-width: none;
+      }
+    }
+  }
+}
+</style>
