@@ -108,7 +108,7 @@ module.exports = function (server) {
       if (sharedoc.data == null) {
         dev.logverbose(`Doc doesnt exist, creating it with ${ops}`);
         await sharedoc.create(ops, "rich-text");
-        await new Promise((r) => setTimeout(r, 2000));
+        // await new Promise((r) => setTimeout(r, 2000));
       } else {
         dev.logverbose(`Doc already exists`);
       }

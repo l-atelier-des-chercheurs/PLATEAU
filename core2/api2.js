@@ -353,7 +353,7 @@ module.exports = (function () {
         changed_data,
       });
     } catch (err) {
-      dev.error("Failed to update content: " + err);
+      dev.error("Failed to update content: " + err.message);
       res.status(500).send(err);
     }
 

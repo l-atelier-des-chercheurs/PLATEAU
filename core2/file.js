@@ -163,8 +163,19 @@ module.exports = (function () {
         if (typeof content !== "string")
           throw new Error("Content (text) is not a string");
 
+        // check if content is different from previous content, return early if that's the case
+        const previous_content = await utils.readFileContent(
+          folder_type,
+          folder_slug,
+          meta.media_filename
+        );
+        if (previous_content === content)
+          throw new Error("content not changed");
+
         dev.logfunction(
           `Content is supposed to be updated`,
+          { previous_content },
+          { content },
           { type: meta.type },
           { media_filename: meta.media_filename }
         );
