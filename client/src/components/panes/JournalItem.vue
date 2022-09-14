@@ -2,28 +2,23 @@
   <div class="_journalItem">
     <sl-details
       :summary="file.title"
-      @sl-show="afterShow"
-      @sl-hide="hide"
+      @sl-show="onShow"
+      @sl-hide="onHide"
       ref="detail"
     >
       <DateField class="" :title="'date_created'" :date="file.date_uploaded" />
       <DateField :title="'date_modified'" :date="file.date_modified" />
       <sl-button @click="removeText" size="small">Supprimer</sl-button>
-
-      <!-- <pre>{{ file.content }}</pre> -->
     </sl-details>
-
-    <transition name="fade_fast">
-      <div class="_editor" v-if="is_open">
-        <CollaborativeEditor2
-          :folder_type="'projects'"
-          :folder_slug="project_slug"
-          :meta_slug="file.slug"
-          :content="file.content"
-          :scrollingContainer="scrollingContainer"
-        />
-      </div>
-    </transition>
+    <CollaborativeEditor2
+      v-if="is_open"
+      :folder_type="'projects'"
+      :folder_slug="project_slug"
+      :meta_slug="file.slug"
+      :content="file.content"
+      :scrollingContainer="scrollingContainer"
+    />
+    open_initially = {{ open_initially }} is_open = {{ is_open }}
   </div>
 </template>
 <script>
@@ -41,14 +36,16 @@ export default {
   },
   data() {
     return {
-      is_open: false,
+      is_open: this.open_initially,
     };
   },
   created() {},
   mounted() {
     if (this.open_initially) {
       this.$nextTick(() => {
+        // setTimeout(() => {
         if (this.$refs.detail.show) this.$refs.detail.show();
+        // }, 500);
       });
     }
   },
@@ -67,11 +64,11 @@ export default {
         meta_slug: this.file.slug,
       });
     },
-    afterShow() {
-      this.is_open = true;
+    onShow() {
+      if (!this.is_open) this.is_open = true;
     },
-    hide() {
-      this.is_open = false;
+    onHide() {
+      if (this.is_open) this.is_open = false;
     },
   },
 };

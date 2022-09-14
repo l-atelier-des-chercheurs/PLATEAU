@@ -69,7 +69,6 @@ export default {
     },
     projectpanes: {
       handler() {
-        debugger;
         this.updateQueryPanes();
       },
       deep: true,

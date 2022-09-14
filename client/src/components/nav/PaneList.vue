@@ -26,12 +26,12 @@
         >
           <div
             class="_paneItem--button button"
-            :style="`--color-active: var(--color-${item.key});`"
+            :style="`--color-active: var(--color-${item.type});`"
             @click="removePane(index)"
           >
             <div>
               <div v-handle class="_handle" />
-              <span>{{ $t(item.key) }}</span>
+              <span>{{ $t(item.type) }}</span>
             </div>
           </div>
         </SlickItem>
@@ -45,8 +45,8 @@
         <sl-menu>
           <sl-menu-item
             v-for="pane in possible_project_panes"
-            :key="pane.key"
-            v-html="$t(pane.key)"
+            :key="pane.type"
+            v-html="$t(pane.type)"
             @click="newPaneSelected(pane)"
           />
         </sl-menu>
@@ -85,23 +85,23 @@ export default {
       project_panes: [],
       possible_project_panes: [
         {
-          key: "Journal",
+          type: "Journal",
           pads: [],
           size: 50,
         },
         {
-          key: "MediaLibrary",
+          type: "MediaLibrary",
           focus: false,
           focus_height: 0,
           size: 50,
         },
         {
-          key: "Capture",
+          type: "Capture",
           mode: false,
           size: 50,
         },
         {
-          key: "Team",
+          type: "Team",
           size: 50,
         },
       ],
@@ -146,6 +146,7 @@ export default {
   methods: {
     newPaneSelected(pane) {
       // $evt.detail.item.value;
+      pane.key = (Math.random().toString(36) + "00000000000000000").slice(2, 5);
       this.project_panes.push(pane);
     },
     removePane(index) {

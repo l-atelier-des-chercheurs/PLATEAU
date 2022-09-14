@@ -3,9 +3,9 @@
     <template v-if="projectpanes.length === 0">
       <pane><i>Aucune panneau n’est actif</i></pane>
     </template>
-    <template v-else v-for="pane in projectpanes">
+    <template v-else v-for="(pane, index) in projectpanes">
       <pane
-        v-if="pane.key === 'Journal'"
+        v-if="pane.type === 'Journal'"
         :key="pane.key"
         min-size="5"
         :size="pane.size"
@@ -19,7 +19,7 @@
       </pane>
 
       <pane
-        v-else-if="pane.key === 'MediaLibrary'"
+        v-else-if="pane.type === 'MediaLibrary'"
         :key="pane.key"
         min-size="5"
         :size="pane.size"
@@ -35,7 +35,7 @@
       </pane>
 
       <pane
-        v-else-if="pane.key === 'Capture'"
+        v-else-if="pane.type === 'Capture'"
         :key="pane.key"
         min-size="5"
         :size="pane.size"
@@ -45,7 +45,7 @@
       </pane>
 
       <pane
-        v-else-if="pane.key === 'Team'"
+        v-else-if="pane.type === 'Team'"
         :key="pane.key"
         min-size="5"
         :size="pane.size"

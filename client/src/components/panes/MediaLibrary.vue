@@ -98,7 +98,7 @@ export default {
   props: {
     project: Object,
     focus_height: Number,
-    media_focused: String,
+    media_focused: [Boolean, String],
   },
   components: {
     Splitpanes,
