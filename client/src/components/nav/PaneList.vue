@@ -22,16 +22,25 @@
           v-for="(item, index) in project_panes"
           :index="index"
           class="_paneItem"
+          :style="`--color-active: var(--color-${item.type});`"
           :key="item.key"
         >
-          <div
-            class="_paneItem--button button"
-            :style="`--color-active: var(--color-${item.type});`"
-            @click="removePane(index)"
-          >
-            <div>
-              <div v-handle class="_handle" />
-              <span>{{ $t(item.type) }}</span>
+          <div class="">
+            <!-- <div v-handle class="_inlineBtn _handle" /> -->
+            <div v-handle class="_inlineBtn">
+              <sl-icon-button
+                name="grip-vertical"
+                label="Supprimer"
+                @click="removePane(index)"
+              />
+            </div>
+            <span>{{ $t(item.type) }}</span>
+            <div class="_inlineBtn _remove">
+              <sl-icon-button
+                name="x"
+                label="Supprimer"
+                @click="removePane(index)"
+              />
             </div>
           </div>
         </SlickItem>
@@ -43,6 +52,7 @@
           <sl-icon name="plus" label="Panneaux" />
         </sl-button>
         <sl-menu>
+          <sl-menu-label>Ajouter un panneau</sl-menu-label>
           <sl-menu-item
             v-for="pane in possible_project_panes"
             :key="pane.type"
@@ -205,28 +215,23 @@ export default {
   }
 }
 
-._paneItem--button {
+._paneItem {
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
   text-decoration: none;
-  cursor: pointer;
   padding: 0;
   text-decoration: none;
   // overrided by pane type color
   --color-active: #ccc;
   --height-panebutton: 32px;
 
-  &[disabled] {
-    cursor: pointer !important;
-  }
-
   > div {
     display: flex;
     align-items: center;
     background-color: #fff;
     // color: white;
-    padding: 0 var(--spacing);
+    // padding: 0 var(--spacing);
     border-radius: calc(var(--height-panebutton) / 2);
     height: var(--height-panebutton);
     transition: all 0.4s ease-out;
@@ -249,38 +254,16 @@ export default {
   }
 }
 
-._handle {
+._inlineBtn {
   position: relative;
   display: block;
   width: var(--height-panebutton);
   height: var(--height-panebutton);
 
-  margin: -8px 2px -8px calc(-1 * var(--spacing));
+  // margin: -8px 2px -8px calc(-1 * var(--spacing));
 
-  padding: 10px;
+  // padding: 10px;
   border: 1px solid transparent;
   border-radius: 50%;
-
-  cursor: col-resize;
-
-  &::before {
-    content: "";
-    display: block;
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50"><path d="M0 7.5v5h50v-5H0zm0 15v5h50v-5H0zm0 15v5h50v-5H0z" color="%23000"/></svg>');
-    background-size: contain;
-    background-repeat: no-repeat;
-    transform: rotate(90deg);
-  }
-
-  &:hover {
-    border-color: #000;
-    background-color: var(--color-active);
-
-    ::before {
-    }
-  }
 }
 </style>
