@@ -12,6 +12,11 @@
     <sl-dialog ref="showArchives" label="Archives" class="">
       <div class="_archives" v-if="show_archives">
         <!-- not sure why sl-select doesnt work here -->
+
+        <sl-button variant="default" size="small" circle>
+          <sl-icon name="arrow-up" label="Plus récent"></sl-icon>
+        </sl-button>
+
         <select v-model="selected_archive_filename">
           <option
             v-for="(archive, index) in archives"
@@ -24,6 +29,10 @@
             "
           />
         </select>
+
+        <sl-button variant="default" size="small" circle>
+          <sl-icon name="arrow-down" label="Plus ancien"></sl-icon>
+        </sl-button>
 
         <!-- <sl-select v-sl-model="selected_archive_filename">
           <sl-menu-item

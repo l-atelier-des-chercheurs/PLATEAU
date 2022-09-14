@@ -1,5 +1,9 @@
 <template>
-  <div class="_collaborativeEditor" :data-editable="editor_is_enabled">
+  <div
+    class="_collaborativeEditor"
+    :data-editable="editor_is_enabled"
+    @click="editorClick"
+  >
     <TextVersioning
       v-if="editor_is_enabled"
       :folder_type="folder_type"
@@ -8,25 +12,15 @@
       @restore="restoreVersion"
     />
 
-    {{ text_deltas }}
-
-    <component :is="`style`" v-html="font_selector_css" />
+    <component :is="`style`" v-html="quill_styles" />
     <div ref="editBtn" class="_btnContainer">
       <sl-button v-if="!editor_is_enabled" @click="toggleEdit" size="small">
         <sl-icon slot="prefix" name="pencil" />Modifier
       </sl-button>
       <sl-button v-else @click="saveText" size="small">Enregistrer</sl-button>
-      <!-- {{ currently_selected_blots }} -->
     </div>
-    <div
-      ref="editor"
-      class="_mainText"
-      :class="{
-        'is--editable': editor_is_enabled,
-      }"
-      @dragover="onDragover"
-      @drop="onDrop"
-    />
+
+    <div ref="editor" class="_mainText" @dragover="onDragover" @drop="onDrop" />
     <transition name="fade" :duration="600">
       <div
         class="quillWrapper--savingIndicator"
@@ -48,7 +42,6 @@
       <span v-if="is_collaborative">
         ID : {{ editor_id }} Etat de la connection : {{ rtc.connection_state }}
       </span>
-      <sl-button v-else @click="saveText" size="small"> Save </sl-button>
     </template>
   </div>
 </template>
@@ -88,6 +81,7 @@ export default {
     meta_slug: String,
     content: String,
     scrollingContainer: HTMLElement,
+    line_selected: [Boolean, Number],
   },
   components: {
     TextVersioning,
@@ -104,13 +98,13 @@ export default {
 
       debounce_textUpdate: undefined,
 
-      is_collaborative: true,
-
+      is_collaborative: false,
       editor_is_enabled: false,
+
       is_loading_or_saving: false,
       show_saved_icon: false,
 
-      currently_selected_blots: false,
+      currently_selected_eles: false,
 
       editor_id: (Math.random().toString(36) + "00000000000000000").slice(
         2,
@@ -128,10 +122,36 @@ export default {
   },
   watch: {
     content() {
-      if (!this.is_collaborative) this.editor.root.innerHTML = this.content;
+      if (!this.is_collaborative) {
+        this.$nextTick(() => {
+          this.editor.root.innerHTML = this.content;
+        });
+      }
+    },
+    line_selected: {
+      handler() {
+        if (this.line_selected) {
+          // let [line, offset] = quill.getLine(this.line_selected);
+          this.$nextTick(() => {
+            const selected_line = this.editor.container.querySelector(
+              `.ql-editor > *:nth-child(${this.line_selected})`
+            );
+            this.currently_selected_eles = [selected_line];
+            this.$nextTick(() => {
+              selected_line.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+                inline: "nearest",
+              });
+            });
+          });
+        }
+        this.currently_selected_eles = false;
+      },
+      immediate: true,
     },
     editor_is_enabled() {},
-    currently_selected_blots(newEles) {
+    currently_selected_eles(newEles) {
       this.editor.container
         .querySelectorAll(".is--selected")
         .forEach((el) => el.classList.remove("is--selected"));
@@ -140,8 +160,7 @@ export default {
     },
   },
   computed: {
-    font_selector_css() {
-      fonts;
+    quill_styles() {
       let css = "";
       for (const font of fonts) {
         css += `
@@ -174,11 +193,6 @@ export default {
 
       if (this.$refs.editBtn)
         this.$el.querySelector(".ql-toolbar").appendChild(this.$refs.editBtn);
-      // document.getElementById('target').appendChild(  document.getElementById('to_be_moved') )
-
-      // this.$el.querySelector(".ql-edit").addEventListener("click", () => {
-      //   this.toggleEdit();
-      // });
 
       this.editor.on("selection-change", () => {
         // console.log(`CollaborativeEditor / selection-change`);
@@ -223,14 +237,9 @@ export default {
       else this.disableEditor();
     },
     async enableEditor() {
-      if (!this.is_collaborative) {
-        this.editor.enable();
-        this.editor_is_enabled = true;
-      } else {
-        await this.startCollaborative();
-        this.editor.enable();
-        this.editor_is_enabled = true;
-      }
+      if (this.is_collaborative) await this.startCollaborative();
+      this.editor.enable();
+      this.editor_is_enabled = true;
     },
     disableEditor() {
       this.editor.setSelection(null);
@@ -246,6 +255,19 @@ export default {
 
     restoreVersion(content) {
       this.editor.root.innerHTML = content;
+    },
+
+    editorClick($event) {
+      $event.preventDefault();
+      if ($event.target.parentElement.classList.contains("ql-editor")) {
+        // click on the left of the element
+        if ($event.offsetX < 0) {
+          const line_number = Array.from(
+            $event.target.parentElement.children
+          ).findIndex((c) => c === $event.target);
+          this.$emit("lineClicked", line_number + 1);
+        }
+      }
     },
 
     updateSelectedLines() {
@@ -264,12 +286,12 @@ export default {
         else blots = this.editor.getLines(range.index, range.length);
 
         if (blots) {
-          this.currently_selected_blots = blots.map((b) => b.domNode);
+          this.currently_selected_eles = blots.map((b) => b.domNode);
           return;
         }
       }
 
-      this.currently_selected_blots = false;
+      this.currently_selected_eles = false;
     },
 
     async saveText() {
@@ -631,6 +653,12 @@ export default {
       border: 0;
 
       &:not(.ql-disabled) {
+        .ql-editor {
+          > * {
+            &::before {
+            }
+          }
+        }
       }
     }
 
@@ -652,7 +680,8 @@ export default {
         // padding-left: calc(var(--spacing));
 
         &::before {
-          content: "";
+          content: counter(listCounter);
+          cursor: pointer;
 
           /* old way : pos abs */
           position: absolute;
@@ -681,8 +710,6 @@ export default {
           // margin-left: calc(var(--spacing) * 2 * -1);
 
           transition: all 0.25s cubic-bezier(0.19, 1, 0.22, 1);
-
-          content: counter(listCounter);
         }
 
         &.is--selected {

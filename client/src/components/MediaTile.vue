@@ -57,6 +57,8 @@ export default {
   position: relative;
   aspect-ratio: 1/1;
   background: rgba(255, 255, 255, 0.35);
+  overflow: hidden;
+  border-radius: 3px;
 
   &[data-type="text"],
   &[data-type="other"] {
@@ -84,15 +86,19 @@ export default {
   inset: 0;
   width: 100%;
   background: transparent;
+  opacity: 0.5;
   transition: all 0.1s linear;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.35);
+    background: white;
+    background: black;
+    // background: rgba(255, 255, 255, 0.35);
     transition: none;
   }
 
   &.is--focused {
-    background: rgba(255, 255, 255, 0.55);
+    // border: 2px solid var(--c-vert);
+    background: var(--c-vert);
   }
 }
 </style>

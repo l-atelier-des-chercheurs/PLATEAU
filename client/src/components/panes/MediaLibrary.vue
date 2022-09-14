@@ -240,8 +240,8 @@ export default {
 ._mediaLibrary--lib--grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 1px;
-  padding: 1px;
+  gap: 2px;
+  padding: 2px;
 }
 
 ._mediaLibrary--focusPane {

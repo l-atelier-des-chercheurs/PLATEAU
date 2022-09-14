@@ -1,5 +1,6 @@
 <template>
   <div class="_journal" ref="journal">
+    {{ opened_journal_entries }}
     <div
       v-for="file of files"
       :key="file.slug"
@@ -9,9 +10,10 @@
       <JournalItem
         :file="file"
         :project_slug="project.slug"
-        :open_initially="entryStatus({ slug: file.slug })"
+        :status="entryStatus({ slug: file.slug })"
         :scrollingContainer="$refs.journal"
         @toggleEntry="toggleEntry({ slug: file.slug, is_open: $event })"
+        @lineClicked="lineClicked({ slug: file.slug, line: $event })"
       />
     </div>
 
@@ -87,16 +89,27 @@ export default {
     },
     entryStatus({ slug }) {
       // todo : is entry opened or close (if its meta name is in this.opened_journal_entries)
-      return this.opened_journal_entries.includes(slug);
+      return this.opened_journal_entries.find((je) => je && je.slug === slug);
     },
     toggleEntry({ slug, is_open }) {
       // todo : add or remove slug from opened_journal_entries
       let opened_journal_entries = this.opened_journal_entries;
       opened_journal_entries = opened_journal_entries.filter(
-        (je) => je !== slug
+        (je) => je !== null && je.slug !== slug
       );
-      if (is_open) opened_journal_entries.push(slug);
+      if (is_open) opened_journal_entries.push({ slug });
 
+      this.$emit("update:opened_journal_entries", opened_journal_entries);
+    },
+    lineClicked({ slug, line }) {
+      let opened_journal_entries = JSON.parse(
+        JSON.stringify(this.opened_journal_entries)
+      );
+      opened_journal_entries = opened_journal_entries.map((je) => {
+        if (je.slug === slug) je.line = line;
+        else delete je.line;
+        return je;
+      });
       this.$emit("update:opened_journal_entries", opened_journal_entries);
     },
   },

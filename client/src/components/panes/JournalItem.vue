@@ -43,6 +43,8 @@
       :meta_slug="file.slug"
       :content="file.content"
       :scrollingContainer="scrollingContainer"
+      :line_selected="line_selected"
+      @lineClicked="$emit('lineClicked', $event)"
     />
   </div>
 </template>
@@ -53,7 +55,7 @@ export default {
   props: {
     file: Object,
     project_slug: String,
-    open_initially: Boolean,
+    status: [Boolean, Object],
     scrollingContainer: HTMLElement,
   },
   components: {
@@ -61,7 +63,7 @@ export default {
   },
   data() {
     return {
-      is_open: this.open_initially,
+      is_open: this.status,
     };
   },
   created() {},
@@ -80,7 +82,11 @@ export default {
       this.$emit("toggleEntry", this.is_open);
     },
   },
-  computed: {},
+  computed: {
+    line_selected() {
+      return this.status && this.status.line;
+    },
+  },
   methods: {
     async removeText() {
       await this.$api.deleteItem({
