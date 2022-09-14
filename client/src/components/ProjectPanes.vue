@@ -1,60 +1,41 @@
 <template>
-  <splitpanes watch-slots :dbl-click-splitter="false" @resized="resized">
+  <div class="_projetPanes">
     <template v-if="projectpanes.length === 0">
       <pane><i>Aucune panneau n’est actif</i></pane>
     </template>
-    <template v-else v-for="(pane, index) in projectpanes">
+    <splitpanes
+      watch-slots
+      :dbl-click-splitter="false"
+      @resized="resized"
+      v-else
+    >
       <pane
-        v-if="pane.type === 'Journal'"
-        :key="pane.key"
+        v-for="pane in projectpanes"
+        :key="pane.index"
         min-size="5"
         :size="pane.size"
-        ref="Journal"
+        :data-size="pane.size"
       >
         <JournalPane
+          v-if="pane.type === 'Journal'"
           :project="project"
           :opened_journal_entries="pane.pads"
           @update:opened_journal_entries="pane.pads = $event"
         />
-      </pane>
-
-      <pane
-        v-else-if="pane.type === 'MediaLibrary'"
-        :key="pane.key"
-        min-size="5"
-        :size="pane.size"
-        ref="MediaLibrary"
-      >
         <MediaLibrary
+          v-else-if="pane.type === 'MediaLibrary'"
+          :key="pane.key"
           :project="project"
           :focus_height="pane.focus_height"
           @update:focus_height="pane.focus_height = $event"
           :media_focused="pane.focus"
           @update:media_focused="pane.focus = $event"
         />
+        <CapturePane v-else-if="pane.type === 'Capture'" :project="project" />
+        <TeamPane v-else-if="pane.type === 'TeamPane'" :project="project" />
       </pane>
-
-      <pane
-        v-else-if="pane.type === 'Capture'"
-        :key="pane.key"
-        min-size="5"
-        :size="pane.size"
-        ref="Capture"
-      >
-        <CapturePane :project="project" />
-      </pane>
-
-      <pane
-        v-else-if="pane.type === 'Team'"
-        :key="pane.key"
-        min-size="5"
-        :size="pane.size"
-        ref="Team"
-      >
-        <TeamPane :project="project" />
-      </pane>
-    </template>
-  </splitpanes>
+    </splitpanes>
+  </div>
 </template>
 <script>
 import { Splitpanes, Pane } from "splitpanes";
@@ -85,16 +66,22 @@ export default {
   watch: {},
   computed: {},
   methods: {
-    resized(shown_projectpanes) {
+    resized(_projectpanessizes) {
       console.log(`Project / methods: resized`);
-      let index = 0;
-      this.projectpanes.map((p) => {
-        p.size = Number(p.size.toFixed(1));
+      let _projectpanes = this.projectpanes.slice();
+      _projectpanes.map((p, index) => {
+        p.size = Number(_projectpanessizes[index].size.toFixed(1));
         return p;
       });
-      // this.$emit("update:projectpanes", projectpanes);
+      this.$emit("update:projectpanes", _projectpanes);
     },
   },
 };
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+._projetPanes {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+</style>

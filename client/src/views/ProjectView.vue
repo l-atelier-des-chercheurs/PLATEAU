@@ -111,7 +111,7 @@ export default {
   align-items: center;
   // justify-content: space-between;
   gap: calc(var(--spacing));
-  padding: var(--spacing);
+  padding: calc(var(--spacing) / 2) calc(var(--spacing) / 1);
 
   border-bottom: 1px solid black;
 

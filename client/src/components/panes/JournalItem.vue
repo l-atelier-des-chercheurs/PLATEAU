@@ -18,7 +18,6 @@
       :content="file.content"
       :scrollingContainer="scrollingContainer"
     />
-    open_initially = {{ open_initially }} is_open = {{ is_open }}
   </div>
 </template>
 <script>

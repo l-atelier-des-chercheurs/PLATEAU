@@ -56,13 +56,14 @@
 
         Médias = {{ medias.length }}
 
-        <div class="_mediaLibrary--lib--grid">
+        <div class="_mediaLibrary--lib--grid" ref="mediaTiles">
           <MediaTile
             v-for="file of medias"
             :key="file.slug"
             :project_slug="project.slug"
             :file="file"
             :is_focused="media_focused === file.slug"
+            :data-fileslug="file.slug"
             @toggleMediaFocus="(slug) => toggleMediaFocus(slug)"
           />
         </div>
@@ -118,7 +119,14 @@ export default {
     };
   },
   created() {},
-  mounted() {},
+  mounted() {
+    console.log(`MediaLibrary / mounted`);
+
+    if (this.media_focused)
+      this.$nextTick(() => {
+        this.scrollToMediaTile(this.media_focused);
+      });
+  },
   beforeDestroy() {},
   watch: {},
   computed: {
@@ -126,9 +134,12 @@ export default {
       return this.project.files.filter((f) => !f.is_journal) || [];
     },
     focused_media() {
-      return (
-        this.project.files.find((f) => f.slug === this.media_focused) || false
-      );
+      const _focused_media =
+        this.project.files.find((f) => f.slug === this.media_focused) || false;
+      if (_focused_media && this.$refs.mediaTiles)
+        this.scrollToMediaTile(_focused_media.slug);
+
+      return _focused_media;
     },
     lib_pane_size() {
       return 100 - this.focus_pane_size;
@@ -139,6 +150,17 @@ export default {
     },
   },
   methods: {
+    scrollToMediaTile(slug) {
+      const focused_tile = this.$refs.mediaTiles.querySelector(
+        `[data-fileslug="${slug}"]`
+      );
+      if (focused_tile)
+        focused_tile.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest",
+        });
+    },
     updateInputFiles($event) {
       this.selected_files = Array.from($event.target.files);
       $event.target.value = "";
@@ -174,10 +196,9 @@ export default {
     },
 
     resized(panes) {
-      const focus_pane_height = panes[1].size;
+      const focus_pane_height = Number(panes[1].size.toFixed(1));
       this.$emit("update:focus_height", focus_pane_height);
     },
-    setMediaFocusHeight(size) {},
     toggleMediaFocus(slug) {
       if (!slug || this.media_focused === slug) {
         this.$emit("update:media_focused", null);
