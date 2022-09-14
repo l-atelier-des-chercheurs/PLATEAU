@@ -1,11 +1,14 @@
 <template>
   <div class="_collaborativeEditor" :data-editable="editor_is_enabled">
     <TextVersioning
+      v-if="editor_is_enabled"
       :folder_type="folder_type"
       :folder_slug="folder_slug"
       :meta_slug="meta_slug"
       @restore="restoreVersion"
     />
+
+    {{ text_deltas }}
 
     <component :is="`style`" v-html="font_selector_css" />
     <div ref="editBtn" class="_btnContainer">
@@ -92,6 +95,7 @@ export default {
   data() {
     return {
       editor: null,
+      text_deltas: null,
 
       rtc: {
         socket: null,
@@ -282,7 +286,6 @@ export default {
         });
       } catch (err) {
         if (err.message === "content not changed") err;
-        debugger;
       }
 
       this.disableEditor();
@@ -352,6 +355,7 @@ export default {
         });
         doc.on("op", (op, source) => {
           console.log(`CollaborativeEditor / op applied`);
+          this.text_deltas = doc.data;
           if (source === this.editor_id) return;
           console.log(`CollaborativeEditor / outside op applied`);
           this.editor.updateContents(op);

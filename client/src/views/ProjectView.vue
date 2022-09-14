@@ -1,16 +1,24 @@
 <template>
   <div class="_projectView">
     <div class="_topbar">
-      <router-link to="/projects" v-text="'⇠'" />
-
       <template v-if="is_loading">Chargement…</template>
       <template v-else-if="error">
         <div v-if="error.status === 404">Projet introuvable</div>
       </template>
       <template v-else>
-        <div>
-          <h1>{{ project.title }}</h1>
-        </div>
+        <sl-breadcrumb>
+          <sl-breadcrumb-item @click="$router.push('/')">
+            <sl-icon slot="prefix" name="house-door-fill" />
+            Plateau
+          </sl-breadcrumb-item>
+          <sl-breadcrumb-item @click="$router.push('/projects')">
+            Projets
+          </sl-breadcrumb-item>
+          <sl-breadcrumb-item>
+            {{ project.title }}
+          </sl-breadcrumb-item>
+        </sl-breadcrumb>
+
         <PaneList class="_paneList" :panes.sync="projectpanes" />
       </template>
     </div>
