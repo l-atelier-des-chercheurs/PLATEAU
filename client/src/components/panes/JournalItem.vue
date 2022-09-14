@@ -6,9 +6,35 @@
       @sl-hide="onHide"
       ref="detail"
     >
-      <DateField class="" :title="'date_created'" :date="file.date_uploaded" />
-      <DateField :title="'date_modified'" :date="file.date_modified" />
-      <sl-button @click="removeText" size="small">Supprimer</sl-button>
+      <sl-tree>
+        <sl-tree-item>
+          Informations
+          <sl-tree-item>
+            Date de création
+            <sl-tree-item>
+              <DateField
+                :date="file.date_uploaded"
+                :show_detail_initially="true"
+              />
+            </sl-tree-item>
+          </sl-tree-item>
+          <sl-tree-item>
+            Date de dernière modification
+            <sl-tree-item>
+              <DateField
+                :date="file.date_modified"
+                :show_detail_initially="true"
+              />
+            </sl-tree-item>
+          </sl-tree-item>
+          <sl-tree-item>
+            Supprimer cette entrée
+            <sl-tree-item>
+              <sl-button @click="removeText" size="small">Confirmer</sl-button>
+            </sl-tree-item>
+          </sl-tree-item>
+        </sl-tree-item>
+      </sl-tree>
     </sl-details>
     <CollaborativeEditor2
       v-if="is_open"
@@ -90,7 +116,7 @@ sl-details::part(base) {
 }
 sl-details::part(content) {
   overflow: initial;
-  padding-top: 0;
+  padding: 0;
   padding-bottom: var(--sl-spacing-small);
 }
 
