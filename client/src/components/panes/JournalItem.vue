@@ -68,11 +68,10 @@ export default {
   },
   created() {},
   mounted() {
-    if (this.open_initially) {
+    if (this.status) {
       this.$nextTick(() => {
-        // setTimeout(() => {
+        debugger;
         if (this.$refs.detail.show) this.$refs.detail.show();
-        // }, 500);
       });
     }
   },

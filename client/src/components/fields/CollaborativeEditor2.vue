@@ -20,29 +20,23 @@
       <sl-button v-else @click="saveText" size="small">Enregistrer</sl-button>
     </div>
 
-    <div ref="editor" class="_mainText" @dragover="onDragover" @drop="onDrop" />
-    <transition name="fade" :duration="600">
+    <div>
       <div
-        class="quillWrapper--savingIndicator"
-        v-if="is_collaborative && (is_loading_or_saving || show_saved_icon)"
-      >
-        <transition name="fade" :duration="600"
-          >""
-          <template v-if="is_loading_or_saving">
-            <span class="loader loader-small" />
-          </template>
-          <template v-else-if="show_saved_icon">
-            <span>✓</span>
-          </template>
-        </transition>
-      </div>
-    </transition>
+        ref="editor"
+        class="_mainText"
+        @dragover="onDragover"
+        @drop="onDrop"
+      />
+    </div>
 
-    <template v-if="editor_is_enabled">
-      <span v-if="is_collaborative">
-        ID : {{ editor_id }} Etat de la connection : {{ rtc.connection_state }}
-      </span>
-    </template>
+    <div class="_savingIndicator">
+      <sl-spinner v-if="is_loading_or_saving"></sl-spinner>
+      <span v-else-if="show_saved_icon">✓</span>
+    </div>
+
+    <!-- <div v-if="editor_is_enabled && is_collaborative">
+      ID : {{ editor_id }} Etat de la connection : {{ rtc.connection_state }}
+    </div> -->
   </div>
 </template>
 <script>
@@ -98,7 +92,7 @@ export default {
 
       debounce_textUpdate: undefined,
 
-      is_collaborative: false,
+      is_collaborative: true,
       editor_is_enabled: false,
 
       is_loading_or_saving: false,
@@ -115,6 +109,7 @@ export default {
   created() {},
   mounted() {
     this.initEditor();
+
     // this.enableEditor();
   },
   beforeDestroy() {
@@ -122,7 +117,10 @@ export default {
   },
   watch: {
     content() {
-      if (!this.is_collaborative) {
+      if (
+        !this.is_collaborative ||
+        (this.is_collaborative && !this.editor_is_enabled)
+      ) {
         this.$nextTick(() => {
           this.editor.root.innerHTML = this.content;
         });
@@ -150,7 +148,6 @@ export default {
       },
       immediate: true,
     },
-    editor_is_enabled() {},
     currently_selected_eles(newEles) {
       this.editor.container
         .querySelectorAll(".is--selected")
@@ -295,6 +292,8 @@ export default {
     },
 
     async saveText() {
+      this.is_loading_or_saving = true;
+
       const new_meta = {
         content: this.getEditorContent(),
       };
@@ -306,8 +305,14 @@ export default {
           meta_slug: this.meta_slug,
           new_meta,
         });
+        this.is_loading_or_saving = false;
+
+        this.show_saved_icon = true;
+        await new Promise((r) => setTimeout(r, 1000));
+        this.show_saved_icon = false;
       } catch (err) {
         if (err.message === "content not changed") err;
+        this.is_loading_or_saving = false;
       }
 
       this.disableEditor();
@@ -356,8 +361,7 @@ export default {
           );
           this.editor.setContents(doc.data, "init");
         } else {
-          // if no doc type, then doc wasnt created server
-          // this is very bad…
+          doc.create(this.editor.getContents(), "rich-text");
         }
 
         this.editor.history.clear();
@@ -396,18 +400,11 @@ export default {
 
     updateTextMedia() {
       if (this.debounce_textUpdate) clearTimeout(this.debounce_textUpdate);
-      this.is_loading_or_saving = true;
       this.debounce_textUpdate = setTimeout(async () => {
         console.log(
-          `CollaborativeEditor • updateTextMedia: saving new snapshop`
+          `CollaborativeEditor • updateTextMedia: saving new snapshot`
         );
-
         await this.saveText();
-        this.is_loading_or_saving = false;
-        this.show_saved_icon = true;
-        setTimeout(() => {
-          this.show_saved_icon = false;
-        }, 200);
       }, 1000);
     },
 
