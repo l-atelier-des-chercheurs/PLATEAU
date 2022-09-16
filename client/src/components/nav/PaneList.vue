@@ -48,7 +48,7 @@
       <!-- <sl-icon name="plus-square-fill" label="Panneaux" />
       <sl-icon name="plus" label="Panneaux" /> -->
       <sl-dropdown>
-        <sl-button slot="trigger" variant="default" circle>
+        <sl-button slot="trigger" variant="primary" circle>
           <sl-icon name="plus" label="Panneaux" />
         </sl-button>
         <sl-menu>

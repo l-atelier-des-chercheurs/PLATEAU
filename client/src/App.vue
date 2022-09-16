@@ -71,7 +71,7 @@ export default {
   }
   @each $size in $sizes {
     $i: index($sizes, $size);
-    --sl-color-primary-#{$size}: hsl(211, 63%, #{98% - $i * 5});
+    --sl-color-primary-#{$size}: hsl(221, 63%, #{98% - $i * 5});
   }
   @each $size in $sizes {
     $i: index($sizes, $size);

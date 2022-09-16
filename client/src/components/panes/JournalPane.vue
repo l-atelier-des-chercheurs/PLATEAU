@@ -1,6 +1,5 @@
 <template>
   <div class="_journal" ref="journal">
-    {{ opened_journal_entries }}
     <div
       v-for="file of files"
       :key="file.slug"
