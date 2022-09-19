@@ -53,7 +53,7 @@
   </div>
 </template>
 <script>
-import CollaborativeEditor2 from "@/components/fields/CollaborativeEditor2.vue";
+import CollaborativeEditor2 from "@/adc-core/fields/collaborative-editor/CollaborativeEditor2.vue";
 
 export default {
   props: {

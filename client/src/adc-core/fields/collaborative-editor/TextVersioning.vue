@@ -141,7 +141,7 @@ export default {
   // overflow: auto;
 
   ::v-deep {
-    @import "./mainText.scss";
+    @import "./imports/mainText.scss";
   }
 }
 </style>

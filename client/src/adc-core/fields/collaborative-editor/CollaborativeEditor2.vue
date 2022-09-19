@@ -14,10 +14,12 @@
 
     <component :is="`style`" v-html="quill_styles" />
     <div ref="editBtn" class="_btnContainer">
-      <sl-button v-if="!editor_is_enabled" @click="toggleEdit" size="small">
+      <sl-button v-show="!editor_is_enabled" @click="toggleEdit" size="small">
         <sl-icon slot="prefix" name="pencil" />Modifier
       </sl-button>
-      <sl-button v-else @click="saveText" size="small">Enregistrer</sl-button>
+      <sl-button v-show="editor_is_enabled" @click="saveText" size="small">
+        Enregistrer
+      </sl-button>
     </div>
 
     <div>
@@ -43,13 +45,13 @@
   </div>
 </template>
 <script>
-import TextVersioning from "./quill/TextVersioning.vue";
+import TextVersioning from "./TextVersioning.vue";
 import ReconnectingWebSocket from "reconnectingwebsocket";
 import ShareDB from "sharedb/lib/client";
 import Quill from "quill";
 ShareDB.types.register(require("rich-text").type);
 
-import { toolbar, fonts, formats } from "./quill/defaults.js";
+import { toolbar, fonts, formats } from "./imports/defaults.js";
 
 const FontAttributor = Quill.import("attributors/style/font");
 FontAttributor.whitelist = fonts;
@@ -61,8 +63,8 @@ DividerBlot.blotName = "divider";
 DividerBlot.tagName = "hr";
 Quill.register(DividerBlot);
 
-import MediaBlot from "./quill/MediaBlot";
-import CardEditableModule from "./quill/CardEditableModule";
+import MediaBlot from "./imports/MediaBlot";
+import CardEditableModule from "./imports/CardEditableModule";
 
 Quill.register("formats/media", MediaBlot);
 Quill.register("modules/cardEditable", CardEditableModule);
@@ -95,6 +97,7 @@ export default {
       debounce_textUpdate: undefined,
 
       is_collaborative: true,
+      autosave: true,
       editor_is_enabled: false,
 
       is_loading_or_saving: false,
@@ -669,7 +672,7 @@ export default {
       background-color: white;
       border-radius: 4px;
 
-      @import "./quill/mainText.scss";
+      @import "./imports/mainText.scss";
 
       > * {
         counter-increment: listCounter;
