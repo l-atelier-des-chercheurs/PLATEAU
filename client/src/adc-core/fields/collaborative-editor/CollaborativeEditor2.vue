@@ -5,21 +5,52 @@
     @click="editorClick"
   >
     <TextVersioning
-      v-if="editor_is_enabled"
+      v-if="show_archives"
       :folder_type="folder_type"
       :folder_slug="folder_slug"
       :meta_slug="file.slug"
+      @close="show_archives = false"
       @restore="restoreVersion"
     />
 
     <component :is="`style`" v-html="quill_styles" />
     <div ref="editBtn" class="_btnContainer">
-      <sl-button v-show="!editor_is_enabled" @click="toggleEdit" size="small">
-        <sl-icon slot="prefix" name="pencil" />Modifier
-      </sl-button>
-      <sl-button v-show="editor_is_enabled" @click="saveText" size="small">
-        Enregistrer
-      </sl-button>
+      <small class="_btnRow">
+        <sl-button @click="toggleEdit" size="small" class="_editBtn">
+          <sl-icon slot="prefix" name="pencil" />
+          <template v-if="!editor_is_enabled"> Modifier </template>
+          <template v-else> Arrêter les modifications </template>
+        </sl-button>
+
+        <sl-button
+          v-if="editor_is_enabled"
+          @click="show_archives = true"
+          size="small"
+        >
+          <sl-icon slot="prefix" name="archive" />
+          Archives
+        </sl-button>
+
+        <div class="_collabEditorStatus" v-if="editor_is_enabled">
+          <transition name="fade_fast" mode="out-in">
+            <span v-if="is_loading_or_saving" key="saving">
+              <sl-spinner style="--indicator-color: currentColor" />
+              {{ $t("saving…") }}
+            </span>
+            <span v-else-if="show_saved_icon" key="saved">
+              <sl-icon name="check-circle" />
+              {{ $t("saved") }}
+            </span>
+            <span v-else key="connected">
+              <b>{{ rtc.connection_state }}</b>
+            </span>
+          </transition>
+        </div>
+
+        <!-- <sl-button v-show="editor_is_enabled" @click="saveText" size="small">
+          Enregistrer
+        </sl-button> -->
+      </small>
     </div>
 
     <div>
@@ -29,18 +60,6 @@
         @dragover="onDragover"
         @drop="onDrop"
       />
-    </div>
-
-    <DateField :date="file.date_modified" :show_detail_initially="true" />
-
-    <div v-if="editor_is_enabled">
-      <div class="_savingIndicator">
-        <sl-spinner v-if="is_loading_or_saving"></sl-spinner>
-        <span v-else-if="show_saved_icon">✓</span>
-      </div>
-      <div v-if="is_collaborative">
-        ID : {{ editor_id }} Etat de la connection : {{ rtc.connection_state }}
-      </div>
     </div>
   </div>
 </template>
@@ -93,6 +112,8 @@ export default {
         socket: null,
         connection_state: null,
       },
+
+      show_archives: false,
 
       debounce_textUpdate: undefined,
 
@@ -156,9 +177,12 @@ export default {
     currently_selected_eles(newEles) {
       this.editor.container
         .querySelectorAll(".is--selected")
-        .forEach((el) => el.classList.remove("is--selected"));
+        .forEach((el) => el.classList && el.classList.remove("is--selected"));
 
-      if (newEles) newEles.forEach((el) => el.classList.add("is--selected"));
+      if (newEles)
+        newEles.forEach(
+          (el) => el.classList && el.classList.add("is--selected")
+        );
     },
   },
   computed: {
@@ -187,14 +211,13 @@ export default {
         bounds: this.$refs.editor,
         theme: "snow",
         formats,
-        placeholder: "…",
+        placeholder: "",
         readOnly: !this.editor_is_enabled,
         scrollingContainer: this.scrollingContainer,
       });
       if (this.file.content) this.editor.root.innerHTML = this.file.content;
 
-      if (this.$refs.editBtn)
-        this.$el.querySelector(".ql-toolbar").appendChild(this.$refs.editBtn);
+      this.setStatusButton();
 
       this.editor.on("selection-change", () => {
         // console.log(`CollaborativeEditor / selection-change`);
@@ -230,14 +253,20 @@ export default {
       // todo : remove status class like is--selected or is--dragover
       t.content
         .querySelectorAll(".is--selected")
-        .forEach((el) => el.classList.remove("is--selected"));
+        .forEach((el) => el.classList && el.classList.remove("is--selected"));
 
       return t.innerHTML;
     },
 
+    setStatusButton() {
+      if (this.$refs.editBtn)
+        this.$el.querySelector(".ql-toolbar").appendChild(this.$refs.editBtn);
+    },
     toggleEdit() {
       if (!this.editor_is_enabled) this.enableEditor();
       else this.disableEditor();
+
+      this.setStatusButton();
     },
     async enableEditor() {
       if (this.is_collaborative) await this.startCollaborative();
@@ -258,12 +287,21 @@ export default {
 
     restoreVersion(content) {
       // TODO : with delta to allow for undo
-      this.editor.root.innerHTML = content;
+      // this.editor.root.innerHTML = content;
+      const value = content;
+      const delta = this.editor.clipboard.convert(value);
+
+      this.editor.setContents(delta, "user");
+
+      this.show_archives = false;
     },
 
     editorClick($event) {
       $event.preventDefault();
-      if ($event.target.parentElement.classList.contains("ql-editor")) {
+      if (
+        $event.target.parentElement.classList &&
+        $event.target.parentElement.classList.contains("ql-editor")
+      ) {
         // click on the left of the element
         if ($event.offsetX < 0) {
           const line_number = Array.from(
@@ -313,9 +351,8 @@ export default {
           new_meta,
         });
         this.is_loading_or_saving = false;
-
         this.show_saved_icon = true;
-        await new Promise((r) => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 1500));
         this.show_saved_icon = false;
       } catch (err) {
         if (err.message === "content not changed") err;
@@ -607,7 +644,12 @@ export default {
 ._collaborativeEditor {
   position: relative;
   font-size: 100%;
-  --toolbar-bg: var(--color-Journal);
+  border: var(--border-size) solid var(--editor-bg);
+
+  --toolbar-bg: white;
+  --editor-bg: #eee;
+  --button-size: 32px;
+  --border-size: 4px;
 
   ::v-deep .ql-toolbar {
     position: sticky;
@@ -617,10 +659,12 @@ export default {
     font-family: inherit;
     font-weight: normal;
     background-color: var(--toolbar-bg);
-    color: black !important;
+    color: #333 !important;
 
     // border-radius: 0.5em;
     border: none;
+    border-bottom: var(--border-size) dotted var(--editor-bg);
+    // border-bottom-style: double;
 
     button,
     svg {
@@ -642,6 +686,23 @@ export default {
 
     .ql-picker.ql-font {
       width: 140px;
+    }
+
+    .ql-formats {
+      margin-right: calc(var(--spacing) / 2);
+      margin-bottom: calc(var(--spacing) / 2);
+      .ql-font {
+        background: var(--editor-bg);
+      }
+      .ql-header {
+        background: var(--editor-bg);
+      }
+      .ql-picker {
+        height: var(--button-size);
+      }
+      .ql-picker-label::before {
+        line-height: var(--button-size);
+      }
     }
   }
   ::v-deep {
@@ -745,15 +806,29 @@ export default {
   }
 }
 
-._collaborativeEditor:not([data-editable="true"]) ._btnContainer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+._collaborativeEditor:not([data-editable="true"]) {
+  ::v-deep .ql-formats {
+    display: none;
+  }
+  ._btnContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    // background-color: var(--editor-bg);
+  }
+}
+
+._btnRow {
   display: flex;
+  flex-flow: row wrap;
   justify-content: center;
   align-items: center;
-  background-color: var(--toolbar-bg);
+  gap: calc(var(--spacing) / 2);
+}
+._collabEditorStatus {
+  padding: calc(var(--spacing) / 4) calc(var(--spacing) / 2);
+  background-color: var(--c-vert);
+  border-radius: 2em;
+  color: black;
 }
 </style>

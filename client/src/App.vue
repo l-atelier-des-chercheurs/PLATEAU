@@ -59,6 +59,8 @@ export default {
   --c-barbgcolor: rgba(255, 255, 255, 0);
   --c-thumbcolor: black;
 
+  --indicator-color: var(--c-vert) !important;
+
   --sl-font-sans: "IBM Plex Sans";
   --sl-font-serif: "IBM Plex Serif";
   --sl-font-mono: "IBM Plex Mono";

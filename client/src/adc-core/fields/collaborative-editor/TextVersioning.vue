@@ -1,38 +1,32 @@
 <template>
   <div>
-    <sl-button
-      @click="toggleArchives"
-      size="small"
-      caret
-      :active="show_archives"
-    >
-      Archives
-    </sl-button>
-
     <sl-dialog ref="showArchives" label="Archives" class="">
-      <div class="_archives" v-if="show_archives">
+      <div class="_archives">
         <!-- not sure why sl-select doesnt work here -->
+        <div class="_topbar">
+          <sl-button variant="default" size="small" pill @click="newerVersion">
+            <sl-icon name="arrow-up" />
+            Plus récent
+          </sl-button>
 
-        <sl-button variant="default" size="small" circle>
-          <sl-icon name="arrow-up" label="Plus récent"></sl-icon>
-        </sl-button>
+          <select v-model="selected_archive_filename">
+            <option
+              v-for="(archive, index) in archives"
+              :value="archive.filename"
+              :key="archive.filename"
+              v-text="
+                formatDateToPrecise(archive.date) +
+                ' - version ' +
+                (archives.length - index)
+              "
+            />
+          </select>
 
-        <select v-model="selected_archive_filename">
-          <option
-            v-for="(archive, index) in archives"
-            :value="archive.filename"
-            :key="archive.filename"
-            v-text="
-              formatDateToPrecise(archive.date) +
-              ' - version ' +
-              (archives.length - index)
-            "
-          />
-        </select>
-
-        <sl-button variant="default" size="small" circle>
-          <sl-icon name="arrow-down" label="Plus ancien"></sl-icon>
-        </sl-button>
+          <sl-button variant="default" size="small" pill @click="olderVersion">
+            <sl-icon name="arrow-down" label="Plus ancien" pill />
+            Plus ancient
+          </sl-button>
+        </div>
 
         <!-- <sl-select v-sl-model="selected_archive_filename">
           <sl-menu-item
@@ -74,18 +68,27 @@ export default {
   data() {
     return {
       archives: null,
-      show_archives: false,
       selected_archive_filename: "",
     };
   },
   created() {},
-  mounted() {},
+  mounted() {
+    this.getArchives();
+    this.$refs.showArchives.show();
+  },
   beforeDestroy() {},
   watch: {},
   computed: {
     archive_shown() {
       if (this.archives)
         return this.archives.find(
+          (a) => a.filename === this.selected_archive_filename
+        );
+      return false;
+    },
+    archive_shown_index() {
+      if (this.archives)
+        return this.archives.findIndex(
           (a) => a.filename === this.selected_archive_filename
         );
       return false;
@@ -103,18 +106,16 @@ export default {
 
       this.selected_archive_filename = this.archives[0].filename;
     },
-    toggleArchives() {
-      this.show_archives = !this.show_archives;
-      if (this.show_archives) {
-        this.getArchives();
-        this.$refs.showArchives.show();
-      } else {
-        this.$refs.showArchives.hide();
-      }
+    olderVersion() {
+      this.selected_archive_filename =
+        this.archives[this.archive_shown_index + 1].filename;
+    },
+    newerVersion() {
+      this.selected_archive_filename =
+        this.archives[this.archive_shown_index - 1].filename;
     },
     restoreVersion(content) {
       this.$emit("restore", content);
-      this.toggleArchives();
     },
   },
 };
@@ -133,6 +134,12 @@ export default {
   }
 }
 
+._topbar {
+  display: flex;
+  justify-content: space-between;
+  margin: calc(var(--spacing) / 1) 0;
+}
+
 ._archiveText {
   background: var(--color-Journal);
   padding: calc(var(--spacing) / 2);
@@ -143,5 +150,9 @@ export default {
   ::v-deep {
     @import "./imports/mainText.scss";
   }
+}
+
+sl-dialog::part(base) {
+  align-items: flex-start;
 }
 </style>

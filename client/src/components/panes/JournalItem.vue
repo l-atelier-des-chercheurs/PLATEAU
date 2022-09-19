@@ -67,7 +67,7 @@ export default {
   },
   data() {
     return {
-      is_open: this.status,
+      is_open: false,
     };
   },
   created() {},
@@ -111,7 +111,8 @@ export default {
   // padding: var(--sl-spacing-medium);
   // margin-top: -1px;
   // margin-bottom: -1px;
-  border-bottom: 1px solid black;
+  // border-bottom: 5px solid black;
+  // margin-bottom: calc(var(--spacing) / 1);
   background: white;
 }
 sl-details::part(summary) {
