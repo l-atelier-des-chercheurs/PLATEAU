@@ -1,5 +1,10 @@
 <template>
-  <div class="_journalItem">
+  <div
+    class="_journalItem"
+    :class="{
+      'is--open': is_open,
+    }"
+  >
     <sl-details
       :summary="file.title"
       @sl-show="onShow"
@@ -40,8 +45,7 @@
       v-if="is_open"
       :folder_type="'projects'"
       :folder_slug="project_slug"
-      :meta_slug="file.slug"
-      :content="file.content"
+      :file="file"
       :scrollingContainer="scrollingContainer"
       :line_selected="line_selected"
       @lineClicked="$emit('lineClicked', $event)"
@@ -70,7 +74,6 @@ export default {
   mounted() {
     if (this.status) {
       this.$nextTick(() => {
-        debugger;
         if (this.$refs.detail.show) this.$refs.detail.show();
       });
     }

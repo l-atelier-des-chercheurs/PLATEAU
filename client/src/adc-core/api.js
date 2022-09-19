@@ -249,22 +249,24 @@ export default function () {
         return res.data.meta_filename;
       },
 
-      async updateItem({ folder_type, folder_slug, meta_slug, new_meta }) {
+      async updateFolder({ folder_type, folder_slug, new_meta }) {
         // const fetch_status = "pending";
         // const fetch_error = null;
         let path = ``;
-        if (folder_type) {
-          path += `/${folder_type}`;
-          if (folder_slug) {
-            path += `/${folder_slug}`;
-            if (meta_slug) {
-              path += `/${meta_slug}`;
-            }
-          }
-        }
+        path += `/${folder_type}`;
+        path += `/${folder_slug}`;
         const response = await this.$axios.patch(path, new_meta);
         return response.data;
       },
+      async updateFile({ folder_type, folder_slug, meta_slug, new_meta }) {
+        let path = ``;
+        path += `/${folder_type}`;
+        path += `/${folder_slug}`;
+        path += `/${meta_slug}`;
+        const response = await this.$axios.patch(path, new_meta);
+        return response.data;
+      },
+
       async deleteItem({ folder_type, folder_slug, meta_slug }) {
         // const fetch_status = "pending";
         // const fetch_error = null;

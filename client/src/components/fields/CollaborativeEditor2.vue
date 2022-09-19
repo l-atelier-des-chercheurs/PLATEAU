@@ -8,7 +8,7 @@
       v-if="editor_is_enabled"
       :folder_type="folder_type"
       :folder_slug="folder_slug"
-      :meta_slug="meta_slug"
+      :meta_slug="file.slug"
       @restore="restoreVersion"
     />
 
@@ -29,14 +29,17 @@
       />
     </div>
 
-    <div class="_savingIndicator">
-      <sl-spinner v-if="is_loading_or_saving"></sl-spinner>
-      <span v-else-if="show_saved_icon">✓</span>
-    </div>
+    <DateField :date="file.date_modified" :show_detail_initially="true" />
 
-    <!-- <div v-if="editor_is_enabled && is_collaborative">
-      ID : {{ editor_id }} Etat de la connection : {{ rtc.connection_state }}
-    </div> -->
+    <div v-if="editor_is_enabled">
+      <div class="_savingIndicator">
+        <sl-spinner v-if="is_loading_or_saving"></sl-spinner>
+        <span v-else-if="show_saved_icon">✓</span>
+      </div>
+      <div v-if="is_collaborative">
+        ID : {{ editor_id }} Etat de la connection : {{ rtc.connection_state }}
+      </div>
+    </div>
   </div>
 </template>
 <script>
@@ -72,8 +75,7 @@ export default {
   props: {
     folder_type: String,
     folder_slug: String,
-    meta_slug: String,
-    content: String,
+    file: Object,
     scrollingContainer: HTMLElement,
     line_selected: [Boolean, Number],
   },
@@ -116,13 +118,13 @@ export default {
     this.disableEditor();
   },
   watch: {
-    content() {
+    "file.content"() {
       if (
         !this.is_collaborative ||
         (this.is_collaborative && !this.editor_is_enabled)
       ) {
         this.$nextTick(() => {
-          this.editor.root.innerHTML = this.content;
+          this.editor.root.innerHTML = this.file.content;
         });
       }
     },
@@ -186,7 +188,7 @@ export default {
         readOnly: !this.editor_is_enabled,
         scrollingContainer: this.scrollingContainer,
       });
-      if (this.content) this.editor.root.innerHTML = this.content;
+      if (this.file.content) this.editor.root.innerHTML = this.file.content;
 
       if (this.$refs.editBtn)
         this.$el.querySelector(".ql-toolbar").appendChild(this.$refs.editBtn);
@@ -197,8 +199,9 @@ export default {
       });
       this.editor.on("text-change", (delta, oldDelta, source) => {
         delta, oldDelta, source;
-        // todo : only update if possibly changing line (backspace and enter)
+
         this.$nextTick(() => {
+          // todo : only update if possibly changing line (backspace and enter)
           this.updateSelectedLines();
         });
       });
@@ -251,6 +254,7 @@ export default {
     },
 
     restoreVersion(content) {
+      // TODO : with delta to allow for undo
       this.editor.root.innerHTML = content;
     },
 
@@ -299,10 +303,10 @@ export default {
       };
 
       try {
-        await this.$api.updateItem({
+        await this.$api.updateFile({
           folder_type: this.folder_type,
           folder_slug: this.folder_slug,
-          meta_slug: this.meta_slug,
+          meta_slug: this.file.slug,
           new_meta,
         });
         this.is_loading_or_saving = false;
@@ -314,8 +318,6 @@ export default {
         if (err.message === "content not changed") err;
         this.is_loading_or_saving = false;
       }
-
-      this.disableEditor();
     },
 
     async startCollaborative() {
@@ -327,7 +329,7 @@ export default {
 
       // const requested_querystring = "?" + params.toString();
       const path_to_meta =
-        this.folder_type + "_" + this.folder_slug + "_" + this.meta_slug;
+        this.folder_type + "_" + this.folder_slug + "_" + this.file.slug;
 
       const requested_resource_url =
         (location.protocol === "https:" ? "wss" : "ws") +
@@ -366,9 +368,7 @@ export default {
 
         this.editor.history.clear();
         this.editor.on("text-change", (delta, oldDelta, source) => {
-          console.log(
-            `CollaborativeEditor / text-change with source ${source}`
-          );
+          console.log(`CollaborativeEditor / text-change w source ${source}`);
           if (source === "user") {
             doc.submitOp(delta, { source: this.editor_id });
             console.log(
@@ -376,7 +376,7 @@ export default {
                 delta
               )}`
             );
-            // this.updateTextMedia();
+            this.updateTextMedia();
           }
         });
         doc.on("op", (op, source) => {

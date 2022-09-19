@@ -95,28 +95,28 @@ module.exports = function (server) {
     // };
 
     dev.logfunction({ url });
-    // remove /isSharedb/ and parse path
-    const q = new URLSearchParams(url.substring(11));
-    const path_to_meta = q.get("path_to_meta");
-    // const path_to_meta = "plop";
 
-    const sharedoc = connection.get("collaborative_texts", path_to_meta);
-    const ops = [{ insert: "Text", attributes: { bold: true } }];
+    /* works, but loading server-side would require using puppeteer or something else
+    to load quill with custom modules (like ql-mediacard), which seems overkill… */
 
-    dev.logverbose(`Connecting to doc ${path_to_meta}`);
-    try {
-      if (sharedoc.data == null) {
-        dev.logverbose(`Doc doesnt exist, creating it with ${ops}`);
-        await sharedoc.create(ops, "rich-text");
-        // await new Promise((r) => setTimeout(r, 2000));
-      } else {
-        dev.logverbose(`Doc already exists`);
-      }
-    } catch (err) {
-      throw err;
-    }
+    // const q = new URLSearchParams(url.substring(11));
+    // const path_to_meta = q.get("path_to_meta");
 
-    // doc client side doesnt seem to be the same as the one used server side
+    // const sharedoc = connection.get("collaborative_texts", path_to_meta);
+    // const ops = [{ insert: "Text", attributes: { bold: true } }];
+
+    // dev.logverbose(`Connecting to doc ${path_to_meta}`);
+    // try {
+    //   if (sharedoc.data == null) {
+    //     dev.logverbose(`Doc doesnt exist, creating it with ${ops}`);
+    //     await sharedoc.create(ops, "rich-text");
+    //     // await new Promise((r) => setTimeout(r, 2000));
+    //   } else {
+    //     dev.logverbose(`Doc already exists`);
+    //   }
+    // } catch (err) {
+    //   throw err;
+    // }
   }
 
   async function getSnapshot(context) {
