@@ -55,9 +55,11 @@ export default function () {
           // truncate long strings in content (long texts for example)
           const _args = JSON.parse(JSON.stringify(args));
           if (_args[0].changed_data?.content)
-            _args[0].changed_data.content =
-              _args[0].changed_data?.content.slice(0, 15) +
-              "[…] (truncated content)";
+            _args[0].changed_data.content = "…";
+          // if (_args[0].changed_data?.content)
+          //   _args[0].changed_data.content =
+          //     _args[0].changed_data?.content.slice(0, 15) +
+          //     "[…] (truncated content)";
           this.$alertify
             .delay(4000)
             .log(`⤓ ` + eventName + JSON.stringify(_args));

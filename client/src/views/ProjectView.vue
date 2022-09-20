@@ -14,7 +14,7 @@
           <sl-breadcrumb-item @click="$router.push('/projects')">
             Projets
           </sl-breadcrumb-item>
-          <sl-breadcrumb-item>
+          <sl-breadcrumb-item @click="$router.replace({ query: {} })">
             {{ project.title }}
           </sl-breadcrumb-item>
         </sl-breadcrumb>

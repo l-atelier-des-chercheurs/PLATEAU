@@ -1,12 +1,18 @@
 <template>
   <div>
-    <sl-dialog ref="showArchives" label="Archives" class="">
-      <div class="_archives">
+    <sl-dialog ref="showArchives" label="Archives" class="" @sl-hide="onHide">
+      <div class="_archives" v-if="archives">
         <!-- not sure why sl-select doesnt work here -->
         <div class="_topbar">
-          <sl-button variant="default" size="small" pill @click="newerVersion">
+          <sl-button
+            variant="default"
+            size="small"
+            pill
+            :disabled="archive_shown_index === 0"
+            @click="newerVersion"
+          >
             <sl-icon name="arrow-up" />
-            Plus récent
+            récent
           </sl-button>
 
           <select v-model="selected_archive_filename">
@@ -15,14 +21,22 @@
               :value="archive.filename"
               :key="archive.filename"
               v-text="
-                formatDateToPrecise(archive.date) +
-                ' - version ' +
-                (archives.length - index)
+                archive.filename === 'current'
+                  ? $t('current')
+                  : formatDateToPrecise(archive.date) +
+                    ' - version ' +
+                    (archives.length - index)
               "
             />
           </select>
 
-          <sl-button variant="default" size="small" pill @click="olderVersion">
+          <sl-button
+            variant="default"
+            size="small"
+            pill
+            :disabled="archive_shown_index === archives.length - 1"
+            @click="olderVersion"
+          >
             <sl-icon name="arrow-down" label="Plus ancien" pill />
             Plus ancient
           </sl-button>
@@ -50,6 +64,7 @@
       <sl-button
         slot="footer"
         variant="primary"
+        :disabled="selected_archive_filename === 'current'"
         @click="restoreVersion(archive_shown.content)"
       >
         {{ $t("restore_this_version") }}
@@ -63,12 +78,13 @@ export default {
     folder_type: String,
     folder_slug: String,
     meta_slug: String,
+    current_content: String,
   },
   components: {},
   data() {
     return {
       archives: null,
-      selected_archive_filename: "",
+      selected_archive_filename: "current",
     };
   },
   created() {},
@@ -102,9 +118,14 @@ export default {
         meta_slug: this.meta_slug,
       });
 
+      this.archives.push({
+        filename: "current",
+        content: this.current_content,
+      });
+
       this.archives.reverse();
 
-      this.selected_archive_filename = this.archives[0].filename;
+      // this.selected_archive_filename = this.archives[0].filename;
     },
     olderVersion() {
       this.selected_archive_filename =
@@ -116,6 +137,10 @@ export default {
     },
     restoreVersion(content) {
       this.$emit("restore", content);
+    },
+    onHide() {
+      debugger;
+      this.$emit("close");
     },
   },
 };
@@ -138,6 +163,7 @@ export default {
   display: flex;
   justify-content: space-between;
   margin: calc(var(--spacing) / 1) 0;
+  gap: calc(var(--spacing) / 1);
 }
 
 ._archiveText {

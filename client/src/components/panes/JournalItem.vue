@@ -1,16 +1,14 @@
 <template>
-  <div
-    class="_journalItem"
-    :class="{
-      'is--open': is_open,
-    }"
-  >
-    <sl-details
-      :summary="file.title"
-      @sl-show="onShow"
-      @sl-hide="onHide"
-      ref="detail"
-    >
+  <div class="_journalItem">
+    <div class="_backToList" @click="$emit('close')">
+      <sl-button @click.stop="$emit('close')" size="small">
+        {{ $t("back") }}
+      </sl-button>
+    </div>
+    <div class="_journalItem--content">
+      <div class="_entryTitle">
+        {{ file.title }}
+      </div>
       <sl-tree>
         <sl-tree-item>
           Informations
@@ -40,16 +38,15 @@
           </sl-tree-item>
         </sl-tree-item>
       </sl-tree>
-    </sl-details>
-    <CollaborativeEditor2
-      v-if="is_open"
-      :folder_type="'projects'"
-      :folder_slug="project_slug"
-      :file="file"
-      :scrollingContainer="scrollingContainer"
-      :line_selected="line_selected"
-      @lineClicked="$emit('lineClicked', $event)"
-    />
+      <CollaborativeEditor2
+        :folder_type="'projects'"
+        :folder_slug="project_slug"
+        :file="file"
+        :scrollingContainer="$el"
+        :line_selected="line_selected"
+        @lineClicked="$emit('lineClicked', $event)"
+      />
+    </div>
   </div>
 </template>
 <script>
@@ -59,36 +56,19 @@ export default {
   props: {
     file: Object,
     project_slug: String,
-    status: [Boolean, Object],
-    scrollingContainer: HTMLElement,
+    line_selected: [Boolean, Number],
   },
   components: {
     CollaborativeEditor2,
   },
   data() {
-    return {
-      is_open: false,
-    };
+    return {};
   },
   created() {},
-  mounted() {
-    if (this.status) {
-      this.$nextTick(() => {
-        if (this.$refs.detail.show) this.$refs.detail.show();
-      });
-    }
-  },
+  mounted() {},
   beforeDestroy() {},
-  watch: {
-    is_open() {
-      this.$emit("toggleEntry", this.is_open);
-    },
-  },
-  computed: {
-    line_selected() {
-      return this.status && this.status.line;
-    },
-  },
+  watch: {},
+  computed: {},
   methods: {
     async removeText() {
       await this.$api.deleteItem({
@@ -97,24 +77,40 @@ export default {
         meta_slug: this.file.slug,
       });
     },
-    onShow() {
-      if (!this.is_open) this.is_open = true;
-    },
-    onHide() {
-      if (this.is_open) this.is_open = false;
-    },
   },
 };
 </script>
 <style lang="scss" scoped>
-._journalItem {
-  // padding: var(--sl-spacing-medium);
-  // margin-top: -1px;
-  // margin-bottom: -1px;
-  // border-bottom: 5px solid black;
-  // margin-bottom: calc(var(--spacing) / 1);
-  background: white;
+._entryTitle {
+  font-size: var(--sl-font-size-x-large);
+  padding: calc(var(--spacing) / 1);
 }
+
+._journalItem {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+
+  display: flex;
+  flex-flow: column nowrap;
+
+  ._backToList {
+    width: 100%;
+    background: transparent;
+    text-align: center;
+    padding: calc(var(--spacing) / 2);
+  }
+
+  ._journalItem--content {
+    pointer-events: auto;
+    background: white;
+    flex: 1 1 100%;
+  }
+}
+
 sl-details::part(summary) {
   font-size: 120%;
 }

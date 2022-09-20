@@ -1,35 +1,55 @@
 <template>
   <div class="_journal" ref="journal">
-    <div
-      v-for="file of files"
-      :key="file.slug"
-      :file="file"
-      :project_slug="project.slug"
-    >
-      <JournalItem
+    <div class="_journal--items">
+      <button
+        type="button"
+        v-for="file of files"
+        :key="file.slug"
         :file="file"
         :project_slug="project.slug"
-        :status="entryStatus({ slug: file.slug })"
-        :scrollingContainer="$refs.journal"
-        @toggleEntry="toggleEntry({ slug: file.slug, is_open: $event })"
-        @lineClicked="lineClicked({ slug: file.slug, line: $event })"
-      />
+        class="_journal--entry"
+        :class="{
+          'was--justOpened': file.slug === entry_just_opened,
+        }"
+        @click="openEntry({ slug: file.slug })"
+      >
+        {{ file.title }}
+      </button>
+
+      <div class="_createForm">
+        <sl-button
+          variant="text"
+          @click="show_create_entry = !show_create_entry"
+        >
+          Créer une entrée
+        </sl-button>
+        <form
+          v-if="show_create_entry"
+          class="input-validation-required"
+          @submit.prevent="createText"
+        >
+          <sl-input name="title" label="Titre" required />
+          <br />
+          <sl-button type="submit" variant="primary">Créer</sl-button>
+        </form>
+      </div>
     </div>
 
-    <div class="_createForm">
-      <sl-button variant="text" @click="show_create_entry = !show_create_entry"
-        >Créer une entrée</sl-button
-      >
-      <form
-        v-if="show_create_entry"
-        class="input-validation-required"
-        @submit.prevent="createText"
-      >
-        <sl-input name="title" label="Titre" required />
-        <br />
-        <sl-button type="submit" variant="primary">Créer</sl-button>
-      </form>
-    </div>
+    <transition name="fade">
+      <div class="_overlay" v-if="entry_opened" @click="closeEntry" />
+    </transition>
+
+    <transition name="slideup">
+      <JournalItem
+        v-if="entry_opened"
+        :file="entry_opened"
+        :project_slug="project.slug"
+        :line_selected="line_selected"
+        :scrollingContainer="$refs.journal"
+        @close="closeEntry"
+        @lineClicked="lineClicked"
+      />
+    </transition>
   </div>
 </template>
 <script>
@@ -38,7 +58,7 @@ import JournalItem from "./JournalItem.vue";
 export default {
   props: {
     project: Object,
-    opened_journal_entries: Array,
+    opened_journal_entry: Object,
   },
   components: {
     JournalItem,
@@ -46,6 +66,7 @@ export default {
   data() {
     return {
       show_create_entry: false,
+      entry_just_opened: false,
     };
   },
   created() {},
@@ -53,6 +74,14 @@ export default {
   beforeDestroy() {},
   watch: {},
   computed: {
+    entry_opened() {
+      if (!this.opened_journal_entry) return false;
+      return this.files.find((f) => f.slug === this.opened_journal_entry.slug);
+    },
+    line_selected() {
+      if (!this.opened_journal_entry) return false;
+      return this.opened_journal_entry.line;
+    },
     files() {
       return this.project.files.filter((f) => f.is_journal === true) || [];
     },
@@ -86,42 +115,61 @@ export default {
 
       this.show_create_entry = false;
     },
-    entryStatus({ slug }) {
-      // todo : is entry opened or close (if its meta name is in this.opened_journal_entries)
-      return this.opened_journal_entries.find((je) => je && je.slug === slug);
+    openEntry({ slug }) {
+      this.$emit("update:opened_journal_entry", { slug });
     },
-    toggleEntry({ slug, is_open }) {
-      // todo : add or remove slug from opened_journal_entries
-      let opened_journal_entries = this.opened_journal_entries;
-      opened_journal_entries = opened_journal_entries.filter(
-        (je) => je !== null && je.slug !== slug
-      );
-      if (is_open) opened_journal_entries.push({ slug });
-
-      this.$emit("update:opened_journal_entries", opened_journal_entries);
+    closeEntry() {
+      this.entry_just_opened = this.opened_journal_entry.slug;
+      this.$emit("update:opened_journal_entry", false);
     },
-    lineClicked({ slug, line }) {
-      let opened_journal_entries = JSON.parse(
-        JSON.stringify(this.opened_journal_entries)
+    lineClicked(line) {
+      let opened_journal_entry = JSON.parse(
+        JSON.stringify(this.opened_journal_entry)
       );
-      opened_journal_entries = opened_journal_entries.map((je) => {
-        if (je.slug === slug) je.line = line;
-        else delete je.line;
-        return je;
-      });
-      this.$emit("update:opened_journal_entries", opened_journal_entries);
+      opened_journal_entry.line = line;
+      this.$emit("update:opened_journal_entry", opened_journal_entry);
     },
   },
 };
 </script>
 <style lang="scss" scoped>
 ._journal {
+  position: relative;
   background: var(--color-Journal);
   height: 100%;
-  overflow: auto;
-  scroll-behavior: smooth;
+  overflow: hidden;
 }
+
+._journal--items {
+  height: 100%;
+  position: absolute;
+  top: 0;
+  overflow: auto;
+}
+
 ._createForm {
   padding: var(--spacing);
+}
+
+._journal--entry {
+  font-size: var(--sl-font-size-x-large);
+  background: white;
+  margin-bottom: 1px;
+  width: 100%;
+  text-align: left;
+  padding: calc(var(--spacing) / 1);
+
+  &.was--justOpened {
+    color: #999;
+  }
+  &:hover {
+    background: var(--c-gris);
+  }
+}
+._overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(10px);
 }
 </style>

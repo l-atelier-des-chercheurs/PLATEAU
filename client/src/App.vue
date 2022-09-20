@@ -38,6 +38,7 @@ export default {
   --c-orange: #f9ca00;
   --c-rouge: #ff3e51;
   --c-bleu: hsl(211, 63%, 47%);
+  --c-bleu_clair: hsl(211, 63%, 77%);
   --c-noir: #333;
   --c-gris: #eff2f3;
   --c-vert: hsl(143, 69%, 55%);
@@ -95,7 +96,13 @@ export default {
 html,
 body {
   background: white;
+  accent-color: var(--c-vert);
 }
+
+::selection {
+  background: var(--c-bleu_clair);
+}
+
 html {
   height: 100%;
 
@@ -117,6 +124,7 @@ button {
   appearance: none;
   border: none;
   cursor: pointer;
+  font-family: inherit;
 }
 
 #app {
@@ -273,16 +281,41 @@ img {
   transform: rotate(180deg);
 }
 
-.fade_fast {
+.fade {
   &-enter-active,
   &-leave-active {
     opacity: 1;
-    transition: opacity 0.1s linear;
+    transition: opacity 0.5s cubic-bezier(0.19, 1, 0.22, 1);
   }
   &-enter,
   &-leave-to {
     opacity: 0;
-    transition: opacity 0.1s linear;
+    transition: opacity 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+}
+.fade_fast {
+  &-enter-active,
+  &-leave-active {
+    opacity: 1;
+    transition: opacity 0.25s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+  &-enter,
+  &-leave-to {
+    opacity: 0;
+    transition: opacity 0.25s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+}
+
+.slideup {
+  &-enter-active,
+  &-leave-active {
+    transform: translateY(0);
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+  &-enter,
+  &-leave-to {
+    transform: translateY(100%);
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
   }
 }
 </style>

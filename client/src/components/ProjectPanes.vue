@@ -19,8 +19,8 @@
         <JournalPane
           v-if="pane.type === 'Journal'"
           :project="project"
-          :opened_journal_entries="pane.pads"
-          @update:opened_journal_entries="pane.pads = $event"
+          :opened_journal_entry="pane.pad"
+          @update:opened_journal_entry="pane.pad = $event"
         />
         <MediaLibrary
           v-else-if="pane.type === 'MediaLibrary'"

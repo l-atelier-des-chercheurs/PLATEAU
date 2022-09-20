@@ -96,7 +96,7 @@ export default {
       possible_project_panes: [
         {
           type: "Journal",
-          pads: [],
+          pad: {},
           size: 50,
         },
         {

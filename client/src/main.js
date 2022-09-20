@@ -50,13 +50,11 @@ const instance = axios.create({
 });
 
 instance.interceptors.request.use((request) => {
-  alertify
-    .delay(4000)
-    .log(
-      `⤒ — ${request.method} + ${request.url}${
-        request.data ? `+ ` + JSON.stringify(request.data).slice(0, 20) : ""
-      }`
-    );
+  alertify.delay(4000).log(
+    `⤒ — ${request.method} + ${request.url}
+      ${request.data ? `+ ` + JSON.stringify(request.data).slice(0, 20) : ""}
+      `
+  );
   return request;
 });
 Vue.prototype.$axios = instance;

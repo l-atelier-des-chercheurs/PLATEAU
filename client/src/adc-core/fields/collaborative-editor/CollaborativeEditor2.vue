@@ -9,6 +9,7 @@
       :folder_type="folder_type"
       :folder_slug="folder_slug"
       :meta_slug="file.slug"
+      :current_content="file.content"
       @close="show_archives = false"
       @restore="restoreVersion"
     />
@@ -277,7 +278,10 @@ export default {
       this.editor.setSelection(null);
       this.editor.blur();
       this.updateSelectedLines();
-      this.endCollaborative();
+
+      if (this.is_collaborative) this.endCollaborative();
+
+      await new Promise((r) => setTimeout(r, 5000));
 
       this.$nextTick(() => {
         this.editor.disable();
@@ -644,7 +648,7 @@ export default {
 ._collaborativeEditor {
   position: relative;
   font-size: 100%;
-  border: var(--border-size) solid var(--editor-bg);
+  border-top: var(--border-size) solid var(--editor-bg);
 
   --toolbar-bg: white;
   --editor-bg: #eee;
@@ -731,7 +735,8 @@ export default {
 
       margin: 0 0 0 calc(var(--spacing) * 2);
       background-color: white;
-      border-radius: 4px;
+
+      padding-bottom: calc(1.42em * 10);
 
       @import "./imports/mainText.scss";
 
