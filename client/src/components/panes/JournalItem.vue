@@ -2,6 +2,7 @@
   <div class="_journalItem">
     <div class="_backToList" @click="$emit('close')">
       <sl-button @click.stop="$emit('close')" size="small">
+        <sl-icon slot="prefix" name="arrow-left" />
         {{ $t("back") }}
       </sl-button>
     </div>
@@ -38,6 +39,7 @@
           </sl-tree-item>
         </sl-tree-item>
       </sl-tree>
+      <br />
       <CollaborativeEditor2
         :folder_type="'projects'"
         :folder_slug="project_slug"

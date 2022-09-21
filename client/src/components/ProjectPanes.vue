@@ -1,14 +1,9 @@
 <template>
   <div class="_projetPanes">
-    <template v-if="projectpanes.length === 0">
-      <pane><i>Aucune panneau n’est actif</i></pane>
-    </template>
-    <splitpanes
-      watch-slots
-      :dbl-click-splitter="false"
-      @resized="resized"
-      v-else
-    >
+    <splitpanes watch-slots :dbl-click-splitter="false" @resized="resized">
+      <template v-if="projectpanes.length === 0">
+        <pane><span class="_msg">Aucun panneau n’est actif</span></pane>
+      </template>
       <pane
         v-for="pane in projectpanes"
         :key="pane.index"
@@ -83,5 +78,9 @@ export default {
   position: relative;
   width: 100%;
   height: 100%;
+}
+._msg {
+  font-style: italic;
+  padding: calc(var(--spacing) / 2);
 }
 </style>

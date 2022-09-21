@@ -1,8 +1,7 @@
 <template>
   <div class="_journal" ref="journal">
     <div class="_journal--items">
-      <button
-        type="button"
+      <div
         v-for="file of files"
         :key="file.slug"
         :file="file"
@@ -13,8 +12,17 @@
         }"
         @click="openEntry({ slug: file.slug })"
       >
-        {{ file.title }}
-      </button>
+        <div>
+          <div class="_journal--entry--title">
+            {{ file.title }}
+          </div>
+          <!-- <DateField :title="'date_created'" :date="file.date_uploaded" />
+          <DateField :title="'date_modified'" :date="file.date_modified" /> -->
+          <!-- {{ file.content.length }} -->
+        </div>
+
+        <sl-icon name="arrow-right" style="font-size: 1.4em" />
+      </div>
 
       <div class="_createForm">
         <sl-button
@@ -120,7 +128,7 @@ export default {
     },
     closeEntry() {
       this.entry_just_opened = this.opened_journal_entry.slug;
-      this.$emit("update:opened_journal_entry", false);
+      this.$emit("update:opened_journal_entry", {});
     },
     lineClicked(line) {
       let opened_journal_entry = JSON.parse(
@@ -142,6 +150,7 @@ export default {
 
 ._journal--items {
   height: 100%;
+  width: 100%;
   position: absolute;
   top: 0;
   overflow: auto;
@@ -152,12 +161,21 @@ export default {
 }
 
 ._journal--entry {
-  font-size: var(--sl-font-size-x-large);
   background: white;
   margin-bottom: 1px;
   width: 100%;
   text-align: left;
   padding: calc(var(--spacing) / 1);
+  cursor: pointer;
+
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: center;
+
+  ._journal--entry--title {
+    font-size: var(--sl-font-size-x-large);
+  }
 
   &.was--justOpened {
     color: #999;
