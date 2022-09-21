@@ -38,7 +38,7 @@
             @click="olderVersion"
           >
             <sl-icon name="arrow-down" label="Plus ancien" pill />
-            Plus ancient
+            ancient
           </sl-button>
         </div>
 

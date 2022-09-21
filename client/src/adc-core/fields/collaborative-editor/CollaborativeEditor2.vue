@@ -121,6 +121,7 @@ export default {
       is_collaborative: true,
       autosave: true,
       editor_is_enabled: false,
+      doc: undefined,
 
       is_loading_or_saving: false,
       show_saved_icon: false,
@@ -281,8 +282,6 @@ export default {
 
       if (this.is_collaborative) this.endCollaborative();
 
-      await new Promise((r) => setTimeout(r, 5000));
-
       this.$nextTick(() => {
         this.editor.disable();
         this.editor_is_enabled = false;
@@ -393,28 +392,28 @@ export default {
       });
 
       console.log(`CollaborativeEditor / connecting to doc ${path_to_meta}`);
-      const doc = connection.get("collaborative_texts", path_to_meta);
+      this.doc = connection.get("collaborative_texts", path_to_meta);
 
-      doc.subscribe((err) => {
+      this.doc.subscribe((err) => {
         if (err) console.error(`CollaborativeEditor / err ${err}`);
         console.log(`CollaborativeEditor / doc subscribe`);
 
-        if (doc.type) {
+        if (this.doc.type) {
           console.log(
             `CollaborativeEditor / doc already exists and doc.data = ${JSON.stringify(
-              doc.data
+              this.doc.data
             )}`
           );
-          this.editor.setContents(doc.data, "init");
+          this.editor.setContents(this.doc.data, "init");
         } else {
-          doc.create(this.editor.getContents(), "rich-text");
+          this.doc.create(this.editor.getContents(), "rich-text");
         }
 
         this.editor.history.clear();
         this.editor.on("text-change", (delta, oldDelta, source) => {
           console.log(`CollaborativeEditor / text-change w source ${source}`);
           if (source === "user") {
-            doc.submitOp(delta, { source: this.editor_id });
+            this.doc.submitOp(delta, { source: this.editor_id });
             console.log(
               `CollaborativeEditor / submitted op to server ${JSON.stringify(
                 delta
@@ -423,16 +422,16 @@ export default {
             this.updateTextMedia();
           }
         });
-        doc.on("op", (op, source) => {
+        this.doc.on("op", (op, source) => {
           console.log(`CollaborativeEditor / op applied`);
-          this.text_deltas = doc.data;
+          this.text_deltas = this.doc.data;
           if (source === this.editor_id) return;
           console.log(`CollaborativeEditor / outside op applied`);
           this.editor.updateContents(op);
         });
       });
 
-      doc.on("error", (err) => {
+      this.doc.on("error", (err) => {
         // err;
         // soucis : les situations ou le serveur a été fermé et en le rouvrant il ne possède plus d’instance du doc dans sharedb…
         console.error(`CollaborativeEditor / doc err ${err}`);
@@ -440,6 +439,7 @@ export default {
     },
     endCollaborative() {
       if (this.rtc.socket) this.rtc.socket.close();
+      if (this.doc) this.doc.unsubscribe();
     },
 
     updateTextMedia() {

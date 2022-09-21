@@ -62,6 +62,7 @@ export default {
   // padding: 1px;
   width: 100%;
   height: 100%;
+  background: black;
 
   ::v-deep {
     ._mediaContent {
