@@ -1,7 +1,7 @@
 -
 <template>
   <div id="app" class="">
-    <!-- <SocketStatus /> -->
+    <SocketStatus />
     <AdminPanel v-if="false" />
 
     <div class="">
