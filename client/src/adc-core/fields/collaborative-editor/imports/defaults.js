@@ -82,6 +82,7 @@ export const toolbar = {
     ["code-block"],
     ["divider"],
     ["clean"],
+    ["status"],
   ],
   handlers: {
     divider: function () {

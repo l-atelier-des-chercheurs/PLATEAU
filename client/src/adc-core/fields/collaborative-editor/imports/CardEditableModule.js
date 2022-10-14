@@ -1,7 +1,7 @@
 import Quill from "quill";
 const Module = Quill.import("core/module");
 
-class CardEditableModule extends Module {
+export default class CardEditableModule extends Module {
   constructor(quill, options) {
     super(quill, options);
     let is_selected = false;
@@ -62,5 +62,3 @@ class CardEditableModule extends Module {
     quill.emitter.listenDOM("click", document.body, listener);
   }
 }
-
-module.exports = CardEditableModule;

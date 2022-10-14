@@ -1,26 +1,29 @@
 <template>
   <div class="_projectView">
     <div class="_topbar">
-      <router-link to="/projects" v-text="'⇠'" />
-
       <template v-if="is_loading">Chargement…</template>
       <template v-else-if="error">
         <div v-if="error.status === 404">Projet introuvable</div>
       </template>
       <template v-else>
-        <div>
-          <h1>{{ project.title }}</h1>
-        </div>
+        <sl-breadcrumb>
+          <sl-breadcrumb-item @click="$router.push('/')">
+            <sl-icon slot="prefix" name="house-door-fill" />
+            Plateau
+          </sl-breadcrumb-item>
+          <sl-breadcrumb-item @click="$router.push('/projects')">
+            Projets
+          </sl-breadcrumb-item>
+          <sl-breadcrumb-item @click="$router.replace({ query: {} })">
+            {{ project.title }}
+          </sl-breadcrumb-item>
+        </sl-breadcrumb>
+
         <PaneList class="_paneList" :panes.sync="projectpanes" />
       </template>
     </div>
     <div class="_panes" v-if="!is_loading && !error">
-      <ProjectPanes
-        :projectpanes.sync="projectpanes"
-        :libpanes.sync="libpanes"
-        :project="project"
-        :media_focused.sync="media_focused"
-      />
+      <ProjectPanes :projectpanes.sync="projectpanes" :project="project" />
     </div>
   </div>
 </template>
@@ -43,8 +46,6 @@ export default {
       project: null,
 
       projectpanes: [],
-      libpanes: [],
-      media_focused: null,
     };
   },
   created() {},
@@ -71,27 +72,10 @@ export default {
       handler() {
         let projectpanes = this.$route.query?.projectpanes;
         if (projectpanes) this.projectpanes = JSON.parse(projectpanes);
-
-        let libpanes = this.$route.query?.libpanes;
-        if (libpanes) this.libpanes = JSON.parse(libpanes);
-
-        this.media_focused = this.$route.query?.media_focused || null;
       },
       immediate: true,
     },
     projectpanes: {
-      handler() {
-        this.updateQueryPanes();
-      },
-      deep: true,
-    },
-    libpanes: {
-      handler() {
-        this.updateQueryPanes();
-      },
-      deep: true,
-    },
-    media_focused: {
       handler() {
         this.updateQueryPanes();
       },
@@ -109,9 +93,6 @@ export default {
 
       if (this.projectpanes)
         query.projectpanes = JSON.stringify(this.projectpanes);
-      if (this.libpanes) query.libpanes = JSON.stringify(this.libpanes);
-      if (this.media_focused) query.media_focused = this.media_focused;
-
       if (
         this.$route.query &&
         JSON.stringify(this.$route.query) === JSON.stringify(query)
@@ -138,7 +119,7 @@ export default {
   align-items: center;
   // justify-content: space-between;
   gap: calc(var(--spacing));
-  padding: var(--spacing);
+  padding: calc(var(--spacing) / 2) calc(var(--spacing) / 1);
 
   border-bottom: 1px solid black;
 

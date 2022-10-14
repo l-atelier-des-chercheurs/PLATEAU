@@ -1,7 +1,7 @@
 -
 <template>
   <div id="app" class="">
-    <SocketStatus />
+    <!-- <SocketStatus /> -->
     <AdminPanel v-if="false" />
 
     <div class="">
@@ -38,12 +38,13 @@ export default {
   --c-orange: #f9ca00;
   --c-rouge: #ff3e51;
   --c-bleu: hsl(211, 63%, 47%);
+  --c-bleu_clair: hsl(211, 63%, 77%);
   --c-noir: #333;
   --c-gris: #eff2f3;
   --c-vert: hsl(143, 69%, 55%);
   --c-vert_fonce: hsl(143, 69%, 40%);
 
-  --active-color: var(--c-orange);
+  --active-color: var(--c-vert);
   /* --active-color: #aaa; */
   --color-WriteUp: #fff;
 
@@ -59,6 +60,8 @@ export default {
   --c-barbgcolor: rgba(255, 255, 255, 0);
   --c-thumbcolor: black;
 
+  --indicator-color: var(--c-vert) !important;
+
   --sl-font-sans: "IBM Plex Sans";
   --sl-font-serif: "IBM Plex Serif";
   --sl-font-mono: "IBM Plex Mono";
@@ -71,7 +74,7 @@ export default {
   }
   @each $size in $sizes {
     $i: index($sizes, $size);
-    --sl-color-primary-#{$size}: hsl(211, 63%, #{98% - $i * 5});
+    --sl-color-primary-#{$size}: hsl(221, 63%, #{98% - $i * 5});
   }
   @each $size in $sizes {
     $i: index($sizes, $size);
@@ -93,22 +96,16 @@ export default {
 html,
 body {
   background: white;
+  accent-color: var(--c-vert);
 }
+
+::selection {
+  background: var(--c-bleu_clair);
+}
+
 html {
   height: 100%;
-}
-body {
-  min-height: 100%;
-}
 
-button {
-  appearance: none;
-  border: none;
-  cursor: pointer;
-}
-
-#app {
-  /* font-family: "Work Sans"; */
   font-family: "IBM Plex Sans";
   font-style: normal;
   font-weight: 300;
@@ -118,6 +115,20 @@ button {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--c-noir);
+}
+body {
+  min-height: 100%;
+}
+
+button {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+#app {
+  /* font-family: "Work Sans"; */
 
   min-height: 100%;
 }
@@ -177,6 +188,7 @@ img {
   // box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.2);
   // border-radius: 4px;
   // overflow: hidden;
+  transition: none !important;
 }
 
 .splitpanes .splitpanes__splitter {
@@ -269,16 +281,41 @@ img {
   transform: rotate(180deg);
 }
 
-.fade_fast {
+.fade {
   &-enter-active,
   &-leave-active {
     opacity: 1;
-    transition: opacity 0.1s linear;
+    transition: opacity 0.5s cubic-bezier(0.19, 1, 0.22, 1);
   }
   &-enter,
   &-leave-to {
     opacity: 0;
-    transition: opacity 0.1s linear;
+    transition: opacity 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+}
+.fade_fast {
+  &-enter-active,
+  &-leave-active {
+    opacity: 1;
+    transition: opacity 0.25s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+  &-enter,
+  &-leave-to {
+    opacity: 0;
+    transition: opacity 0.25s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+}
+
+.slideup {
+  &-enter-active,
+  &-leave-active {
+    transform: translateY(0);
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+  &-enter,
+  &-leave-to {
+    transform: translateY(100%);
+    transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
   }
 }
 </style>

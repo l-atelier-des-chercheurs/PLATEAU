@@ -2,26 +2,28 @@ import Quill from "quill";
 let BlockEmbed = Quill.import("blots/block/embed");
 
 // inspired from https://gist.github.com/tranduongms1/584d43ec7d8ddeab458f087adbeef950
-class MediaBlot extends BlockEmbed {
+export default class MediaBlot extends BlockEmbed {
   static blotName = "media";
   static tagName = "figure";
   static className = "ql-mediacard";
 
-  static create({ type, src, content, caption, metaFileName }) {
-    let node = super.create();
+  static create({ type, src, content, caption, meta_filename }) {
     console.log(`CollaborativeEditor • MediaBlot : create for type = ${type}`);
 
-    node.setAttribute("contenteditable", false);
+    let node = super.create();
+    let container = window.document.createElement("div");
+    container.classList.add("ql-mediacard-container");
 
-    let bg = window.document.createElement("div");
-    bg.setAttribute("class", "ql-mediacard--background");
-    node.appendChild(bg);
+    node.setAttribute("contenteditable", false);
+    // let bg = window.document.createElement("div");
+    // bg.setAttribute("class", "ql-mediacard--background");
+    // node.appendChild(bg);
 
     let tag;
 
-    if (!type || !metaFileName) {
+    if (!type || !meta_filename) {
       alert(
-        `Missing type or metaFileName : type = ${type} and metaFileName = ${metaFileName}`
+        `Missing type or meta_filename : type = ${type} and meta_filename = ${meta_filename}`
       );
       return;
     }
@@ -43,29 +45,23 @@ class MediaBlot extends BlockEmbed {
       tag.setAttribute("src", src);
     }
     tag.setAttribute("draggable", false);
-    node.appendChild(tag);
+    container.appendChild(tag);
+
     if (caption) {
       let caption_tag = window.document.createElement("figcaption");
       caption_tag.innerHTML = caption;
-      node.appendChild(caption_tag);
+      container.appendChild(caption_tag);
     }
     node.dataset.type = type;
-    node.dataset.metaFileName = metaFileName;
+    node.dataset.meta_filename = meta_filename;
     node.setAttribute("draggable", false);
-
-    // todo for later: allow drag from cards in quill
-    // to move inside document or to composition
+    // todo for later: allow drag from cards in quill to move inside document or to composition
     node.addEventListener("dragstart", ($event) => {
       $event.dataTransfer.setData("text/plain", "media_in_quill");
       $event.dataTransfer.effectAllowed = "move";
-      // this.is_dragged = true;
-      // this.$root.settings.media_being_dragged = media.metaFileName;
     });
 
-    node.style.animation = "scale-in 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
-    node.addEventListener("animationend", () => {
-      node.style.animation = "";
-    });
+    node.appendChild(container);
 
     return node;
   }
@@ -73,32 +69,46 @@ class MediaBlot extends BlockEmbed {
   constructor(node) {
     super(node);
 
-    let removeButton;
-    let caption;
-    let captionInput;
+    let btnRow, caption, captionInput;
 
     node.__onSelect = () => {
       const quill = Quill.find(node.parentElement.parentElement);
-      // const _block = Quill.find(node);
 
-      // quill.setSelection(quill.getIndex(_block), 0, Quill.sources.USER);
+      if (!quill.container.classList.contains("is--editable")) return;
       node.classList.add("is--focused");
 
-      removeButton = window.document.createElement("button");
-      removeButton.innerHTML = "×";
+      btnRow = window.document.createElement("div");
+
+      let removeButton = window.document.createElement("button");
+      removeButton.innerHTML = "supprimer ×";
       removeButton.setAttribute("type", "button");
       removeButton.classList.add("_button_removeMedia");
       removeButton.addEventListener("click", () => {
-        node.__onDeselect();
         quill.enable(true);
-        node.style.animation = "scale-out 0.5s cubic-bezier(0.19, 1, 0.22, 1)";
-        node.addEventListener("animationend", () => {
-          super.remove();
-          // node.remove();
-          // supprimer du bloc proprement
+        super.remove();
+      });
+      btnRow.appendChild(removeButton);
+
+      let ratioButton = window.document.createElement("select");
+      ratioButton.innerHTML = `
+        <option>default</option>
+        <option>1/4</option>
+        <option>2/4</option>
+        <option>3/4</option>
+        `;
+      ratioButton.classList.add("_select_ratio");
+      ratioButton.addEventListener("change", (event) => {
+        const ratio = event.target.value;
+        node.dataset.ratio = ratio;
+        ratioButton.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest",
         });
       });
-      node.appendChild(removeButton);
+      btnRow.appendChild(ratioButton);
+
+      node.appendChild(btnRow);
 
       caption = node.querySelector("figcaption");
       captionInput = window.document.createElement("input");
@@ -113,7 +123,7 @@ class MediaBlot extends BlockEmbed {
       } else {
         caption = window.document.createElement("figcaption");
         caption.appendChild(captionInput);
-        node.appendChild(caption);
+        node.querySelector(".ql-mediacard-container").appendChild(caption);
       }
 
       setTimeout(() => {
@@ -129,13 +139,12 @@ class MediaBlot extends BlockEmbed {
         caption.innerText = value;
       }
       node.classList.remove("is--focused");
-      removeButton.remove();
+      btnRow.remove();
     };
   }
 
   // deleteAt() {
   //   console.log("deleteAt for custom mediablock: prevented");
-
   //   return false;
   //   // prevent removing on backspace after block
   // }
@@ -148,7 +157,7 @@ class MediaBlot extends BlockEmbed {
       return {
         alt: img.getAttribute("alt"),
         src: img.getAttribute("src"),
-        metaFileName: node.dataset.metaFileName,
+        meta_filename: node.dataset.meta_filename,
         type: node.dataset.type,
         caption: figcaption ? figcaption.innerText : null,
       };
@@ -159,7 +168,7 @@ class MediaBlot extends BlockEmbed {
       return {
         alt: video.getAttribute("alt"),
         src: video.getAttribute("src"),
-        metaFileName: node.dataset.metaFileName,
+        meta_filename: node.dataset.meta_filename,
         type: node.dataset.type,
         caption: figcaption ? figcaption.innerText : null,
       };
@@ -170,7 +179,7 @@ class MediaBlot extends BlockEmbed {
       return {
         alt: audio.getAttribute("alt"),
         src: audio.getAttribute("src"),
-        metaFileName: node.dataset.metaFileName,
+        meta_filename: node.dataset.meta_filename,
         type: node.dataset.type,
         caption: figcaption ? figcaption.innerText : null,
       };
@@ -179,7 +188,7 @@ class MediaBlot extends BlockEmbed {
       let figcaption = node.querySelector("figcaption");
       if (!blockquote) return false;
       return {
-        metaFileName: node.dataset.metaFileName,
+        meta_filename: node.dataset.meta_filename,
         content: blockquote.innerHTML,
         type: node.dataset.type,
         caption: figcaption ? figcaption.innerText : null,
@@ -187,5 +196,3 @@ class MediaBlot extends BlockEmbed {
     }
   }
 }
-
-module.exports = MediaBlot;

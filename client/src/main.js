@@ -37,6 +37,9 @@ Vue.component("LoaderSpinner", {
   `,
 });
 
+import FormatDates from "./mixins/FormatDates";
+Vue.mixin(FormatDates);
+
 import "axios-debug-log/enable";
 import axios from "axios";
 const instance = axios.create({
@@ -47,13 +50,11 @@ const instance = axios.create({
 });
 
 instance.interceptors.request.use((request) => {
-  alertify
-    .delay(4000)
-    .log(
-      `⤒ — ${request.method} + ${request.url}${
-        request.data ? `+ ` + JSON.stringify(request.data).slice(0, 20) : ""
-      }`
-    );
+  alertify.delay(4000).log(
+    `⤒ — ${request.method} + ${request.url}
+      ${request.data ? `+ ` + JSON.stringify(request.data).slice(0, 20) : ""}
+      `
+  );
   return request;
 });
 Vue.prototype.$axios = instance;
@@ -68,6 +69,11 @@ new Vue({
     is_connected: false,
     is_electron: navigator.userAgent.toLowerCase().indexOf(" electron/") > -1,
     dev_mode: true,
+
+    window: {
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+    },
   },
   mounted() {
     this.$api.init();
@@ -75,10 +81,20 @@ new Vue({
     this.$eventHub.$on("socketio.reconnect", this.socketConnected);
     this.$eventHub.$on("socketio.disconnect", this.socketDisconnected);
     this.$eventHub.$on("socketio.connect_error", this.socketConnectError);
+
+    window.addEventListener("resize", () => {
+      this.window.innerWidth = window.innerWidth;
+      this.window.innerHeight = window.innerHeight;
+    });
   },
   watch: {
     "$api.socket.connected": function () {
       this.is_connected = this.$api.socket.connected;
+    },
+  },
+  computed: {
+    is_mobile_view() {
+      return this.window.innerWidth < 700;
     },
   },
   methods: {

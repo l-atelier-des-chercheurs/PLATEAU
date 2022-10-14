@@ -55,9 +55,11 @@ export default function () {
           // truncate long strings in content (long texts for example)
           const _args = JSON.parse(JSON.stringify(args));
           if (_args[0].changed_data?.content)
-            _args[0].changed_data.content =
-              _args[0].changed_data?.content.slice(0, 15) +
-              "[…] (truncated content)";
+            _args[0].changed_data.content = "…";
+          // if (_args[0].changed_data?.content)
+          //   _args[0].changed_data.content =
+          //     _args[0].changed_data?.content.slice(0, 15) +
+          //     "[…] (truncated content)";
           this.$alertify
             .delay(4000)
             .log(`⤓ ` + eventName + JSON.stringify(_args));
@@ -249,26 +251,24 @@ export default function () {
         return res.data.meta_filename;
       },
 
-      async updateItem({ folder_type, folder_slug, meta_slug, new_meta }) {
+      async updateFolder({ folder_type, folder_slug, new_meta }) {
         // const fetch_status = "pending";
         // const fetch_error = null;
-        try {
-          let path = ``;
-          if (folder_type) {
-            path += `/${folder_type}`;
-            if (folder_slug) {
-              path += `/${folder_slug}`;
-              if (meta_slug) {
-                path += `/${meta_slug}`;
-              }
-            }
-          }
-          const response = await this.$axios.patch(path, new_meta);
-          return response.data;
-        } catch (e) {
-          throw e.response.data;
-        }
+        let path = ``;
+        path += `/${folder_type}`;
+        path += `/${folder_slug}`;
+        const response = await this.$axios.patch(path, new_meta);
+        return response.data;
       },
+      async updateFile({ folder_type, folder_slug, meta_slug, new_meta }) {
+        let path = ``;
+        path += `/${folder_type}`;
+        path += `/${folder_slug}`;
+        path += `/${meta_slug}`;
+        const response = await this.$axios.patch(path, new_meta);
+        return response.data;
+      },
+
       async deleteItem({ folder_type, folder_slug, meta_slug }) {
         // const fetch_status = "pending";
         // const fetch_error = null;

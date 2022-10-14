@@ -47,10 +47,12 @@ export default {
   z-index: 1500;
   bottom: 0;
   width: 100%;
+  pointer-events: none;
 
   margin: calc(var(--spacing) / 2) 0;
 
   ._socketStatus--content {
+    pointer-events: auto;
     margin: 0 auto;
     max-width: 50ch;
     background: var(--c-rouge);

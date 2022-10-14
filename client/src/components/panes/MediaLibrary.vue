@@ -56,24 +56,16 @@
 
         Médias = {{ medias.length }}
 
-        <div class="_mediaLibrary--lib--grid">
-          <div
+        <div class="_mediaLibrary--lib--grid" ref="mediaTiles">
+          <MediaTile
             v-for="file of medias"
             :key="file.slug"
-            class="_mediaTile"
-            :data-type="file.type"
-          >
-            <!-- {{ file.type }} -->
-            <MediaContent :file="file" :project_slug="project.slug" />
-            <button
-              type="button"
-              class="_focusMediaBtn"
-              :class="{
-                'is--focused': media_focused === file.slug,
-              }"
-              @click="toggleMediaFocus(file.slug)"
-            />
-          </div>
+            :project_slug="project.slug"
+            :file="file"
+            :is_focused="media_focused === file.slug"
+            :data-fileslug="file.slug"
+            @toggleMediaFocus="(slug) => toggleMediaFocus(slug)"
+          />
         </div>
       </pane>
       <pane
@@ -83,21 +75,14 @@
         :size="focus_pane_size"
       >
         <transition name="fade_fast" mode="out-in">
-          <div v-if="focused_media" :key="focused_media.slug">
-            <MediaContent
-              :file="focused_media"
-              :project_slug="project.slug"
-              :resolution="1600"
-            />
-            <sl-button-group class="_focusBtns">
-              <sl-button size="small" @click="toggleMediaFocus()">
-                Fermer
-              </sl-button>
-              <sl-button size="small" @click="removeMedia(focused_media.slug)">
-                Supprimer
-              </sl-button>
-            </sl-button-group>
-          </div>
+          <MediaFocus
+            v-if="focused_media"
+            :key="focused_media.slug"
+            :file="focused_media"
+            :project_slug="project.slug"
+            @remove="removeMedia(focused_media.slug)"
+            @close="toggleMediaFocus(focused_media.slug)"
+          />
         </transition>
       </pane>
     </splitpanes>
@@ -106,21 +91,22 @@
 <script>
 import { Splitpanes, Pane } from "splitpanes";
 
+import MediaFocus from "@/components/MediaFocus";
 import UploadFiles from "@/components/fields/UploadFiles";
-import MediaContent from "@/components/MediaContent.vue";
+import MediaTile from "@/components/MediaTile.vue";
 
 export default {
   props: {
     project: Object,
-    libpanes: Array,
-    media_focused: String,
+    focus_height: Number,
+    media_focused: [Boolean, String],
   },
   components: {
     Splitpanes,
     Pane,
-
+    MediaTile,
+    MediaFocus,
     UploadFiles,
-    MediaContent,
   },
   data() {
     return {
@@ -129,11 +115,18 @@ export default {
       show_create_link_field: false,
       url_to: "https://latelier-des-chercheurs.fr/",
 
-      focuspane_height_when_opened: this.libpanes[1] || 50,
+      focuspane_height_when_opened: this.focus_height,
     };
   },
   created() {},
-  mounted() {},
+  mounted() {
+    console.log(`MediaLibrary / mounted`);
+
+    if (this.media_focused)
+      this.$nextTick(() => {
+        this.scrollToMediaTile(this.media_focused);
+      });
+  },
   beforeDestroy() {},
   watch: {},
   computed: {
@@ -141,18 +134,33 @@ export default {
       return this.project.files.filter((f) => !f.is_journal) || [];
     },
     focused_media() {
-      return (
-        this.project.files.find((f) => f.slug === this.media_focused) || false
-      );
+      const _focused_media =
+        this.project.files.find((f) => f.slug === this.media_focused) || false;
+      if (_focused_media && this.$refs.mediaTiles)
+        this.scrollToMediaTile(_focused_media.slug);
+
+      return _focused_media;
     },
     lib_pane_size() {
-      return (this.libpanes && this.libpanes[0]) || 100;
+      return 100 - this.focus_pane_size;
     },
     focus_pane_size() {
-      return (this.libpanes && this.libpanes[1]) || 0;
+      if (!this.focused_media) return 0;
+      return this.focus_height;
     },
   },
   methods: {
+    scrollToMediaTile(slug) {
+      const focused_tile = this.$refs.mediaTiles.querySelector(
+        `[data-fileslug="${slug}"]`
+      );
+      if (focused_tile)
+        focused_tile.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "nearest",
+        });
+    },
     updateInputFiles($event) {
       this.selected_files = Array.from($event.target.files);
       $event.target.value = "";
@@ -187,22 +195,21 @@ export default {
       this.$api.uploadText({ filename, content, additional_meta });
     },
 
-    resized(libpanes) {
-      const _libpanes = libpanes.map((l) => Number(l.size.toFixed(2)));
-      this.$emit("update:libpanes", _libpanes);
-      if (_libpanes[1] !== 0) this.focuspane_height_when_opened = _libpanes[1];
+    resized(panes) {
+      const focus_pane_height = Number(panes[1].size.toFixed(1));
+      this.$emit("update:focus_height", focus_pane_height);
     },
-
     toggleMediaFocus(slug) {
       if (!slug || this.media_focused === slug) {
         this.$emit("update:media_focused", null);
-        this.resized([{ size: 100 }, { size: 0 }]);
       } else {
         this.$emit("update:media_focused", slug);
-        this.resized([
-          { size: 100 - this.focuspane_height_when_opened },
-          { size: this.focuspane_height_when_opened },
-        ]);
+        if (this.focus_height === 0) this.$emit("update:focus_height", 50);
+        // debugger;
+        // this.resized([
+        //   { size: 100 - this.focuspane_height_when_opened },
+        //   { size: this.focuspane_height_when_opened },
+        // ]);
       }
     },
 
@@ -233,76 +240,12 @@ export default {
 ._mediaLibrary--lib--grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  // gap: calc(var(--spacing) / 2);
-  // padding: calc(var(--spacing) / 2);
-  gap: 1px;
-  padding: 1px;
-
-  ._mediaTile {
-    position: relative;
-    aspect-ratio: 1/1;
-    background: rgba(255, 255, 255, 0.35);
-
-    &[data-type="text"],
-    &[data-type="other"] {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-
-      text-align: center;
-    }
-
-    ::v-deep {
-      img {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        max-width: none;
-      }
-    }
-  }
-
-  ._focusMediaBtn {
-    appearance: none;
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    background: transparent;
-    transition: all 0.1s linear;
-
-    &:hover {
-      background: rgba(255, 255, 255, 0.35);
-      transition: none;
-    }
-
-    &.is--focused {
-      background: rgba(255, 255, 255, 0.55);
-    }
-  }
+  gap: 2px;
+  padding: 2px;
 }
 
 ._mediaLibrary--focusPane {
-  position: relative;
-  padding: 1px;
   // background: var(--c-bleu);
-
-  ::v-deep {
-    ._mediaContent {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-
-      img {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-
-        object-fit: contain;
-        max-width: none;
-      }
-    }
-  }
 }
 
 ._focusBtns {
