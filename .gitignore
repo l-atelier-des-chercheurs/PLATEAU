@@ -1,6 +1,5 @@
 /dist/
 settings.json
-/public/dist/
 
 ####### NODE ########
 .tmp
@@ -36,8 +35,6 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
-
-public/dist/build.js
 
 changelog.csv
 access.csv
