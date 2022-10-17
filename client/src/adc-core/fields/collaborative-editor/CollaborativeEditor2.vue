@@ -15,10 +15,16 @@
     />
 
     <component :is="`style`" v-html="quill_styles" />
-    <div ref="editBtn" class="_btnContainer">
+    <div ref="editBtn" class="_btnContainer" v-if="can_edit">
       <small class="_btnRow">
-        <sl-button @click="toggleEdit" size="small" class="_editBtn">
-          <sl-icon slot="prefix" name="pencil" />
+        <sl-button
+          variant="edit"
+          class="editBtn"
+          size="small"
+          pill
+          @click="toggleEdit"
+        >
+          <sl-icon name="pencil-fill" :label="$t('edit')" />
           <template v-if="!editor_is_enabled"> Modifier </template>
           <template v-else> Arrêter les modifications </template>
         </sl-button>
@@ -100,6 +106,7 @@ export default {
     file: Object,
     scrollingContainer: HTMLElement,
     line_selected: [Boolean, Number],
+    can_edit: Boolean,
   },
   components: {
     TextVersioning,
@@ -137,7 +144,6 @@ export default {
   created() {},
   mounted() {
     this.initEditor();
-
     // this.enableEditor();
   },
   beforeDestroy() {
@@ -347,10 +353,9 @@ export default {
       };
 
       try {
-        await this.$api.updateFile({
-          folder_type: this.folder_type,
-          folder_slug: this.folder_slug,
-          meta_slug: this.file.slug,
+        let path = `/${this.folder_type}/${this.folder_slug}/${this.file.slug}`;
+        await this.$api.updateMeta({
+          path,
           new_meta,
         });
         this.is_loading_or_saving = false;
@@ -733,7 +738,7 @@ export default {
       height: auto;
       overflow: visible;
 
-      margin: 0 0 0 calc(var(--spacing) * 2);
+      padding: 0 0 0 calc(var(--spacing) * 2);
       background-color: white;
 
       padding-bottom: calc(1.42em * 10);

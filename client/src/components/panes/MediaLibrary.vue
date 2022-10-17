@@ -214,7 +214,7 @@ export default {
     },
 
     async removeMedia(slug) {
-      await this.$api.deleteItem({
+      await this.$api.deleteFile({
         folder_type: "projects",
         folder_slug: this.project.slug,
         meta_slug: slug,

@@ -139,7 +139,6 @@ export default {
       this.$emit("restore", content);
     },
     onHide() {
-      debugger;
       this.$emit("close");
     },
   },
@@ -167,7 +166,7 @@ export default {
 }
 
 ._archiveText {
-  background: var(--color-Journal);
+  background: var(--c-gris);
   padding: calc(var(--spacing) / 2);
   width: 100%;
   // max-height: 150px;

@@ -6,9 +6,13 @@ export default function () {
     data: {
       socket: "",
       store: {},
+      is_logged_in: false,
+      debug_mode: false,
     },
+    created() {},
     methods: {
-      init() {
+      init({ debug_mode }) {
+        this.debug_mode = debug_mode;
         this.initSchema();
         this.initSocketio();
       },
@@ -60,9 +64,10 @@ export default function () {
           //   _args[0].changed_data.content =
           //     _args[0].changed_data?.content.slice(0, 15) +
           //     "[…] (truncated content)";
-          this.$alertify
-            .delay(4000)
-            .log(`⤓ ` + eventName + JSON.stringify(_args));
+          if (this.debug_mode)
+            this.$alertify
+              .delay(4000)
+              .log(`⤓ ` + eventName + JSON.stringify(_args));
         });
         this.socket.on("folderCreated", this.folderCreated);
         this.socket.on("folderUpdated", this.folderUpdated);
@@ -196,6 +201,16 @@ export default function () {
         const d = response.data;
         return d;
       },
+      async deleteFolder({ folder_type, folder_slug }) {
+        try {
+          const response = await this.$axios.delete(
+            `/${folder_type}/${folder_slug}`
+          );
+          return response.data;
+        } catch (e) {
+          throw e.response.data;
+        }
+      },
 
       async uploadText({
         folder_type,
@@ -219,7 +234,6 @@ export default function () {
           additional_meta,
         });
       },
-
       async uploadFile({
         folder_type,
         folder_slug,
@@ -240,7 +254,7 @@ export default function () {
           .post(path, formData, {
             headers: { "Content-Type": "multipart/form-data" },
             onUploadProgress: (progressEvent) => {
-              onProgress(progressEvent);
+              if (onProgress) onProgress(progressEvent);
             },
           })
           .catch((err) => {
@@ -251,35 +265,45 @@ export default function () {
         return res.data.meta_filename;
       },
 
-      async updateFolder({ folder_type, folder_slug, new_meta }) {
-        // const fetch_status = "pending";
-        // const fetch_error = null;
-        let path = ``;
-        path += `/${folder_type}`;
-        path += `/${folder_slug}`;
-        const response = await this.$axios.patch(path, new_meta);
-        return response.data;
-      },
-      async updateFile({ folder_type, folder_slug, meta_slug, new_meta }) {
-        let path = ``;
-        path += `/${folder_type}`;
-        path += `/${folder_slug}`;
-        path += `/${meta_slug}`;
+      async updateMeta({ path, new_meta }) {
         const response = await this.$axios.patch(path, new_meta);
         return response.data;
       },
 
-      async deleteItem({ folder_type, folder_slug, meta_slug }) {
-        // const fetch_status = "pending";
-        // const fetch_error = null;
+      async updateCover({
+        folder_type,
+        folder_slug,
+        filename,
+        rawData,
+        onProgress,
+      }) {
+        let formData = new FormData();
+        if (rawData) formData.append("file", rawData, filename);
+
+        const path = `/${folder_type}/${folder_slug}?cover`;
+
+        await this.$axios
+          .patch(path, formData, {
+            headers: { "Content-Type": "multipart/form-data" },
+            onUploadProgress: (progressEvent) => {
+              if (onProgress) onProgress(progressEvent);
+            },
+          })
+          .catch((err) => {
+            this.$alertify.delay(4000).error(err);
+            throw err;
+          });
+
+        return;
+      },
+
+      async deleteFile({ folder_type, folder_slug, meta_slug }) {
         try {
           const response = await this.$axios.delete(
             `/${folder_type}/${folder_slug}/${meta_slug}`
           );
-          // const fetch_status = "success";
           return response.data;
         } catch (e) {
-          // this.fetch_status = "error";
           throw e.response.data;
         }
       },
